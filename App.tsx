@@ -197,6 +197,8 @@ const App: React.FC = () => {
         (chunk, accumulated) => {
           fullText = accumulated;
           setMessages([{ role: 'model', text: accumulated }]);
+          // 自動滾動到底部
+          setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }), 50);
         }
       );
 
@@ -279,6 +281,8 @@ const App: React.FC = () => {
             updated[updated.length - 1] = { role: 'model', text: accumulated };
             return updated;
           });
+          // 自動滾動到底部
+          setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }), 50);
         }
       );
       setFollowUpCount(prev => prev + 1); // 增加追問次數
