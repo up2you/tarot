@@ -324,8 +324,8 @@ const App: React.FC = () => {
       {appState === AppState.WELCOME && (
         <div className="max-w-4xl w-full mt-20 animate-fade-up">
           <header className="mb-20 text-center animate-float">
-            <h1 className="text-8xl font-cinzel font-black tracking-tighter gold-text-shimmer mb-2">AETHERIS</h1>
-            <p className="text-[10px] font-cinzel tracking-[1.5em] text-[#d4af37]/60 uppercase ml-[1.5em]">Baroque Divine Oracle</p>
+            <h1 className="text-4xl md:text-8xl font-cinzel font-black tracking-tighter gold-text-shimmer mb-2">AETHERIS</h1>
+            <p className="text-[8px] md:text-[10px] font-cinzel tracking-[0.8em] md:tracking-[1.5em] text-[#d4af37]/60 uppercase">Baroque Divine Oracle</p>
           </header>
 
           <div className="divine-vessel p-12 md:p-20 shadow-2xl">
@@ -358,30 +358,24 @@ const App: React.FC = () => {
               <textarea
                 value={question}
                 onChange={(e) => setQuestion(e.target.value)}
-                placeholder="在此傾訴您的靈魂之惑..."
-                className="w-full h-48 bg-transparent text-[#f3e5ab] placeholder-[#d4af37]/10 focus:outline-none font-lora italic text-2xl leading-relaxed custom-scrollbar resize-none"
+                placeholder="傾訴您的靈魂之惑..."
+                className="w-full h-32 md:h-48 bg-transparent text-[#f3e5ab] placeholder-[#d4af37]/40 focus:outline-none font-lora italic text-lg md:text-2xl leading-relaxed custom-scrollbar resize-none"
               />
             </div>
 
-            <div className="flex gap-4">
+            <div className="flex gap-3">
               <button
                 onClick={handleStartShuffle}
                 disabled={!question.trim() || !selectedSpreadId}
-                className="flex-[3] py-8 rounded-full gold-button text-2xl font-black tracking-[0.5em] disabled:opacity-20 disabled:grayscale transition-all shadow-[0_10px_30px_rgba(0,0,0,0.5)]"
+                className="flex-[2] py-3 md:py-5 rounded-full gold-button text-base md:text-xl font-black tracking-[0.2em] md:tracking-[0.5em] disabled:opacity-20 disabled:grayscale transition-all shadow-[0_10px_30px_rgba(0,0,0,0.5)]"
               >
                 領受天啟
               </button>
               <button
                 onClick={() => setShowHistory(true)}
-                className="flex-1 py-3 md:py-8 rounded-full border border-[#d4af37]/40 text-[#d4af37] font-cinzel text-xs tracking-widest uppercase hover:bg-[#d4af37]/10 transition-all"
+                className="flex-1 py-3 md:py-5 rounded-full border border-[#d4af37]/40 text-[#d4af37] font-cinzel text-xs tracking-widest uppercase hover:bg-[#d4af37]/10 transition-all"
               >
                 歷史記錄
-              </button>
-              <button
-                onClick={() => setShowManager(true)}
-                className="flex-1 py-3 md:py-8 rounded-full border border-[#d4af37]/40 text-[#d4af37] font-cinzel text-xs tracking-widest uppercase hover:bg-[#d4af37]/10 transition-all"
-              >
-                管理牌組
               </button>
             </div>
           </div>
@@ -601,21 +595,21 @@ const App: React.FC = () => {
                     </div>
                   )}
 
-                  <form onSubmit={handleSendMessage} className="flex gap-6 items-center">
-                    <div className="flex-1 bg-black/40 border border-[#d4af37]/30 rounded-full px-10 py-6">
+                  <form onSubmit={handleSendMessage} className="flex flex-col md:flex-row gap-3 md:gap-6 items-stretch md:items-center">
+                    <div className="flex-1 bg-black/40 border border-[#d4af37]/30 rounded-full px-6 md:px-10 py-3 md:py-6">
                       <input
                         type="text"
                         value={userInput}
                         onChange={(e) => setUserInput(e.target.value)}
                         placeholder="向隱士追問命運的細節..."
-                        className="w-full bg-transparent text-[#d4af37] outline-none text-xl font-lora italic placeholder-[#d4af37]/10"
+                        className="w-full bg-transparent text-[#d4af37] outline-none text-base md:text-xl font-lora italic placeholder-[#d4af37]/30"
                         disabled={!currentUser?.isVip && followUpCount >= MAX_FREE_FOLLOWUPS}
                       />
                     </div>
                     <button
                       type="submit"
                       disabled={isTyping || !userInput.trim() || (!currentUser?.isVip && followUpCount >= MAX_FREE_FOLLOWUPS)}
-                      className="gold-button px-12 py-6 rounded-full text-xl font-black tracking-widest text-black transition-all hover:scale-105 active:scale-95 disabled:opacity-30"
+                      className="gold-button px-8 md:px-12 py-3 md:py-6 rounded-full text-base md:text-xl font-black tracking-widest text-black transition-all hover:scale-105 active:scale-95 disabled:opacity-30 self-center"
                     >
                       探尋
                     </button>
@@ -624,7 +618,7 @@ const App: React.FC = () => {
                   <div className="text-center">
                     <button
                       onClick={handleResetCeremony}
-                      className="inline-block py-6 px-16 rounded-full border border-[#d4af37]/20 text-[#d4af37]/60 font-cinzel text-lg tracking-[0.3em] uppercase hover:bg-[#d4af37]/10 hover:text-[#d4af37] transition-all active:scale-95"
+                      className="inline-block py-3 md:py-6 px-6 md:px-16 rounded-full border border-[#d4af37]/20 text-[#d4af37]/60 font-cinzel text-xs md:text-lg tracking-[0.1em] md:tracking-[0.3em] uppercase hover:bg-[#d4af37]/10 hover:text-[#d4af37] transition-all active:scale-95 whitespace-nowrap"
                     >
                       † 結束解讀，重啟儀式 †
                     </button>
