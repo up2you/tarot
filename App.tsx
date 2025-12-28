@@ -324,42 +324,42 @@ const App: React.FC = () => {
       {appState === AppState.WELCOME && (
         <div className="max-w-4xl w-full mt-20 animate-fade-up">
           <header className="mb-20 text-center animate-float">
-            <h1 className="text-4xl md:text-8xl font-cinzel font-black tracking-tighter gold-text-shimmer mb-2">AETHERIS</h1>
-            <p className="text-[8px] md:text-[10px] font-cinzel tracking-[0.8em] md:tracking-[1.5em] text-[#d4af37]/60 uppercase">Baroque Divine Oracle</p>
+            <h1 className="text-5xl md:text-8xl font-cinzel font-black tracking-tighter gold-text-shimmer mb-2">AETHERIS</h1>
+            <p className="text-[8px] md:text-[10px] font-cinzel tracking-[0.5em] md:tracking-[1.5em] text-[#d4af37]/60 uppercase">Baroque Divine Oracle</p>
           </header>
 
           <div className="divine-vessel p-12 md:p-20 shadow-2xl">
             {/* 牌陣選擇提示 */}
-            <div className="mb-8">
+            <div className="mb-6">
               <button
                 onClick={() => setAppState(AppState.SELECT_SPREAD)}
                 className="w-full p-4 rounded-lg border border-[#d4af37]/30 hover:bg-[#d4af37]/5 transition-all"
               >
                 <div className="flex flex-col items-center justify-center">
-                  <p className="text-[10px] font-cinzel text-[#d4af37]/40 tracking-widest uppercase mb-1">選擇的牌陣</p>
+                  <p className="text-xs md:text-sm font-cinzel text-[#d4af37]/60 tracking-widest uppercase mb-1">選擇的牌陣</p>
                   <div className="flex items-center gap-2">
-                    <p className="text-xl font-cinzel text-[#d4af37] font-black">
+                    <p className="text-lg md:text-2xl font-cinzel text-[#ffd700] font-black">
                       {selectedSpreadId
                         ? Object.values(SPREADS).find(s => s.id === selectedSpreadId)?.nameZh
                         : '請選擇牌陣'}
                     </p>
-                    <span className="text-[#d4af37]/40">→</span>
+                    <span className="text-[#ffd700]/60">→</span>
                   </div>
                 </div>
               </button>
             </div>
 
-            <div className="mb-12 text-center">
-              <h2 className="text-4xl font-cinzel text-[#d4af37] tracking-[0.3em] font-black uppercase mb-4">叩問星穹</h2>
-              <p className="text-[#d4af37]/40 font-lora italic">請於心中默唸您的靈魂之惑，星穹之靈將為您撥開命運的塵埃。</p>
+            <div className="mb-6 text-center">
+              <h2 className="text-2xl md:text-4xl font-cinzel text-[#d4af37] tracking-[0.2em] md:tracking-[0.3em] font-black uppercase mb-2">叩問星穹</h2>
+              <p className="text-[#d4af37]/40 font-lora italic text-sm md:text-base">請於心中默唸您的靈魂之惑，星穹之靈將為您撥開命運的塵埃。</p>
             </div>
 
-            <div className="obsidian-mirror p-8 mb-10">
+            <div className="obsidian-mirror p-6 md:p-8 mb-6">
               <textarea
                 value={question}
                 onChange={(e) => setQuestion(e.target.value)}
-                placeholder="傾訴您的靈魂之惑..."
-                className="w-full h-32 md:h-48 bg-transparent text-[#f3e5ab] placeholder-[#d4af37]/40 focus:outline-none font-lora italic text-lg md:text-2xl leading-relaxed custom-scrollbar resize-none"
+                placeholder="在此輸入您的靈魂之惑..."
+                className="w-full h-24 md:h-40 bg-transparent text-[#f3e5ab] placeholder-[#d4af37]/25 focus:outline-none font-lora italic text-base md:text-xl leading-relaxed custom-scrollbar resize-none"
               />
             </div>
 
