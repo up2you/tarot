@@ -373,13 +373,13 @@ const App: React.FC = () => {
               </button>
               <button
                 onClick={() => setShowHistory(true)}
-                className="flex-1 py-8 rounded-full border border-[#d4af37]/40 text-[#d4af37] font-cinzel text-xs tracking-widest uppercase hover:bg-[#d4af37]/10 transition-all"
+                className="flex-1 py-3 md:py-8 rounded-full border border-[#d4af37]/40 text-[#d4af37] font-cinzel text-xs tracking-widest uppercase hover:bg-[#d4af37]/10 transition-all"
               >
                 歷史記錄
               </button>
               <button
                 onClick={() => setShowManager(true)}
-                className="flex-1 py-8 rounded-full border border-[#d4af37]/40 text-[#d4af37] font-cinzel text-xs tracking-widest uppercase hover:bg-[#d4af37]/10 transition-all"
+                className="flex-1 py-3 md:py-8 rounded-full border border-[#d4af37]/40 text-[#d4af37] font-cinzel text-xs tracking-widest uppercase hover:bg-[#d4af37]/10 transition-all"
               >
                 管理牌組
               </button>
@@ -523,7 +523,7 @@ const App: React.FC = () => {
 
           {appState === AppState.INTERACTIVE && (
             <div ref={interpretationRef} className="w-full divine-vessel z-50 animate-fade-up">
-              <div className="p-12 md:p-24 relative">
+              <div className="p-4 md:p-12 lg:p-24 relative">
 
                 <button
                   onClick={handleResetCeremony}
@@ -541,7 +541,7 @@ const App: React.FC = () => {
 
                 <div className="mb-16 border-b border-[#d4af37]/20 pb-12 flex items-center justify-between">
                   <div className="w-14 hidden md:block"></div>
-                  <h2 className="text-4xl md:text-6xl font-cinzel text-[#d4af37] font-black tracking-[0.2em] gold-text-shimmer text-center">艾瑟瑞爾的神諭</h2>
+                  <h2 className="text-xl md:text-6xl font-cinzel text-[#d4af37] font-black tracking-[0.1em] md:tracking-[0.2em] gold-text-shimmer text-center">艾瑟瑞爾的神諭</h2>
                   <div className="flex gap-4">
                     <button
                       onClick={handleShare}
