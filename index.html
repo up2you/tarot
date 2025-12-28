@@ -320,6 +320,79 @@
       background: linear-gradient(to right, transparent, rgba(212, 175, 55, 0.2), transparent);
       margin: 3.5rem 0;
     }
+
+    /* ===== 手機版響應式樣式 ===== */
+    @media (max-width: 768px) {
+      body {
+        overflow-x: hidden;
+        width: 100vw;
+      }
+
+      /* 修正右側空白 */
+      #root {
+        max-width: 100vw;
+        overflow-x: hidden;
+      }
+
+      /* 主標題縮小 */
+      .prose-mystic h1 {
+        font-size: 1.5rem;
+        letter-spacing: 0.1em;
+        margin-bottom: 2rem;
+        padding: 0 1rem;
+      }
+
+      /* h2 標題縮小 */
+      .prose-mystic h2 {
+        font-size: 1rem;
+        letter-spacing: 0.05em;
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+        padding: 0.8rem 1rem;
+        line-height: 1.5;
+      }
+
+      /* h3 標題縮小 */
+      .prose-mystic h3 {
+        font-size: 0.95rem;
+        margin-top: 1.5rem;
+        margin-bottom: 0.8rem;
+      }
+
+      /* 內文增加段落間距 */
+      .prose-mystic p {
+        font-size: 0.9rem;
+        line-height: 1.8;
+        margin-bottom: 1.2rem;
+        text-align: justify;
+      }
+
+      /* 列表間距 */
+      .prose-mystic ul,
+      .prose-mystic ol {
+        padding-left: 1rem;
+        margin-bottom: 1rem;
+      }
+
+      .prose-mystic li {
+        font-size: 0.9rem;
+        line-height: 1.7;
+        margin-bottom: 0.5rem;
+      }
+
+      /* 使用者問題框 */
+      .user-query-box {
+        padding: 1.5rem;
+        margin: 2rem auto;
+        border-radius: 2rem;
+        font-size: 0.95rem;
+      }
+
+      /* 分隔線 */
+      .oracle-divider {
+        margin: 2rem 0;
+      }
+    }
   </style>
   <script type="importmap">
 {
