@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aetheris - Divine Sanctuary</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            mystic: {
+              gold: '#d4af37',
+              ivory: '#fdfcf0',
+              dark: '#0a0a0a',
+              crimson: '#8b0000',
+            }
+          },
+          animation: {
+            'fade-up': 'fade-up 1.5s ease-out forwards',
+            'glow': 'glow 4s ease-in-out infinite',
+            'shimmer': 'shimmer 3s infinite linear',
+            'float': 'float 6s ease-in-out infinite',
+            'deal-card': 'deal-card 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
+            'holy-flash': 'holy-flash 1.5s ease-out forwards',
+          },
+          keyframes: {
+            'fade-up': {
+              '0%': { opacity: '0', transform: 'translateY(30px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' },
+            },
+            'deal-card': {
+              '0%': { opacity: '0', transform: 'scale(0.8) translateY(50px)' },
+              '100%': { opacity: '1', transform: 'scale(1) translateY(0)' },
+            },
+            'glow': {
+              '0%, 100%': { filter: 'drop-shadow(0 0 10px rgba(212, 175, 55, 0.3))' },
+              '50%': { filter: 'drop-shadow(0 0 30px rgba(212, 175, 55, 0.6))' },
+            },
+            'shimmer': {
+              '0%': { backgroundPosition: '-200% center' },
+              '100%': { backgroundPosition: '200% center' },
+            },
+            'float': {
+              '0%, 100%': { transform: 'translateY(0)' },
+              '50%': { transform: 'translateY(-15px)' },
+            },
+            'holy-flash': {
+              '0%': { opacity: '0', transform: 'scale(0.5)', filter: 'blur(20px) brightness(2)' },
+              '20%': { opacity: '1' },
+              '100%': { opacity: '0', transform: 'scale(2)', filter: 'blur(40px) brightness(1)' },
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Lora:ital,wght@0,400;0,700;1,400&display=swap"
+    rel="stylesheet">
+  <style>
+    /* === 主題變數定義 === */
+    :root {
+      --theme-primary: #d4af37;
+      --theme-primary-light: #f3e5ab;
+      --theme-secondary: #8b0000;
+      --theme-bg: #050505;
+      --theme-bg-gradient: radial-gradient(circle at center, #1e0a0a 0%, #050000 100%);
+      --theme-vessel-bg: linear-gradient(180deg, rgba(5, 5, 5, 1) 0%, rgba(15, 5, 5, 1) 100%);
+      --theme-card-border: rgba(212, 175, 55, 0.4);
+      --theme-text: #ddd;
+      /* 保持金色的標題元素 */
+      --theme-gold: #d4af37;
+      --theme-gold-light: #f3e5ab;
+    }
+
+    /* Baroque 主題 (預設) */
+    [data-theme="baroque"],
+    :root {
+      --theme-primary: #d4af37;
+      --theme-primary-light: #f3e5ab;
+      --theme-secondary: #8b0000;
+      --theme-bg: #050505;
+      --theme-bg-gradient: radial-gradient(circle at center, #1e0a0a 0%, #050000 100%);
+      --theme-vessel-bg: linear-gradient(180deg, rgba(5, 5, 5, 1) 0%, rgba(15, 5, 5, 1) 100%);
+      --theme-card-border: rgba(212, 175, 55, 0.4);
+      --theme-gold: #d4af37;
+      --theme-gold-light: #f3e5ab;
+    }
+
+    /* Cyberpunk 主題 */
+    [data-theme="cyberpunk"] {
+      --theme-primary: #00fff9;
+      --theme-primary-light: #00fff9;
+      --theme-secondary: #ff00ff;
+      --theme-bg: #0a0014;
+      --theme-bg-gradient: radial-gradient(circle at center, #1a0033 0%, #0a0014 100%);
+      --theme-vessel-bg: linear-gradient(180deg, rgba(10, 0, 20, 0.95) 0%, rgba(26, 0, 51, 0.9) 100%);
+      --theme-card-border: rgba(0, 255, 249, 0.4);
+      /* 保持金色標題 */
+      --theme-gold: #d4af37;
+      --theme-gold-light: #f3e5ab;
+    }
+
+    /* Celestial 主題 */
+    [data-theme="celestial"] {
+      --theme-primary: #a78bfa;
+      --theme-primary-light: #c4b5fd;
+      --theme-secondary: #fbbf24;
+      --theme-bg: #020617;
+      --theme-bg-gradient: radial-gradient(circle at center, #0f172a 0%, #020617 100%);
+      --theme-vessel-bg: linear-gradient(180deg, rgba(2, 6, 23, 0.95) 0%, rgba(15, 23, 42, 0.9) 100%);
+      --theme-card-border: rgba(167, 139, 250, 0.4);
+      /* 保持金色標題 */
+      --theme-gold: #d4af37;
+      --theme-gold-light: #f3e5ab;
+    }
+
+    body {
+      font-family: 'Lora', serif;
+      background-color: var(--theme-bg);
+      color: var(--theme-text);
+      overflow-x: hidden;
+      scroll-behavior: smooth;
+    }
+
+    .mystic-gradient {
+      background: var(--theme-bg-gradient);
+      background-attachment: fixed;
+      position: relative;
+    }
+
+    .divine-vessel {
+      border: 2px solid var(--theme-card-border);
+      background: var(--theme-vessel-bg);
+      box-shadow: 0 -80px 200px rgba(0, 0, 0, 1);
+      border-radius: 5rem;
+      position: relative;
+      backdrop-filter: blur(50px);
+    }
+
+    .perspective-3000 {
+      perspective: 3000px;
+    }
+
+    .card-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transition: transform 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+      transform-style: preserve-3d;
+    }
+
+    .card-flipped {
+      transform: rotateY(180deg);
+    }
+
+    .card-face {
+      position: absolute;
+      inset: 0;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      border-radius: 1rem;
+      overflow: hidden;
+    }
+
+    .card-back-side {
+      transform: rotateY(0deg);
+      border: 4px solid rgba(212, 175, 55, 0.4);
+      background: #1a0505;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+    }
+
+    .card-front-side {
+      transform: rotateY(180deg);
+      border: 6px solid #d4af37;
+      background: #000;
+      box-shadow: 0 0 60px rgba(212, 175, 55, 0.4);
+    }
+
+    .canvas-emergence {
+      animation: emergence-glow 1.8s cubic-bezier(0.2, 1, 0.3, 1) forwards;
+    }
+
+    @keyframes emergence-glow {
+      0% {
+        filter: blur(15px) sepia(1) brightness(0.5) contrast(1.5);
+        transform: scale(1.1);
+        opacity: 0;
+      }
+
+      30% {
+        opacity: 1;
+        filter: blur(8px) sepia(0.5) brightness(1.8) contrast(1.2);
+      }
+
+      100% {
+        filter: blur(0) sepia(0) brightness(1) contrast(1);
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    .craquelure-overlay {
+      position: absolute;
+      inset: 0;
+      background-image: url('https://www.transparenttextures.com/patterns/crackle-glaze.png');
+      opacity: 0.3;
+      pointer-events: none;
+      mix-blend-mode: multiply;
+    }
+
+    .prose-mystic {
+      color: #ccc;
+      line-height: 1.8;
+      font-size: 1.25rem;
+      /* 微調內文字級使排版更精緻 */
+    }
+
+    .prose-mystic h1 {
+      font-family: 'Cinzel', serif;
+      color: var(--theme-gold);
+      font-size: 2.5rem;
+      text-align: center;
+      letter-spacing: 0.4em;
+      margin-bottom: 4rem;
+      text-shadow: 0 0 30px rgba(212, 175, 55, 0.5);
+    }
+
+    /* 主標題 (h2)：揭示牌位與牌名。進一步縮小字級以適應長句。 */
+    .prose-mystic h2 {
+      font-family: 'Cinzel', serif;
+      color: var(--theme-gold-light);
+      font-size: 1.45rem;
+      /* 再次縮小字級 (從 1.75rem 下調) */
+      margin-top: 4rem;
+      margin-bottom: 2rem;
+      padding: 1.2rem 1.5rem;
+      text-align: center;
+      letter-spacing: 0.1em;
+      background: linear-gradient(to right, transparent, rgba(212, 175, 55, 0.08), transparent);
+      border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+      font-weight: 700;
+      line-height: 1.4;
+    }
+
+    /* 副標題 (h3)：如「牌面本質」，保持顯眼但按比例縮小 */
+    .prose-mystic h3 {
+      font-family: 'Cinzel', serif;
+      color: var(--theme-gold);
+      font-size: 1.35rem;
+      /* 配合 h2 調整比例 */
+      font-weight: 700;
+      margin-top: 2.5rem;
+      margin-bottom: 1rem;
+      letter-spacing: 0.05em;
+      text-shadow: 0 0 5px rgba(212, 175, 55, 0.2);
+    }
+
+    .highlight-gold {
+      color: #d4af37;
+      font-weight: 700;
+      text-shadow: 0 0 5px rgba(212, 175, 55, 0.3);
+    }
+
+    .highlight-crimson {
+      color: #ff4d4d;
+      font-weight: 700;
+      text-shadow: 0 0 5px rgba(255, 77, 77, 0.3);
+    }
+
+    .user-query-box {
+      border: 2px solid rgba(212, 175, 55, 0.4);
+      background: rgba(0, 0, 0, 0.9);
+      padding: 3rem;
+      border-radius: 4rem;
+      margin: 5rem auto;
+      max-width: 80%;
+      font-style: italic;
+      color: var(--theme-gold-light);
+      text-align: center;
+      font-size: 1.6rem;
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 1);
+      position: relative;
+    }
+
+    .gold-button {
+      background: linear-gradient(90deg, #a68527, #e6c673, #d4af37, #e6c673, #a68527);
+      animation: shimmer 5s infinite linear;
+      background-size: 200% auto;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    }
+
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: var(--theme-gold);
+      border-radius: 10px;
+    }
+
+    .gold-text-shimmer {
+      background: linear-gradient(90deg, #d4af37, #fdfcf0, #d4af37);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-size: 200% auto;
+      animation: shimmer 4s infinite linear;
+    }
+
+    .prose-mystic hr {
+      border: 0;
+      height: 1px;
+      background: linear-gradient(to right, transparent, rgba(212, 175, 55, 0.2), transparent);
+      margin: 3.5rem 0;
+    }
+  </style>
+  <script type="importmap">
+{
+  "imports": {
+    "@google/genai": "https://esm.sh/@google/genai@^1.34.0",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react": "https://esm.sh/react@^19.2.3",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "marked": "https://esm.sh/marked@^12.0.0"
+  }
+}
+</script>
+  <link rel="stylesheet" href="/index.css">
+</head>
+
+<body class="mystic-gradient min-h-screen">
+  <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+
+</html>

@@ -1,0 +1,8 @@
+
+{
+  "name": "Aetheris: The Divine Oracle",
+  "description": "A sophisticated and mystical Tarot reading experience featuring animated card spreads, immersive sound effects, and deep AI-driven spiritual guidance powered by Gemini 3 Pro.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
