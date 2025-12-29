@@ -12,11 +12,11 @@ interface TarotCardProps {
   customBack?: string;
 }
 
-const TarotCard: React.FC<TarotCardProps> = ({ 
-  card, 
-  isFlipped, 
-  isReversed, 
-  onClick, 
+const TarotCard: React.FC<TarotCardProps> = ({
+  card,
+  isFlipped,
+  isReversed,
+  onClick,
   className = "",
   size = 'md',
   customBack,
@@ -34,9 +34,9 @@ const TarotCard: React.FC<TarotCardProps> = ({
   }, [isFlipped]);
 
   const sizeClasses = {
-    sm: 'w-28 h-[12.5rem]', 
-    md: 'w-48 h-[21.5rem]', 
-    lg: 'w-64 h-[28.5rem]'  
+    sm: 'w-28 h-[12.5rem]',
+    md: 'w-48 h-[21.5rem]',
+    lg: 'w-64 h-[28.5rem]'
   };
 
   const DefaultMysticPattern = () => (
@@ -51,48 +51,48 @@ const TarotCard: React.FC<TarotCardProps> = ({
   );
 
   return (
-    <div 
+    <div
       className={`relative perspective-3000 ${sizeClasses[size]} ${className}`}
       onClick={onClick}
     >
       {/* 聖光擴散層 - 僅在翻牌瞬間出現 */}
       {showLight && (
         <div className="absolute inset-0 z-50 pointer-events-none overflow-hidden rounded-xl">
-           <div className="absolute inset-0 bg-white animate-holy-flash mix-blend-screen opacity-0"></div>
-           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#d4af37]/40 to-transparent animate-shimmer pointer-events-none"></div>
+          <div className="absolute inset-0 bg-white animate-holy-flash mix-blend-screen opacity-0"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#d4af37]/40 to-transparent animate-shimmer pointer-events-none"></div>
         </div>
       )}
 
       <div className={`card-inner ${isFlipped ? 'card-flipped' : ''} cursor-pointer shadow-[0_30px_60px_rgba(0,0,0,0.9)]`}>
-        
+
         {/* 牌背 (Back side) */}
         <div className="card-face card-back-side">
-           {customBack ? (
-             <img 
-               src={customBack} 
-               className="w-full h-full object-cover"
-               alt="聖殿之印" 
-             />
-           ) : <DefaultMysticPattern />}
-           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20"></div>
-           <div className="absolute inset-0 border-[1px] border-[#d4af37]/20 m-2 rounded-lg pointer-events-none"></div>
-           <div className="absolute inset-x-4 inset-y-10 border-x border-[#d4af37]/10 pointer-events-none"></div>
+          {customBack ? (
+            <img
+              src={customBack}
+              className="w-full h-full object-cover"
+              alt="聖殿之印"
+            />
+          ) : <DefaultMysticPattern />}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20"></div>
+          <div className="absolute inset-0 border-[1px] border-[#d4af37]/20 m-2 rounded-lg pointer-events-none"></div>
+          <div className="absolute inset-x-4 inset-y-10 border-x border-[#d4af37]/10 pointer-events-none"></div>
         </div>
-        
+
         {/* 牌面 (Front side) */}
         <div className="card-face card-front-side">
           {card && (
             <div className={`relative w-full h-full flex flex-col ${isReversed ? 'rotate-180' : ''}`}>
-              
+
               <div className={`flex-1 relative overflow-hidden bg-[#050505] ${isFlipped ? 'canvas-emergence' : ''}`}>
                 {/* 核心牌面圖片 */}
-                <img 
-                  src={card.image} 
-                  alt={card.nameZh} 
+                <img
+                  src={card.image}
+                  alt={card.nameZh}
                   className="w-full h-full object-cover"
                   loading="eager"
                 />
-                
+
                 {/* 油畫裂紋質感層 - 隨時間慢慢淡出 */}
                 <div className={`craquelure-overlay transition-opacity duration-[2000ms] ${isFlipped ? 'opacity-10' : 'opacity-30'}`}></div>
 
@@ -101,16 +101,24 @@ const TarotCard: React.FC<TarotCardProps> = ({
 
                 {/* 模擬油畫的高光掃過感 */}
                 {isFlipped && (
-                   <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent pointer-events-none"></div>
+                  <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent pointer-events-none"></div>
                 )}
+
+                {/* 3D 光澤反射層 */}
+                <div
+                  className={`absolute inset-0 pointer-events-none transition-opacity duration-700 ${isFlipped ? 'opacity-100' : 'opacity-0'}`}
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 40%, transparent 60%, rgba(0,0,0,0.15) 100%)',
+                  }}
+                />
               </div>
 
               {/* 牌名標籤 */}
               <div className={`absolute bottom-6 left-1/2 -translate-x-1/2 w-[88%] transition-all duration-1000 ${isFlipped ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
                 <div className="bg-[#fdfcf0]/90 backdrop-blur-md border-2 border-[#d4af37] py-2 px-1 shadow-[0_15px_30px_rgba(0,0,0,1)] rounded-sm text-center">
-                   <p className="text-black font-cinzel text-xl font-black tracking-[0.2em] leading-tight">{card.nameZh}</p>
-                   <div className="w-1/3 h-px bg-black/20 mx-auto my-1.5"></div>
-                   <p className="text-black/60 text-[8px] uppercase tracking-[0.4em] font-cinzel font-bold">{card.name}</p>
+                  <p className="text-black font-cinzel text-xl font-black tracking-[0.2em] leading-tight">{card.nameZh}</p>
+                  <div className="w-1/3 h-px bg-black/20 mx-auto my-1.5"></div>
+                  <p className="text-black/60 text-[8px] uppercase tracking-[0.4em] font-cinzel font-bold">{card.name}</p>
                 </div>
               </div>
             </div>

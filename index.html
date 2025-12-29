@@ -133,12 +133,43 @@
     }
 
     .divine-vessel {
-      border: 2px solid var(--theme-card-border);
-      background: var(--theme-vessel-bg);
-      box-shadow: 0 -80px 200px rgba(0, 0, 0, 1);
-      border-radius: 5rem;
+      border: 1px solid rgba(212, 175, 55, 0.25);
+      background: linear-gradient(135deg,
+          rgba(15, 8, 8, 0.95) 0%,
+          rgba(25, 12, 12, 0.9) 50%,
+          rgba(15, 8, 8, 0.95) 100%);
+      box-shadow:
+        0 0 0 1px rgba(212, 175, 55, 0.08),
+        0 -80px 200px rgba(0, 0, 0, 1),
+        0 25px 80px rgba(0, 0, 0, 0.8),
+        inset 0 1px 0 rgba(255, 255, 255, 0.03),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+      border-radius: 4rem;
       position: relative;
-      backdrop-filter: blur(50px);
+      backdrop-filter: blur(40px) saturate(140%);
+      overflow: hidden;
+    }
+
+    /* 容器頂部光暈 */
+    .divine-vessel::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: radial-gradient(ellipse 100% 50% at 50% 0%,
+          rgba(212, 175, 55, 0.06) 0%,
+          transparent 60%);
+      pointer-events: none;
+    }
+
+    /* 容器邊緣微光 */
+    .divine-vessel::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      box-shadow: inset 0 0 60px rgba(212, 175, 55, 0.02);
+      pointer-events: none;
     }
 
     .perspective-3000 {
@@ -307,11 +338,30 @@
     }
 
     .gold-text-shimmer {
-      background: linear-gradient(90deg, #d4af37, #fdfcf0, #d4af37);
+      background: linear-gradient(90deg,
+          #a68527 0%,
+          #d4af37 20%,
+          #fdfcf0 50%,
+          #d4af37 80%,
+          #a68527 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-      background-size: 200% auto;
-      animation: shimmer 4s infinite linear;
+      background-clip: text;
+      background-size: 300% auto;
+      animation: shimmer 4s linear infinite, title-pulse 3s ease-in-out infinite;
+      filter: drop-shadow(0 0 30px rgba(212, 175, 55, 0.4));
+    }
+
+    @keyframes title-pulse {
+
+      0%,
+      100% {
+        filter: drop-shadow(0 0 20px rgba(212, 175, 55, 0.3));
+      }
+
+      50% {
+        filter: drop-shadow(0 0 50px rgba(212, 175, 55, 0.6));
+      }
     }
 
     .prose-mystic hr {
@@ -319,6 +369,63 @@
       height: 1px;
       background: linear-gradient(to right, transparent, rgba(212, 175, 55, 0.2), transparent);
       margin: 3.5rem 0;
+    }
+
+    /* ===== 聖光射線 ===== */
+    .divine-rays {
+      position: fixed;
+      inset: 0;
+      background: conic-gradient(from 180deg at 50% 120%,
+          transparent 0deg,
+          rgba(212, 175, 55, 0.02) 10deg,
+          transparent 20deg,
+          transparent 160deg,
+          rgba(212, 175, 55, 0.015) 170deg,
+          transparent 180deg);
+      animation: rotate-rays 90s linear infinite;
+      opacity: 0.8;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    @keyframes rotate-rays {
+      from {
+        transform: rotate(0deg);
+      }
+
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* ===== 底部霧氣 ===== */
+    .mist-layer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 50vh;
+      background: linear-gradient(to top,
+          rgba(212, 175, 55, 0.03) 0%,
+          rgba(139, 0, 0, 0.02) 30%,
+          transparent 100%);
+      animation: mist-pulse 10s ease-in-out infinite;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    @keyframes mist-pulse {
+
+      0%,
+      100% {
+        opacity: 0.4;
+        transform: translateY(0);
+      }
+
+      50% {
+        opacity: 0.7;
+        transform: translateY(-30px);
+      }
     }
 
     /* ===== 手機版響應式樣式 ===== */
@@ -409,6 +516,10 @@
 </head>
 
 <body class="mystic-gradient min-h-screen">
+  <!-- 氛圍視覺層 -->
+  <div class="divine-rays"></div>
+  <div class="mist-layer"></div>
+
   <div id="root"></div>
   <script type="module" src="/index.tsx"></script>
 </body>
