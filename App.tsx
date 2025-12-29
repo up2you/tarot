@@ -654,7 +654,7 @@ ${cleanedInterpretation}
                     isFlipped={isFlipped[idx]}
                     isReversed={s.isReversed}
                     onClick={() => flipCard(idx)}
-                    size={spread.length > 5 ? 'sm' : 'lg'}
+                    size={isMobile ? 'sm' : (spread.length > 5 ? 'sm' : 'lg')}
                     customBack={cardBackImage}
                   />
                   {!isFlipped[idx] && (
