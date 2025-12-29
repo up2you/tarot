@@ -196,7 +196,7 @@ export const SPREADS = {
     nameZh: '凱爾特十字',
     category: 'general',
     description: '經典深度分析',
-    isVip: true, // VIP 專屬
+    isVip: false, // 暫時開放測試
     positions: [
       { key: 'significator', name: '核心', description: '當前處境的核心' },
       { key: 'crossing', name: '障礙', description: '橫跨的挑戰或影響' },
