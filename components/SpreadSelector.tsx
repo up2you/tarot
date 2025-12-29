@@ -45,7 +45,7 @@ const SpreadSelector: React.FC<SpreadSelectorProps> = ({ isVip, onSelectSpread, 
             {/* 返回按鈕 */}
             <button
                 onClick={selectedCategory ? () => setSelectedCategory(null) : onBack}
-                className="mb-8 text-[#d4af37]/40 hover:text-[#d4af37] font-cinzel text-sm tracking-widest uppercase flex items-center gap-2 group transition-all"
+                className="mb-8 text-[#d4af37]/80 hover:text-[#d4af37] font-cinzel text-sm tracking-widest uppercase flex items-center gap-2 group transition-all border border-[#d4af37]/40 px-4 py-2 rounded-full hover:bg-[#d4af37]/10"
             >
                 <span className="group-hover:-translate-x-1 transition-transform">←</span>
                 {selectedCategory ? '返回分類' : '返回首頁'}

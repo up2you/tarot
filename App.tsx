@@ -459,10 +459,10 @@ ${cleanedInterpretation}
       {appState === AppState.AUTH && <AuthForm onSuccess={handleAuthSuccess} />}
 
       {appState === AppState.WELCOME && (
-        <div className="max-w-4xl w-full mt-20 animate-fade-up">
-          <header className="mb-20 text-center animate-float">
+        <div className="max-w-4xl w-full mt-6 md:mt-20 animate-fade-up">
+          <header className="mb-8 md:mb-20 text-center animate-float">
             <h1 className="text-5xl md:text-8xl font-cinzel font-black tracking-tighter gold-text-shimmer mb-2">AETHERIS</h1>
-            <p className="text-[8px] md:text-[10px] font-cinzel tracking-[0.5em] md:tracking-[1.5em] text-[#d4af37]/60 uppercase">Baroque Divine Oracle</p>
+            <p className="text-[10px] md:text-[10px] font-cinzel tracking-[0.5em] md:tracking-[1.5em] text-[#d4af37]/80 uppercase">Baroque Divine Oracle</p>
           </header>
 
           <div className="divine-vessel p-12 md:p-20 shadow-2xl">
@@ -531,7 +531,7 @@ ${cleanedInterpretation}
                   <span className="text-3xl">✦</span>
                   <div>
                     <h3 className="text-2xl font-cinzel font-black text-[#d4af37] tracking-widest">凱爾特十字</h3>
-                    <p className="text-[10px] font-cinzel text-[#d4af37]/40 tracking-widest uppercase">Celtic Cross • 10 Cards</p>
+                    <p className="text-[10px] font-cinzel text-[#d4af37]/70 tracking-widest uppercase">Celtic Cross • 10 Cards</p>
                   </div>
                 </div>
                 <div className="px-4 py-2 bg-gradient-to-r from-yellow-600 to-yellow-500 rounded-full">
