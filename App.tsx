@@ -592,23 +592,26 @@ ${cleanedInterpretation}
       )}
 
       {appState === AppState.SHUFFLING && (
-        <div className="py-32 flex flex-col items-center gap-8">
-          {/* AI 生成的洗牌圖片 */}
-          <div className="relative">
-            <img
-              src="/shuffle-animation.png"
-              alt="洗牌中"
-              className="w-72 md:w-96 h-auto animate-pulse"
-              style={{
-                filter: 'drop-shadow(0 0 30px rgba(212, 175, 55, 0.3))',
-                animation: 'float 3s ease-in-out infinite, glow 2s ease-in-out infinite alternate'
-              }}
-            />
-            {/* 發光效果疊加 */}
-            <div
-              className="absolute inset-0 bg-gradient-radial from-[#d4af37]/10 to-transparent rounded-full animate-pulse"
-              style={{ filter: 'blur(40px)' }}
-            ></div>
+        <div className="py-40 flex flex-col items-center gap-12">
+          <div className="relative w-48 h-72">
+            {[...Array(5)].map((_, i) => (
+              <div
+                key={i}
+                className="absolute inset-0 bg-gradient-to-br from-[#1a0505] to-[#2a0a0a] border-2 border-[#d4af37]/40 rounded-xl shadow-2xl"
+                style={{
+                  zIndex: 5 - i,
+                  animation: `shuffleCard${i % 3} ${1.0 + i * 0.15}s ease-in-out infinite`,
+                  animationDelay: `${i * 0.1}s`
+                }}
+              >
+                {/* 牌背裝飾 */}
+                <div className="absolute inset-2 border border-[#d4af37]/20 rounded-lg flex items-center justify-center">
+                  <div className="w-16 h-16 border border-[#d4af37]/30 rounded-full flex items-center justify-center">
+                    <span className="text-[#d4af37]/40 text-2xl">✦</span>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
           <div className="text-center">
             <p className="font-cinzel text-[#d4af37] text-2xl tracking-[0.5em] font-black animate-pulse mb-2">天啟編織中</p>
