@@ -592,24 +592,24 @@ ${cleanedInterpretation}
       )}
 
       {appState === AppState.SHUFFLING && (
-        <div className="py-40 flex flex-col items-center gap-12">
+        <div className="py-32 flex flex-col items-center gap-8">
           <div className="relative w-48 h-72">
             {[...Array(5)].map((_, i) => (
               <div
                 key={i}
-                className="absolute inset-0 bg-gradient-to-br from-[#1a0505] to-[#2a0a0a] border-2 border-[#d4af37]/40 rounded-xl shadow-2xl"
+                className="absolute inset-0 rounded-xl shadow-2xl overflow-hidden"
                 style={{
                   zIndex: 5 - i,
                   animation: `shuffleCard${i % 3} ${1.0 + i * 0.15}s ease-in-out infinite`,
                   animationDelay: `${i * 0.1}s`
                 }}
               >
-                {/* 牌背裝飾 */}
-                <div className="absolute inset-2 border border-[#d4af37]/20 rounded-lg flex items-center justify-center">
-                  <div className="w-16 h-16 border border-[#d4af37]/30 rounded-full flex items-center justify-center">
-                    <span className="text-[#d4af37]/40 text-2xl">✦</span>
-                  </div>
-                </div>
+                <img
+                  src={cardBackImage}
+                  alt="牌背"
+                  className="w-full h-full object-cover rounded-xl border-2 border-[#d4af37]/40"
+                  style={{ filter: 'drop-shadow(0 0 10px rgba(212, 175, 55, 0.3))' }}
+                />
               </div>
             ))}
           </div>
