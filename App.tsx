@@ -277,6 +277,10 @@ const App: React.FC = () => {
       .replace(/\*\*/g, '')
       .replace(/\*/g, '')
       .replace(/---/g, '─────────')
+      // 移除 HTML 標籤
+      .replace(/<span[^>]*>/g, '「')
+      .replace(/<\/span>/g, '」')
+      .replace(/<[^>]+>/g, '')
       .trim();
 
     const fullShareText = `✦ 艾瑟瑞爾塔羅神諭 ✦
@@ -344,6 +348,10 @@ ${cleanedInterpretation}
       .replace(/\*\*/g, '')
       .replace(/\*/g, '')
       .replace(/---/g, '─────────')
+      // 移除 HTML 標籤
+      .replace(/<span[^>]*>/g, '「')
+      .replace(/<\/span>/g, '」')
+      .replace(/<[^>]+>/g, '')
       .trim();
 
     const fullShareText = `✦ 艾瑟瑞爾塔羅神諭 ✦
