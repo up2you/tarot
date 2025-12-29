@@ -267,6 +267,33 @@ const App: React.FC = () => {
       return;
     }
 
+    // 準備完整解讀文字
+    const cardNames = spread.map(s => `${s.position}: ${s.card.nameZh}(${s.isReversed ? '逆位' : '正位'})`).join('\n');
+    const fullInterpretation = messages.find(m => m.role === 'model')?.text || '';
+    // 清理 Markdown 標記
+    const cleanedInterpretation = fullInterpretation
+      .replace(/^#+\s+/gm, '【')
+      .replace(/\n#+\s+/g, '】\n\n【')
+      .replace(/\*\*/g, '')
+      .replace(/\*/g, '')
+      .replace(/---/g, '─────────')
+      .trim();
+
+    const fullShareText = `✦ 艾瑟瑞爾塔羅神諭 ✦
+
+📿 我的提問：
+「${question}」
+
+🎴 抽出的牌陣：
+${cardNames}
+
+🔮 神諭啟示：
+${cleanedInterpretation}
+
+─────────
+🌐 majorarcana.app
+在聖殿的穹頂之下，窺見命運的真相`;
+
     try {
       // 生成圖片
       const dataUrl = await toPng(node, {
@@ -280,28 +307,28 @@ const App: React.FC = () => {
       const blob = await response.blob();
       const file = new File([blob], 'aetheris-oracle.png', { type: 'image/png' });
 
-      // 嘗試使用 Web Share API 分享圖片
+      // 嘗試使用 Web Share API 分享圖片 + 完整文字
       if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
         await navigator.share({
           files: [file],
           title: 'Aetheris 塔羅神諭',
-          text: `我的提問：「${question}」\nmajorarcana.app`,
+          text: fullShareText,
         });
       } else {
-        // 降級：下載圖片
+        // 降級：下載圖片 + 複製完整文字
         const link = document.createElement('a');
         link.download = 'aetheris-oracle.png';
         link.href = dataUrl;
         link.click();
-        alert('圖卡已下載！您可以手動分享至社群媒體。');
+        // 同時複製完整文字到剪貼簿
+        await navigator.clipboard.writeText(fullShareText);
+        alert('✅ 圖卡已下載！\n📋 完整解讀內容已複製到剪貼簿\n\n您可以將圖片和文字一起分享至社群媒體。');
       }
     } catch (err) {
       console.error('Share image failed:', err);
-      // 再次降級：複製文字
-      const cardNames = spread.map(s => `${s.position}: ${s.card.nameZh}(${s.isReversed ? '逆位' : '正位'})`).join('、');
-      const shareText = `【艾瑟瑞爾塔羅神諭】\n\n我的提問：『${question}』\n抽出牌陣：${cardNames}\n\n在聖殿的穹頂之下，我已窺見命運的真相。\n\nmajorarcana.app`;
-      navigator.clipboard.writeText(shareText);
-      alert('神諭內容已複製到剪貼簿！');
+      // 再次降級：只複製完整文字
+      await navigator.clipboard.writeText(fullShareText);
+      alert('圖卡生成失敗，但完整神諭內容已複製到剪貼簿！');
     } finally {
       setShowShareCard(false);
     }
