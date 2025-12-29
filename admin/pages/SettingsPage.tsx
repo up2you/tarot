@@ -4,30 +4,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { MobileCardDisplayMode } from '../../types';
-import { getSettings, updateSettings, AppSettings } from '../../services/settingsService';
+import { getSettings, updateSettings } from '../../services/settingsService';
 
-// 從 localStorage 讀取顯示設定
-const DISPLAY_STORAGE_KEY = 'aetheris_display_settings';
 
-const getDisplaySettings = () => {
-    try {
-        const stored = localStorage.getItem(DISPLAY_STORAGE_KEY);
-        if (stored) {
-            return JSON.parse(stored);
-        }
-    } catch (e) {
-        console.error('Failed to load display settings:', e);
-    }
-    return { mobileCardDisplayMode: 'grid' };
-};
-
-const saveDisplaySettings = (settings: { mobileCardDisplayMode: MobileCardDisplayMode }) => {
-    try {
-        localStorage.setItem(DISPLAY_STORAGE_KEY, JSON.stringify(settings));
-    } catch (e) {
-        console.error('Failed to save display settings:', e);
-    }
-};
 
 const SettingsPage: React.FC = () => {
     const [isLoading, setIsLoading] = useState(true);
@@ -54,9 +33,7 @@ const SettingsPage: React.FC = () => {
                 setAllowRegistration(settings.allow_registration);
                 setAllowFreeReading(settings.allow_free_reading);
 
-                // 載入 localStorage 設定
-                const displaySettings = getDisplaySettings();
-                setMobileDisplayMode(displaySettings.mobileCardDisplayMode || 'grid');
+                setMobileDisplayMode(settings.mobile_display_mode || 'grid');
             } catch (error) {
                 console.error('Failed to load settings:', error);
             } finally {
@@ -82,6 +59,7 @@ const SettingsPage: React.FC = () => {
                 admin_emails: emailList,
                 allow_registration: allowRegistration,
                 allow_free_reading: allowFreeReading,
+                mobile_display_mode: mobileDisplayMode,
             });
 
             if (success) {
@@ -100,7 +78,8 @@ const SettingsPage: React.FC = () => {
 
     const handleDisplayModeChange = (mode: MobileCardDisplayMode) => {
         setMobileDisplayMode(mode);
-        saveDisplaySettings({ mobileCardDisplayMode: mode });
+        // 即時儲存到 Supabase
+        updateSettings({ mobile_display_mode: mode });
     };
 
     const displayModes: { mode: MobileCardDisplayMode; label: string; desc: string; icon: string }[] = [

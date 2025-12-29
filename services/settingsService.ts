@@ -12,6 +12,7 @@ export interface AppSettings {
     admin_emails: string[];
     allow_registration: boolean;
     allow_free_reading: boolean;
+    mobile_display_mode: 'grid' | 'fullscreen' | 'carousel';
     updated_at: string;
 }
 
@@ -22,6 +23,7 @@ const DEFAULT_SETTINGS: AppSettings = {
     admin_emails: [],
     allow_registration: true,
     allow_free_reading: true,
+    mobile_display_mode: 'grid',
     updated_at: new Date().toISOString(),
 };
 
