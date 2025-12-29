@@ -52,20 +52,26 @@ export const getSettings = async (): Promise<AppSettings> => {
  * 更新應用程式設定
  */
 export const updateSettings = async (updates: Partial<AppSettings>): Promise<boolean> => {
+    console.log('[Settings] Attempting to update:', updates);
+
     try {
-        const { error } = await supabase
+        const { data, error } = await supabase
             .from('app_settings')
             .update({
                 ...updates,
                 updated_at: new Date().toISOString(),
             })
-            .eq('id', 'global');
+            .eq('id', 'global')
+            .select();
+
+        console.log('[Settings] Update response:', { data, error });
 
         if (error) {
             console.error('[Settings] Failed to update:', error);
             return false;
         }
 
+        console.log('[Settings] Update successful!');
         return true;
     } catch (err) {
         console.error('[Settings] Update error:', err);
