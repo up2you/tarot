@@ -166,7 +166,7 @@ const App: React.FC = () => {
 
     setTimeout(() => {
       setAppState(AppState.SPREADING);
-    }, 2000);
+    }, 4000); // 延長洗牌動畫時間
   };
 
   // 選擇牌陣
