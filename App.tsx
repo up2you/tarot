@@ -21,6 +21,8 @@ import { generateThemedCardArt, isThemeComplete, getCachedArt } from './services
 import { initMobileApp, hapticFeedback, hapticNotification } from './services/mobileService';
 import { saveReading } from './services/historyService';
 import { marked } from 'marked';
+import { toPng } from 'html-to-image';
+import ShareCardPreview from './components/ShareCardPreview';
 
 const App: React.FC = () => {
   const { currentTheme } = useTheme();
@@ -50,6 +52,8 @@ const App: React.FC = () => {
   const { playSound } = useThemedSounds(currentTheme);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const interpretationRef = useRef<HTMLDivElement>(null);
+  const shareCardRef = useRef<HTMLDivElement>(null);
+  const [showShareCard, setShowShareCard] = useState(false);
 
   const syncLocalAssets = useCallback(async (user: User) => {
     const theme = user.theme || AppTheme.BAROQUE;
@@ -250,23 +254,56 @@ const App: React.FC = () => {
   };
 
   const handleShare = async () => {
-    const cardNames = spread.map(s => `${s.position}: ${s.card.nameZh}(${s.isReversed ? '逆位' : '正位'})`).join('、');
-    const shareText = `【艾瑟瑞爾塔羅神諭】\n\n我的提問：『${question}』\n抽出牌陣：${cardNames}\n\n在聖殿的穹頂之下，我已窺見命運的真相。你也想聽聽神諭嗎？`;
-    const shareUrl = window.location.href;
+    // 顯示分享卡片
+    setShowShareCard(true);
 
-    if (navigator.share) {
-      try {
+    // 等待 DOM 渲染
+    await new Promise(resolve => setTimeout(resolve, 300));
+
+    const node = shareCardRef.current;
+    if (!node) {
+      setShowShareCard(false);
+      alert('生成圖卡失敗，請重試');
+      return;
+    }
+
+    try {
+      // 生成圖片
+      const dataUrl = await toPng(node, {
+        quality: 0.95,
+        pixelRatio: 2,
+        backgroundColor: '#0a0505',
+      });
+
+      // 轉換為 Blob
+      const response = await fetch(dataUrl);
+      const blob = await response.blob();
+      const file = new File([blob], 'aetheris-oracle.png', { type: 'image/png' });
+
+      // 嘗試使用 Web Share API 分享圖片
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
         await navigator.share({
-          title: 'Aetheris Tarot Oracle',
-          text: shareText,
-          url: shareUrl,
+          files: [file],
+          title: 'Aetheris 塔羅神諭',
+          text: `我的提問：「${question}」\nmajorarcana.app`,
         });
-      } catch (err) {
-        console.log('Sharing failed', err);
+      } else {
+        // 降級：下載圖片
+        const link = document.createElement('a');
+        link.download = 'aetheris-oracle.png';
+        link.href = dataUrl;
+        link.click();
+        alert('圖卡已下載！您可以手動分享至社群媒體。');
       }
-    } else {
-      navigator.clipboard.writeText(`${shareText}\n${shareUrl}`);
-      alert('神諭內容與連結已刻入剪貼簿，您可以將其分享至通訊軟體。');
+    } catch (err) {
+      console.error('Share image failed:', err);
+      // 再次降級：複製文字
+      const cardNames = spread.map(s => `${s.position}: ${s.card.nameZh}(${s.isReversed ? '逆位' : '正位'})`).join('、');
+      const shareText = `【艾瑟瑞爾塔羅神諭】\n\n我的提問：『${question}』\n抽出牌陣：${cardNames}\n\n在聖殿的穹頂之下，我已窺見命運的真相。\n\nmajorarcana.app`;
+      navigator.clipboard.writeText(shareText);
+      alert('神諭內容已複製到剪貼簿！');
+    } finally {
+      setShowShareCard(false);
     }
   };
 
@@ -323,6 +360,18 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col items-center py-20 px-4 relative">
+      {/* 分享圖卡（隱藏，用於生成圖片） */}
+      {showShareCard && (
+        <div className="fixed -left-[9999px] top-0 z-[-1]">
+          <ShareCardPreview
+            ref={shareCardRef}
+            spread={spread}
+            question={question}
+            interpretation={messages.find(m => m.role === 'model')?.text || ''}
+          />
+        </div>
+      )}
+
       {/* 背景特效 */}
       <ThemeEffects theme={currentTheme} />
 
