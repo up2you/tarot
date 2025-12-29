@@ -1,0 +1,16 @@
+{
+    "rewrites": [
+        {
+            "source": "/admin",
+            "destination": "/admin.html"
+        },
+        {
+            "source": "/admin/(.*)",
+            "destination": "/admin.html"
+        },
+        {
+            "source": "/((?!admin|assets|card01|audio|.*\\..*).*)",
+            "destination": "/index.html"
+        }
+    ]
+}
