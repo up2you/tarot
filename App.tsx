@@ -597,12 +597,27 @@ ${cleanedInterpretation}
             {[...Array(5)].map((_, i) => (
               <div
                 key={i}
-                className="absolute inset-0 bg-[#1a0505] border-2 border-[#d4af37]/30 rounded-xl animate-pulse"
-                style={{ transform: `rotate(${i * 15 - 30}deg) translate(${Math.sin(Date.now() / 500 + i) * 20}px)`, zIndex: i }}
-              ></div>
+                className="absolute inset-0 bg-gradient-to-br from-[#1a0505] to-[#2a0a0a] border-2 border-[#d4af37]/40 rounded-xl shadow-2xl"
+                style={{
+                  transform: `rotate(${i * 8 - 16}deg)`,
+                  zIndex: 5 - i,
+                  animation: `shuffleCard${i % 3} ${1.2 + i * 0.1}s ease-in-out infinite`,
+                  animationDelay: `${i * 0.15}s`
+                }}
+              >
+                {/* 牌背裝飾 */}
+                <div className="absolute inset-2 border border-[#d4af37]/20 rounded-lg flex items-center justify-center">
+                  <div className="w-16 h-16 border border-[#d4af37]/30 rounded-full flex items-center justify-center">
+                    <span className="text-[#d4af37]/40 text-2xl">✦</span>
+                  </div>
+                </div>
+              </div>
             ))}
           </div>
-          <p className="font-cinzel text-[#d4af37] text-2xl tracking-[1em] font-black animate-pulse">天啟編織中</p>
+          <div className="text-center">
+            <p className="font-cinzel text-[#d4af37] text-2xl tracking-[0.5em] font-black animate-pulse mb-2">天啟編織中</p>
+            <p className="text-[#d4af37]/40 font-lora italic text-sm">正在為您編織命運的絲線...</p>
+          </div>
         </div>
       )}
 
@@ -669,14 +684,16 @@ ${cleanedInterpretation}
             <div ref={interpretationRef} className="w-full divine-vessel z-50 animate-fade-up">
               <div className="p-4 md:p-12 lg:p-24 relative">
 
-                <button
-                  onClick={handleResetCeremony}
-                  className="absolute top-8 right-8 text-[#d4af37]/40 hover:text-[#d4af37] font-cinzel text-xs tracking-widest uppercase flex items-center gap-2 group transition-all"
-                >
-                  <span className="group-hover:-translate-x-1 transition-transform">←</span> 重啟儀式
-                </button>
+                <div className="flex justify-end mb-6">
+                  <button
+                    onClick={handleResetCeremony}
+                    className="px-4 py-2 rounded-full border border-[#d4af37]/40 text-[#d4af37]/70 hover:text-[#d4af37] hover:border-[#d4af37] hover:bg-[#d4af37]/10 font-cinzel text-xs tracking-widest uppercase flex items-center gap-2 group transition-all"
+                  >
+                    <span className="group-hover:-translate-x-1 transition-transform">←</span> 重啟儀式
+                  </button>
+                </div>
 
-                <div className="mb-12 text-center">
+                <div className="mb-8 md:mb-12 text-center">
                   <div className="inline-block px-10 py-6 obsidian-mirror border-[#d4af37]/10">
                     <p className="text-[10px] font-cinzel tracking-[0.5em] text-[#d4af37]/40 uppercase mb-3">提問魂印 (The Inquiry)</p>
                     <h3 className="text-2xl md:text-3xl font-lora italic text-[#f3e5ab] leading-relaxed">「 {question} 」</h3>
