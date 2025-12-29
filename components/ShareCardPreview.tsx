@@ -1,6 +1,7 @@
 /**
  * 分享圖卡預覽組件
  * 用於生成可分享的精美圖片
+ * 支援 3 張牌、10 張牌（凱爾特十字）等不同牌陣
  */
 
 import React, { forwardRef } from 'react';
@@ -16,15 +17,12 @@ const ShareCardPreview = forwardRef<HTMLDivElement, ShareCardPreviewProps>(
     ({ spread, question, interpretation }, ref) => {
         // 摘取解讀摘要（前 120 字）
         const getSummary = (text: string) => {
-            // 移除 Markdown 標記
             const cleaned = text
                 .replace(/^#+\s+/gm, '')
                 .replace(/\*\*/g, '')
                 .replace(/\*/g, '')
                 .replace(/---/g, '')
                 .trim();
-
-            // 取前 120 字
             if (cleaned.length > 120) {
                 return cleaned.slice(0, 120) + '...';
             }
@@ -32,6 +30,32 @@ const ShareCardPreview = forwardRef<HTMLDivElement, ShareCardPreviewProps>(
         };
 
         const summary = getSummary(interpretation);
+        const isLargeSpread = spread.length > 5;
+
+        // 渲染單張牌
+        const renderCard = (s: typeof spread[0], idx: number, size: 'sm' | 'xs' = 'sm') => {
+            const sizeClasses = size === 'xs'
+                ? 'w-12 h-20'
+                : 'w-20 h-32';
+            return (
+                <div key={idx} className="flex flex-col items-center">
+                    <div
+                        className={`${sizeClasses} rounded-lg border border-[#d4af37]/50 overflow-hidden shadow-lg`}
+                        style={{ boxShadow: '0 8px 24px rgba(0,0,0,0.6)' }}
+                    >
+                        <img
+                            src={s.aiImage || s.card.image}
+                            alt={s.card.nameZh}
+                            className={`w-full h-full object-cover ${s.isReversed ? 'rotate-180' : ''}`}
+                            crossOrigin="anonymous"
+                        />
+                    </div>
+                    <p className={`text-[#f3e5ab] font-bold mt-1 ${size === 'xs' ? 'text-[8px]' : 'text-xs'}`}>
+                        {s.card.nameZh}
+                    </p>
+                </div>
+            );
+        };
 
         return (
             <div
@@ -61,36 +85,19 @@ const ShareCardPreview = forwardRef<HTMLDivElement, ShareCardPreviewProps>(
                 {/* 分隔線 */}
                 <div className="h-px bg-gradient-to-r from-transparent via-[#d4af37]/40 to-transparent mb-6" />
 
-                {/* 牌陣展示 */}
-                <div className="flex justify-center gap-3 mb-6">
-                    {spread.slice(0, 3).map((s, idx) => (
-                        <div key={idx} className="flex flex-col items-center">
-                            <div
-                                className="w-20 h-32 rounded-lg border-2 border-[#d4af37]/50 overflow-hidden shadow-lg"
-                                style={{ boxShadow: '0 8px 24px rgba(0,0,0,0.6)' }}
-                            >
-                                <img
-                                    src={s.aiImage || s.card.image}
-                                    alt={s.card.nameZh}
-                                    className={`w-full h-full object-cover ${s.isReversed ? 'rotate-180' : ''}`}
-                                    crossOrigin="anonymous"
-                                />
-                            </div>
-                            <p className="text-[#d4af37]/70 text-[10px] mt-2 tracking-wider">
-                                {s.position}
-                            </p>
-                            <p className="text-[#f3e5ab] text-xs font-bold">
-                                {s.card.nameZh}
-                            </p>
+                {/* 牌陣展示 - 根據數量調整佈局 */}
+                {isLargeSpread ? (
+                    // 大型牌陣（凱爾特十字等）使用網格
+                    <div className="mb-6">
+                        <div className="grid grid-cols-5 gap-2 justify-items-center">
+                            {spread.map((s, idx) => renderCard(s, idx, 'xs'))}
                         </div>
-                    ))}
-                </div>
-
-                {/* 若超過 3 張顯示更多標記 */}
-                {spread.length > 3 && (
-                    <p className="text-center text-[#d4af37]/40 text-xs mb-4">
-                        +{spread.length - 3} 張牌陣
-                    </p>
+                    </div>
+                ) : (
+                    // 小型牌陣（3張）水平排列
+                    <div className="flex justify-center gap-3 mb-6">
+                        {spread.map((s, idx) => renderCard(s, idx, 'sm'))}
+                    </div>
                 )}
 
                 {/* 分隔線 */}
