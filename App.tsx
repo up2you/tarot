@@ -10,8 +10,7 @@ import SpreadSelector from './components/SpreadSelector';
 import CelticCrossLayout from './components/CelticCrossLayout';
 import YearlyLayout from './components/YearlyLayout';
 import MobileCardViewer from './components/MobileCardViewer';
-import ThemeSelector from './components/ThemeSelector';
-import BackgroundMusic from './components/BackgroundMusic';
+import SettingsMenu from './components/SettingsMenu';
 import ThemeEffects from './components/ThemeEffects';
 import { useTheme } from './hooks/useTheme';
 import { useDisplaySettings } from './hooks/useDisplaySettings';
@@ -454,11 +453,8 @@ ${cleanedInterpretation}
       {/* 背景特效 */}
       <ThemeEffects theme={currentTheme} />
 
-      {/* 主題選擇器 */}
-      <ThemeSelector />
-
-      {/* 背景音樂 */}
-      <BackgroundMusic theme={currentTheme} />
+      {/* 漢堡設定選單 */}
+      <SettingsMenu />
 
       {appState === AppState.AUTH && <AuthForm onSuccess={handleAuthSuccess} />}
 
@@ -474,17 +470,18 @@ ${cleanedInterpretation}
             <div className="mb-6">
               <button
                 onClick={() => setAppState(AppState.SELECT_SPREAD)}
-                className="w-full p-4 rounded-lg border border-[#d4af37]/30 hover:bg-[#d4af37]/5 transition-all"
+                className="w-full p-4 rounded-xl border-2 border-[#ffd700]/50 hover:border-[#ffd700] hover:bg-[#ffd700]/10 transition-all group"
               >
                 <div className="flex flex-col items-center justify-center">
-                  <p className="text-xs md:text-sm font-cinzel text-[#d4af37]/60 tracking-widest uppercase mb-1">選擇的牌陣</p>
+                  <p className="text-xs md:text-sm font-cinzel text-[#ffd700]/80 tracking-widest uppercase mb-1 group-hover:text-[#ffd700]">點擊此處可更換牌陣</p>
                   <div className="flex items-center gap-2">
+                    <span className="text-[#ffd700]/60 text-sm">現在牌陣:</span>
                     <p className="text-lg md:text-2xl font-cinzel text-[#ffd700] font-black">
                       {selectedSpreadId
                         ? Object.values(SPREADS).find(s => s.id === selectedSpreadId)?.nameZh
                         : '請選擇牌陣'}
                     </p>
-                    <span className="text-[#ffd700]/60">→</span>
+                    <span className="text-[#ffd700] text-xl group-hover:translate-x-1 transition-transform">→</span>
                   </div>
                 </div>
               </button>
@@ -495,13 +492,15 @@ ${cleanedInterpretation}
               <p className="text-[#d4af37]/40 font-lora italic text-sm md:text-base">請於心中默唸您的靈魂之惑，星穹之靈將為您撥開命運的塵埃。</p>
             </div>
 
-            <div className="obsidian-mirror p-6 md:p-8 mb-6">
-              <textarea
-                value={question}
-                onChange={(e) => setQuestion(e.target.value)}
-                placeholder="在此輸入您的靈魂之惑..."
-                className="w-full h-24 md:h-40 bg-transparent text-[#f3e5ab] placeholder-[#d4af37]/25 focus:outline-none font-lora italic text-base md:text-xl leading-relaxed custom-scrollbar resize-none"
-              />
+            <div className="border-2 border-[#d4af37]/40 rounded-xl p-1 mb-6 shadow-[0_0_30px_rgba(212,175,55,0.1)]">
+              <div className="obsidian-mirror p-6 md:p-8 rounded-lg">
+                <textarea
+                  value={question}
+                  onChange={(e) => setQuestion(e.target.value)}
+                  placeholder="在此輸入您的靈魂之惑..."
+                  className="w-full h-24 md:h-40 bg-transparent text-[#f3e5ab] placeholder-[#d4af37]/40 focus:outline-none font-lora italic text-base md:text-xl leading-relaxed custom-scrollbar resize-none"
+                />
+              </div>
             </div>
 
             <div className="flex gap-3">
