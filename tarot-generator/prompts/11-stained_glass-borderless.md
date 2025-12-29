@@ -982,3 +982,50 @@ ABSOLUTELY CRITICAL REQUIREMENTS:
 - This will be composited with a separate frame and text layer in Photoshop
 ```
 
+---
+
+## 🎴 Card Back (牌背)
+
+```
+BORDERLESS TAROT CARD BACK ILLUSTRATION - NO FRAME, NO TEXT
+
+Magnificent stained glass tarot card back design.
+      Lead came lines defining colorful glass segments.
+      Perfectly symmetrical rose window pattern design.
+      Rich jewel-tone colors with luminous backlit effect.
+      Gothic cathedral window aesthetic.
+      Sacred geometry and religious art influences.
+      Dramatic light streaming through colored glass.
+      Medieval craftsmanship quality.
+      Vertical composition 9:16 aspect ratio.
+
+CRITICAL: This is for Photoshop compositing - generate ONLY the illustration with NO border, frame, or text.
+
+VISUAL COMPOSITION:
+Ornate symmetrical design with central radiant rose window.
+      Lead came geometric patterns radiating outward like cathedral rays.
+      Four corner elements with Gothic trefoil and quatrefoil motifs.
+      Layered translucent glass colors creating luminous depth.
+      Hidden sacred symbols and Christian iconography in pattern.
+      Brilliant divine light emanating from central sacred geometry.
+
+ARTISTIC MOOD:
+Sacred, luminous, majestic, divine reverence
+
+STYLE: Stained Glass Cathedral
+COLOR PALETTE: Sapphire blue, ruby red, emerald green, amber, purple
+ARTISTIC INFLUENCE: Notre-Dame windows, Chartres Cathedral, Gothic architecture
+
+ABSOLUTELY CRITICAL REQUIREMENTS:
+- DO NOT add ANY border, frame, or decorative edge
+- DO NOT include ANY text, titles, or card names
+- The illustration must extend to ALL EDGES of the image
+- Pure artwork only - edge to edge illustration
+- PERFECTLY SYMMETRICAL design (vertically and horizontally)
+- NO ornamental frame, NO gilded border, NO decorative corners
+- NO title plate, NO name label, NO text of any kind
+- High resolution, commercial quality illustration
+- Vertical 9:16 aspect ratio
+- This will be composited with a separate frame layer in Photoshop
+```
+

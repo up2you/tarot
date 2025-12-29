@@ -1004,3 +1004,51 @@ ABSOLUTELY CRITICAL REQUIREMENTS:
 - This will be composited with a separate frame and text layer in Photoshop
 ```
 
+---
+
+## 🎴 Card Back (牌背)
+
+```
+BORDERLESS TAROT CARD BACK ILLUSTRATION - NO FRAME, NO TEXT
+
+Vibrant psychedelic tarot card back design.
+      Kaleidoscopic patterns and optical illusions.
+      Perfectly symmetrical mind-bending pattern design.
+      Intense saturated colors with high contrast.
+      Flowing organic forms and fractal elements.
+      Third eye and consciousness expansion themes.
+      Detailed zentangle and mandala patterns.
+      1960s concert poster aesthetic.
+      Mind-expanding visual experience.
+      Vertical composition 9:16 aspect ratio.
+
+CRITICAL: This is for Photoshop compositing - generate ONLY the illustration with NO border, frame, or text.
+
+VISUAL COMPOSITION:
+Ornate symmetrical design with central all-seeing eye mandala.
+      Fractal spiral patterns and paisley waves radiating outward.
+      Four corner elements with mushroom and third-eye motifs.
+      Layered op-art optical illusions creating hypnotic depth.
+      Hidden consciousness-expanding symbols in the pattern.
+      Brilliant prismatic rainbow light emanating from awakened center.
+
+ARTISTIC MOOD:
+Transcendent, vibrant, consciousness-expanding, cosmic awakening
+
+STYLE: Psychedelic Vision
+COLOR PALETTE: Electric purple, hot pink, lime green, orange, turquoise
+ARTISTIC INFLUENCE: Peter Max, Alex Grey, 1960s concert posters
+
+ABSOLUTELY CRITICAL REQUIREMENTS:
+- DO NOT add ANY border, frame, or decorative edge
+- DO NOT include ANY text, titles, or card names
+- The illustration must extend to ALL EDGES of the image
+- Pure artwork only - edge to edge illustration
+- PERFECTLY SYMMETRICAL design (vertically and horizontally)
+- NO ornamental frame, NO gilded border, NO decorative corners
+- NO title plate, NO name label, NO text of any kind
+- High resolution, commercial quality illustration
+- Vertical 9:16 aspect ratio
+- This will be composited with a separate frame layer in Photoshop
+```
+

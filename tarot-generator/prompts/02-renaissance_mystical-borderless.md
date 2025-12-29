@@ -982,3 +982,50 @@ ABSOLUTELY CRITICAL REQUIREMENTS:
 - This will be composited with a separate frame and text layer in Photoshop
 ```
 
+---
+
+## 🎴 Card Back (牌背)
+
+```
+BORDERLESS TAROT CARD BACK ILLUSTRATION - NO FRAME, NO TEXT
+
+Exquisite Renaissance tarot card back design.
+      Italian High Renaissance painting technique with sfumato edges.
+      Perfectly symmetrical ornate pattern inspired by Florentine manuscripts.
+      Central mystical seal with sacred geometry and celestial charts.
+      Muted earth tones with touches of ultramarine blue and vermillion.
+      Aged parchment texture with gold leaf illumination details.
+      Intricate interlocking patterns inspired by Leonardo da Vinci's studies.
+      Museum-quality fine art painting, highly detailed.
+      Vertical composition 9:16 aspect ratio.
+
+CRITICAL: This is for Photoshop compositing - generate ONLY the illustration with NO border, frame, or text.
+
+VISUAL COMPOSITION:
+Ornate symmetrical mandala with central alchemical rose window.
+      Four evangelists' symbols subtly integrated in corner quadrants.
+      Delicate vine and acanthus leaf patterns radiating outward.
+      Layered glazing technique creating luminous depth.
+      Hidden mystical symbols woven into Renaissance scroll patterns.
+      Soft divine light emanating from sacred center.
+
+ARTISTIC MOOD:
+Scholarly, mystical, timeless wisdom, sacred knowledge
+
+STYLE: Renaissance Mystical
+COLOR PALETTE: Ultramarine blue, vermillion, gold leaf, earth tones, soft ivory
+ARTISTIC INFLUENCE: Leonardo da Vinci, Botticelli, medieval illuminated manuscripts
+
+ABSOLUTELY CRITICAL REQUIREMENTS:
+- DO NOT add ANY border, frame, or decorative edge
+- DO NOT include ANY text, titles, or card names
+- The illustration must extend to ALL EDGES of the image
+- Pure artwork only - edge to edge illustration
+- PERFECTLY SYMMETRICAL design (vertically and horizontally)
+- NO ornamental frame, NO gilded border, NO decorative corners
+- NO title plate, NO name label, NO text of any kind
+- High resolution, commercial quality illustration
+- Vertical 9:16 aspect ratio
+- This will be composited with a separate frame layer in Photoshop
+```
+

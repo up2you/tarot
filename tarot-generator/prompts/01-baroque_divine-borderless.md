@@ -960,3 +960,50 @@ ABSOLUTELY CRITICAL REQUIREMENTS:
 - This will be composited with a separate frame and text layer in Photoshop
 ```
 
+---
+
+## 🎴 Card Back (牌背)
+
+```
+BORDERLESS TAROT CARD BACK ILLUSTRATION - NO FRAME, NO TEXT
+
+Masterpiece tarot card back design in High Baroque style.
+      Dramatic Caravaggio-style chiaroscuro with deep shadows and golden highlights.
+      Perfectly symmetrical ornate pattern design.
+      Central mystical seal with alchemical symbols and celestial motifs.
+      Rich oil painting texture with visible brushstrokes.
+      Deep crimson velvet background with heavy golden embossed patterns.
+      Intricate golden filigree arabesques radiating from center.
+      Museum-quality fine art, highly detailed, 8K resolution.
+      Vertical composition 9:16 aspect ratio.
+
+CRITICAL: This is for Photoshop compositing - generate ONLY the illustration with NO border, frame, or text.
+
+VISUAL COMPOSITION:
+Ornate symmetrical design with central mystical medallion.
+      Four corner decorative elements with baroque scrollwork.
+      Radial pattern emanating from glowing central seal.
+      Layered depth with shadow and highlight creating 3D effect.
+      Hidden esoteric symbols woven into the pattern.
+      Divine light rays emerging from central element.
+
+ARTISTIC MOOD:
+Mysterious, sacred, premium, timeless elegance
+
+STYLE: Baroque Divine
+COLOR PALETTE: Deep crimson, antique gold, ivory, burnt sienna, midnight blue
+ARTISTIC INFLUENCE: Caravaggio, Rembrandt, Peter Paul Rubens
+
+ABSOLUTELY CRITICAL REQUIREMENTS:
+- DO NOT add ANY border, frame, or decorative edge
+- DO NOT include ANY text, titles, or card names
+- The illustration must extend to ALL EDGES of the image
+- Pure artwork only - edge to edge illustration
+- PERFECTLY SYMMETRICAL design (vertically and horizontally)
+- NO ornamental frame, NO gilded border, NO decorative corners
+- NO title plate, NO name label, NO text of any kind
+- High resolution, commercial quality illustration
+- Vertical 9:16 aspect ratio
+- This will be composited with a separate frame layer in Photoshop
+```
+

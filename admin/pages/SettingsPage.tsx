@@ -4,15 +4,41 @@
 
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../services/supabaseClient';
+import { MobileCardDisplayMode } from '../../types';
+
+// 從 localStorage 讀取顯示設定
+const DISPLAY_STORAGE_KEY = 'aetheris_display_settings';
+
+const getDisplaySettings = () => {
+    try {
+        const stored = localStorage.getItem(DISPLAY_STORAGE_KEY);
+        if (stored) {
+            return JSON.parse(stored);
+        }
+    } catch (e) {
+        console.error('Failed to load display settings:', e);
+    }
+    return { mobileCardDisplayMode: 'grid' };
+};
+
+const saveDisplaySettings = (settings: { mobileCardDisplayMode: MobileCardDisplayMode }) => {
+    try {
+        localStorage.setItem(DISPLAY_STORAGE_KEY, JSON.stringify(settings));
+    } catch (e) {
+        console.error('Failed to save display settings:', e);
+    }
+};
 
 const SettingsPage: React.FC = () => {
     const [maintenanceMode, setMaintenanceMode] = useState(false);
     const [maintenanceMessage, setMaintenanceMessage] = useState('系統維護中，請稍後再試');
     const [isSaving, setIsSaving] = useState(false);
+    const [mobileDisplayMode, setMobileDisplayMode] = useState<MobileCardDisplayMode>('grid');
 
-    // TODO: 從 Supabase 載入設定
+    // 載入設定
     useEffect(() => {
-        // loadSettings();
+        const settings = getDisplaySettings();
+        setMobileDisplayMode(settings.mobileCardDisplayMode || 'grid');
     }, []);
 
     const handleToggleMaintenance = async () => {
@@ -28,8 +54,55 @@ const SettingsPage: React.FC = () => {
         }
     };
 
+    const handleDisplayModeChange = (mode: MobileCardDisplayMode) => {
+        setMobileDisplayMode(mode);
+        saveDisplaySettings({ mobileCardDisplayMode: mode });
+    };
+
+    const displayModes: { mode: MobileCardDisplayMode; label: string; desc: string; icon: string }[] = [
+        { mode: 'grid', label: '並列格子', desc: '一次顯示所有牌', icon: '▦' },
+        { mode: 'fullscreen', label: '全螢幕滑動', desc: '單牌沉浸式', icon: '▣' },
+        { mode: 'carousel', label: '水平輪播', desc: '左右滑動切換', icon: '◧' },
+    ];
+
     return (
         <div className="space-y-6">
+            {/* 📱 手機牌陣顯示模式 */}
+            <div className="bg-gray-800 rounded-xl p-6 border border-gray-700">
+                <h3 className="text-xl font-bold text-white flex items-center gap-2 mb-2">
+                    📱 手機牌陣顯示模式
+                </h3>
+                <p className="text-gray-400 text-sm mb-6">
+                    設定手機版牌陣的顯示方式（僅影響當前裝置）
+                </p>
+
+                <div className="grid grid-cols-3 gap-4">
+                    {displayModes.map(({ mode, label, desc, icon }) => (
+                        <button
+                            key={mode}
+                            onClick={() => handleDisplayModeChange(mode)}
+                            className={`p-4 rounded-lg border-2 transition-all text-center ${mobileDisplayMode === mode
+                                    ? 'border-amber-500 bg-amber-500/10'
+                                    : 'border-gray-600 hover:border-gray-500 bg-gray-700/30'
+                                }`}
+                        >
+                            <div className="text-3xl mb-2">{icon}</div>
+                            <div className={`font-bold ${mobileDisplayMode === mode ? 'text-amber-400' : 'text-white'}`}>
+                                {label}
+                            </div>
+                            <div className="text-gray-400 text-xs mt-1">{desc}</div>
+                        </button>
+                    ))}
+                </div>
+
+                <div className="mt-4 p-3 bg-gray-700/30 rounded-lg">
+                    <p className="text-gray-400 text-sm">
+                        💡 <strong className="text-white">提示：</strong>
+                        「全螢幕滑動」模式下，凱爾特十字牌陣會分為「十字區」和「權杖柱」兩個分組顯示
+                    </p>
+                </div>
+            </div>
+
             {/* 維護模式 */}
             <div className="bg-gray-800 rounded-xl p-6 border border-gray-700">
                 <div className="flex items-center justify-between mb-6">

@@ -1004,3 +1004,50 @@ ABSOLUTELY CRITICAL REQUIREMENTS:
 - This will be composited with a separate frame and text layer in Photoshop
 ```
 
+---
+
+## 🎴 Card Back (牌背)
+
+```
+BORDERLESS TAROT CARD BACK ILLUSTRATION - NO FRAME, NO TEXT
+
+Luxurious Art Deco tarot card back design.
+      Bold geometric patterns with sharp angles and perfect symmetry.
+      Sleek metallic gold and silver on deep black background.
+      Sunburst rays and chevron patterns radiating from center.
+      Stylized Egyptian and Aztec geometric influences.
+      High contrast with jewel-tone accent colors.
+      Glamorous 1920s aesthetic with modern precision.
+      Premium commercial quality, vector-sharp details.
+      Vertical composition 9:16 aspect ratio.
+
+CRITICAL: This is for Photoshop compositing - generate ONLY the illustration with NO border, frame, or text.
+
+VISUAL COMPOSITION:
+Ornate symmetrical geometric mandala with central starburst.
+      Layered chevrons, zigzags, and fan patterns radiating outward.
+      Four corner elements with stylized Chrysler Building-inspired motifs.
+      Sharp metallic gradients creating dimensional depth.
+      Hidden geometric eyes and pyramid symbols in the pattern.
+      Brilliant golden rays emanating from sacred geometric center.
+
+ARTISTIC MOOD:
+Glamorous, powerful, opulent, sophisticated mystique
+
+STYLE: Art Deco Luxe
+COLOR PALETTE: Black, gold, silver, emerald, ruby, sapphire
+ARTISTIC INFLUENCE: Erté, Tamara de Lempicka, Chrysler Building design
+
+ABSOLUTELY CRITICAL REQUIREMENTS:
+- DO NOT add ANY border, frame, or decorative edge
+- DO NOT include ANY text, titles, or card names
+- The illustration must extend to ALL EDGES of the image
+- Pure artwork only - edge to edge illustration
+- PERFECTLY SYMMETRICAL design (vertically and horizontally)
+- NO ornamental frame, NO gilded border, NO decorative corners
+- NO title plate, NO name label, NO text of any kind
+- High resolution, commercial quality illustration
+- Vertical 9:16 aspect ratio
+- This will be composited with a separate frame layer in Photoshop
+```
+

@@ -9,10 +9,12 @@ import HistoryPanel from './components/HistoryPanel';
 import SpreadSelector from './components/SpreadSelector';
 import CelticCrossLayout from './components/CelticCrossLayout';
 import YearlyLayout from './components/YearlyLayout';
+import MobileCardViewer from './components/MobileCardViewer';
 import ThemeSelector from './components/ThemeSelector';
 import BackgroundMusic from './components/BackgroundMusic';
 import ThemeEffects from './components/ThemeEffects';
 import { useTheme } from './hooks/useTheme';
+import { useDisplaySettings } from './hooks/useDisplaySettings';
 import { useThemedSounds } from './components/SoundManager';
 import { createTarotSession, DeepSeekChat } from './services/geminiService';
 import { generateThemedCardArt, isThemeComplete, getCachedArt } from './services/imageService';
@@ -22,6 +24,8 @@ import { marked } from 'marked';
 
 const App: React.FC = () => {
   const { currentTheme } = useTheme();
+  const { settings: displaySettings } = useDisplaySettings();
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [appState, setAppState] = useState<AppState>(AppState.AUTH);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [question, setQuestion] = useState('');
@@ -52,6 +56,15 @@ const App: React.FC = () => {
     const cachedBack = await getCachedArt(`${theme}_BACK_IMAGE`);
     // 優先使用快取的自訂牌背，否則使用預設本地牌背
     setCardBackImage(cachedBack || CARD_BACK_IMAGE);
+  }, []);
+
+  // 監聽視窗大小變化
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   useEffect(() => {
@@ -469,8 +482,18 @@ const App: React.FC = () => {
       {(appState === AppState.SPREADING || appState === AppState.INTERACTIVE) && (
         <div className="w-full max-w-7xl flex flex-col items-center gap-4">
 
-          {/* 凱爾特十字特殊佈局 */}
-          {selectedSpreadId === 'celtic_cross' ? (
+          {/* 手機非 Grid 模式：使用 MobileCardViewer */}
+          {isMobile && displaySettings.mobileCardDisplayMode !== 'grid' ? (
+            <MobileCardViewer
+              spread={spread}
+              isFlipped={isFlipped}
+              onFlipCard={flipCard}
+              cardBackImage={cardBackImage}
+              mode={displaySettings.mobileCardDisplayMode}
+              spreadType={selectedSpreadId || undefined}
+            />
+          ) : selectedSpreadId === 'celtic_cross' ? (
+            /* 凱爾特十字特殊佈局 (桌面版或 Grid 模式) */
             <CelticCrossLayout
               spread={spread}
               isFlipped={isFlipped}

@@ -1004,3 +1004,51 @@ ABSOLUTELY CRITICAL REQUIREMENTS:
 - This will be composited with a separate frame and text layer in Photoshop
 ```
 
+---
+
+## 🎴 Card Back (牌背)
+
+```
+BORDERLESS TAROT CARD BACK ILLUSTRATION - NO FRAME, NO TEXT
+
+Vintage botanical tarot card back design.
+      Hand-drawn scientific illustration style.
+      Perfectly symmetrical natural specimen pattern design.
+      Aged parchment texture with subtle foxing.
+      Delicate watercolor flower and herb elements arranged symmetrically.
+      Sepia and muted earth tone color palette.
+      Elegant copperplate engraving details.
+      Victorian-era natural history aesthetic.
+      Museum specimen collection quality.
+      Vertical composition 9:16 aspect ratio.
+
+CRITICAL: This is for Photoshop compositing - generate ONLY the illustration with NO border, frame, or text.
+
+VISUAL COMPOSITION:
+Ornate symmetrical design with central botanical mandala of pressed flowers.
+      Intricate vine tendrils and leaf patterns radiating outward.
+      Four corner elements with dried herb and seed pod motifs.
+      Layered botanical specimens creating natural depth.
+      Hidden medicinal plants and magical herbs woven into pattern.
+      Soft aged golden glow from antique central specimen.
+
+ARTISTIC MOOD:
+Scholarly, natural, timeless curiosity, Victorian elegance
+
+STYLE: Vintage Botanical
+COLOR PALETTE: Sepia, sage green, dusty rose, cream, antique gold
+ARTISTIC INFLUENCE: Ernst Haeckel, Maria Sibylla Merian, Victorian herbarium
+
+ABSOLUTELY CRITICAL REQUIREMENTS:
+- DO NOT add ANY border, frame, or decorative edge
+- DO NOT include ANY text, titles, or card names
+- The illustration must extend to ALL EDGES of the image
+- Pure artwork only - edge to edge illustration
+- PERFECTLY SYMMETRICAL design (vertically and horizontally)
+- NO ornamental frame, NO gilded border, NO decorative corners
+- NO title plate, NO name label, NO text of any kind
+- High resolution, commercial quality illustration
+- Vertical 9:16 aspect ratio
+- This will be composited with a separate frame layer in Photoshop
+```
+

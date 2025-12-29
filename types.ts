@@ -92,3 +92,11 @@ export interface SpreadDefinition {
   description: string;
   isVip: boolean;
 }
+
+// 手機牌陣顯示模式
+export type MobileCardDisplayMode = 'grid' | 'fullscreen' | 'carousel';
+
+// 顯示設定
+export interface DisplaySettings {
+  mobileCardDisplayMode: MobileCardDisplayMode;
+}

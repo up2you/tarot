@@ -1004,3 +1004,51 @@ ABSOLUTELY CRITICAL REQUIREMENTS:
 - This will be composited with a separate frame and text layer in Photoshop
 ```
 
+---
+
+## 🎴 Card Back (牌背)
+
+```
+BORDERLESS TAROT CARD BACK ILLUSTRATION - NO FRAME, NO TEXT
+
+Elegant minimalist tarot card back design.
+      Clean geometric shapes with generous negative space.
+      Perfectly symmetrical Zen-inspired pattern design.
+      Subtle ink wash gradients and precise linework.
+      Japanese wabi-sabi aesthetic influence.
+      Muted color palette with single accent color.
+      Thoughtful symbolic representation.
+      Zen garden inspired tranquility.
+      Premium commercial design quality.
+      Vertical composition 9:16 aspect ratio.
+
+CRITICAL: This is for Photoshop compositing - generate ONLY the illustration with NO border, frame, or text.
+
+VISUAL COMPOSITION:
+Refined symmetrical design with central ensō circle or simple mandala.
+      Delicate brush stroke patterns radiating outward with intentional imperfection.
+      Four corner elements with minimal geometric or natural motifs.
+      Layered subtle washes creating meditative depth.
+      Hidden single meaningful symbol at center (lotus, moon, wave).
+      Soft diffused light emanating from empty space.
+
+ARTISTIC MOOD:
+Serene, contemplative, elegant simplicity, mindful stillness
+
+STYLE: Minimalist Zen
+COLOR PALETTE: Off-white, charcoal gray, single accent (varies), soft cream
+ARTISTIC INFLUENCE: Japanese ink painting, Bauhaus, Scandinavian design
+
+ABSOLUTELY CRITICAL REQUIREMENTS:
+- DO NOT add ANY border, frame, or decorative edge
+- DO NOT include ANY text, titles, or card names
+- The illustration must extend to ALL EDGES of the image
+- Pure artwork only - edge to edge illustration
+- PERFECTLY SYMMETRICAL design (vertically and horizontally)
+- NO ornamental frame, NO gilded border, NO decorative corners
+- NO title plate, NO name label, NO text of any kind
+- High resolution, commercial quality illustration
+- Vertical 9:16 aspect ratio
+- This will be composited with a separate frame layer in Photoshop
+```
+

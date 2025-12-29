@@ -982,3 +982,50 @@ ABSOLUTELY CRITICAL REQUIREMENTS:
 - This will be composited with a separate frame and text layer in Photoshop
 ```
 
+---
+
+## 🎴 Card Back (牌背)
+
+```
+BORDERLESS TAROT CARD BACK ILLUSTRATION - NO FRAME, NO TEXT
+
+Futuristic cyberpunk tarot card back design.
+      Neon holographic aesthetic with digital glitch effects.
+      Perfectly symmetrical high-tech circuit pattern design.
+      Dark cityscape elements with rain and reflections integrated.
+      Glowing cyan, magenta, and electric blue neon accents.
+      High-tech mystical symbols and data streams woven into pattern.
+      Dramatic lighting with volumetric fog.
+      Blade Runner meets mysticism aesthetic.
+      Vertical composition 9:16 aspect ratio.
+
+CRITICAL: This is for Photoshop compositing - generate ONLY the illustration with NO border, frame, or text.
+
+VISUAL COMPOSITION:
+Ornate symmetrical design with central holographic neural network.
+      Circuit board traces and neon grid lines radiating outward.
+      Four corner elements with cybernetic eye and tech-rune motifs.
+      Layered digital glitch effects creating virtual depth.
+      Hidden binary code and encrypted mystical data in pattern.
+      Brilliant neon glow emanating from AI oracle core.
+
+ARTISTIC MOOD:
+Futuristic, electric, mysterious, digital transcendence
+
+STYLE: Cyberpunk Oracle
+COLOR PALETTE: Neon cyan, hot magenta, electric blue, black, chrome silver
+ARTISTIC INFLUENCE: Blade Runner, Ghost in the Shell, Syd Mead
+
+ABSOLUTELY CRITICAL REQUIREMENTS:
+- DO NOT add ANY border, frame, or decorative edge
+- DO NOT include ANY text, titles, or card names
+- The illustration must extend to ALL EDGES of the image
+- Pure artwork only - edge to edge illustration
+- PERFECTLY SYMMETRICAL design (vertically and horizontally)
+- NO ornamental frame, NO gilded border, NO decorative corners
+- NO title plate, NO name label, NO text of any kind
+- High resolution, commercial quality illustration
+- Vertical 9:16 aspect ratio
+- This will be composited with a separate frame layer in Photoshop
+```
+

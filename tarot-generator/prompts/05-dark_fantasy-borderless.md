@@ -982,3 +982,50 @@ ABSOLUTELY CRITICAL REQUIREMENTS:
 - This will be composited with a separate frame and text layer in Photoshop
 ```
 
+---
+
+## 🎴 Card Back (牌背)
+
+```
+BORDERLESS TAROT CARD BACK ILLUSTRATION - NO FRAME, NO TEXT
+
+Epic dark fantasy tarot card back design.
+      Dramatic gothic atmosphere with supernatural elements.
+      Perfectly symmetrical dark ornate pattern design.
+      Deep shadows with ethereal magical lighting effects.
+      Mysterious fog and mystical energy swirls integrated into pattern.
+      Haunting beauty with elegant darkness.
+      Rich textures of aged metal, weathered stone, and velvet.
+      AAA game concept art quality, cinematic composition.
+      Vertical composition 9:16 aspect ratio.
+
+CRITICAL: This is for Photoshop compositing - generate ONLY the illustration with NO border, frame, or text.
+
+VISUAL COMPOSITION:
+Ornate symmetrical design with central dark mystical seal.
+      Gothic iron scrollwork and thorny vine patterns radiating outward.
+      Four corner elements with skull and raven motifs.
+      Layered ethereal mist creating spectral depth.
+      Hidden demonic runes and occult symbols woven into the pattern.
+      Eerie magical glow emanating from corrupted central sigil.
+
+ARTISTIC MOOD:
+Ominous, haunting, powerful, dark elegance
+
+STYLE: Dark Fantasy
+COLOR PALETTE: Blood red, midnight black, ghostly silver, deep purple, bone white
+ARTISTIC INFLUENCE: Brom, Gerald Brom, H.R. Giger, Dark Souls concept art
+
+ABSOLUTELY CRITICAL REQUIREMENTS:
+- DO NOT add ANY border, frame, or decorative edge
+- DO NOT include ANY text, titles, or card names
+- The illustration must extend to ALL EDGES of the image
+- Pure artwork only - edge to edge illustration
+- PERFECTLY SYMMETRICAL design (vertically and horizontally)
+- NO ornamental frame, NO gilded border, NO decorative corners
+- NO title plate, NO name label, NO text of any kind
+- High resolution, commercial quality illustration
+- Vertical 9:16 aspect ratio
+- This will be composited with a separate frame layer in Photoshop
+```
+

@@ -982,3 +982,50 @@ ABSOLUTELY CRITICAL REQUIREMENTS:
 - This will be composited with a separate frame and text layer in Photoshop
 ```
 
+---
+
+## 🎴 Card Back (牌背)
+
+```
+BORDERLESS TAROT CARD BACK ILLUSTRATION - NO FRAME, NO TEXT
+
+Elegant Art Nouveau tarot card back design.
+      Flowing organic lines and sensuous botanical curves.
+      Alphonse Mucha-inspired decorative illustration style.
+      Perfectly symmetrical whiplash pattern design.
+      Soft, dreamy color palette with metallic gold accents.
+      Ornate circular halo designs with zodiac and floral motifs.
+      Delicate watercolor and ink technique.
+      Commercial illustration quality, highly detailed.
+      Vertical composition 9:16 aspect ratio.
+
+CRITICAL: This is for Photoshop compositing - generate ONLY the illustration with NO border, frame, or text.
+
+VISUAL COMPOSITION:
+Ornate symmetrical design with central flowering mandala.
+      Sinuous plant tendrils and peacock feather patterns radiating outward.
+      Four corner elements with stylized iris and lily designs.
+      Layered organic shapes creating dreamy depth.
+      Hidden feminine silhouettes woven into floral patterns.
+      Soft luminescent glow from sacred botanical center.
+
+ARTISTIC MOOD:
+Dreamy, romantic, organic beauty, mystical femininity
+
+STYLE: Art Nouveau Ethereal
+COLOR PALETTE: Sage green, dusty rose, gold, cream, soft lavender
+ARTISTIC INFLUENCE: Alphonse Mucha, Gustav Klimt, Aubrey Beardsley
+
+ABSOLUTELY CRITICAL REQUIREMENTS:
+- DO NOT add ANY border, frame, or decorative edge
+- DO NOT include ANY text, titles, or card names
+- The illustration must extend to ALL EDGES of the image
+- Pure artwork only - edge to edge illustration
+- PERFECTLY SYMMETRICAL design (vertically and horizontally)
+- NO ornamental frame, NO gilded border, NO decorative corners
+- NO title plate, NO name label, NO text of any kind
+- High resolution, commercial quality illustration
+- Vertical 9:16 aspect ratio
+- This will be composited with a separate frame layer in Photoshop
+```
+
