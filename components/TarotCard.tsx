@@ -8,7 +8,7 @@ interface TarotCardProps {
   isReversed: boolean;
   onClick?: () => void;
   className?: string;
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'xs' | 'sm' | 'md' | 'lg';
   customBack?: string;
 }
 
@@ -34,6 +34,7 @@ const TarotCard: React.FC<TarotCardProps> = ({
   }, [isFlipped]);
 
   const sizeClasses = {
+    xs: 'w-20 h-[9rem]',     // 超小尺寸 - 凱爾特十字手機版
     sm: 'w-28 h-[12.5rem]',
     md: 'w-48 h-[21.5rem]',
     lg: 'w-64 h-[28.5rem]'

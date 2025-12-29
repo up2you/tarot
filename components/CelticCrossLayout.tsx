@@ -51,7 +51,7 @@ const CelticCrossLayout: React.FC<CelticCrossLayoutProps> = ({
                         isFlipped={isFlipped[index]}
                         isReversed={s.isReversed}
                         onClick={() => onFlipCard(index)}
-                        size="sm"
+                        size="xs"
                         customBack={cardBackImage}
                     />
                 </div>
@@ -67,7 +67,7 @@ const CelticCrossLayout: React.FC<CelticCrossLayoutProps> = ({
             <div className="flex flex-col md:flex-row gap-8 md:gap-12 items-center justify-center">
 
                 {/* 左側：十字區域 */}
-                <div className="relative" style={{ width: '280px', height: '400px' }}>
+                <div className="relative" style={{ width: '220px', height: '320px' }}>
                     {/* 中心區域 - 1. 核心 + 2. 障礙 (並排顯示，障礙稍微偏右且旋轉) */}
                     <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-1 animate-deal-card">
                         {/* 1. 核心 */}
