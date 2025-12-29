@@ -637,9 +637,9 @@ ${cleanedInterpretation}
             />
           ) : (
             /* 預設格子佈局 */
-            <div className={`grid gap-6 md:gap-10 w-full min-h-[400px] mb-4 ${spread.length <= 3 ? 'grid-cols-1 md:grid-cols-3' :
-              spread.length <= 5 ? 'grid-cols-2 md:grid-cols-5' :
-                spread.length <= 6 ? 'grid-cols-2 md:grid-cols-3' :
+            <div className={`grid gap-4 md:gap-10 w-full min-h-[400px] mb-4 ${spread.length <= 3 ? 'grid-cols-3' :
+              spread.length <= 5 ? 'grid-cols-3 md:grid-cols-5' :
+                spread.length <= 6 ? 'grid-cols-3 md:grid-cols-3' :
                   'grid-cols-3 md:grid-cols-4'
               }`}>
               {spread.map((s, idx) => (
