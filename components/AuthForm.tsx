@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { registerUser, loginUser, googleUpsertUser } from '../services/authService';
+import { upsertUserProfile, getUserProfile } from '../services/userService';
 import { User } from '../types';
 
 interface AuthFormProps {
@@ -46,14 +47,28 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
   const handleGoogleLogin = async () => {
     setLoading(true);
     setError('');
-    
+
     // 模擬 Google OAuth 授權流程
     setTimeout(async () => {
       try {
         const mockEmail = "divine.seeker@google.com";
         const mockName = "Google 求道者";
-        const user = await googleUpsertUser(mockEmail, mockName);
-        onSuccess(user);
+
+        // 同步到 IndexedDB (本地)
+        const localUser = await googleUpsertUser(mockEmail, mockName);
+
+        // 同步到 Supabase (雲端)
+        const profile = await upsertUserProfile(mockEmail, mockName);
+
+        // 合併雲端 VIP 狀態和額度
+        if (profile) {
+          localUser.isVip = profile.is_vip;
+          (localUser as any).freeReadingsRemaining = profile.free_readings_remaining;
+          (localUser as any).email = profile.email;
+          (localUser as any).supabaseId = profile.id;
+        }
+
+        onSuccess(localUser);
       } catch (err) {
         setError('Google 靈魂印記感應失敗。');
         setLoading(false);
@@ -64,12 +79,12 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
   return (
     <div className="w-full max-w-md mx-auto baroque-border-outer bg-black/90 p-12 rounded-[3rem] gold-glow-heavy animate-fade-in relative overflow-hidden">
       <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/damask.png')] pointer-events-none"></div>
-      
+
       <div className="relative z-10 text-center">
         <h2 className="text-3xl font-cinzel text-[#d4af37] mb-8 tracking-[0.3em] font-black uppercase">
           {isLogin ? '身分揭示' : '契約締結'}
         </h2>
-        
+
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="relative">
             <input
@@ -81,7 +96,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
               className="w-full bg-black/40 border border-[#d4af37]/30 rounded-full px-6 py-4 text-[#d4af37] placeholder-[#d4af37]/20 focus:outline-none focus:border-[#d4af37] transition-all font-lora italic"
             />
           </div>
-          
+
           <div className="relative">
             <input
               type="password"
@@ -119,10 +134,10 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
         >
           <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
           <svg className="w-5 h-5" viewBox="0 0 24 24">
-            <path fill="#EA4335" d="M12.48 10.92v3.28h7.84c-.24 1.84-.9 3.32-2.12 4.4-1.2 1.08-2.68 1.88-5.72 1.88-5.04 0-9.12-4.12-9.12-9.2s4.08-9.2 9.12-9.2c2.72 0 4.84 1.08 6.36 2.48l2.44-2.44C19.28 1.12 16.32 0 12.48 0 5.64 0 0 5.64 0 12.48s5.64 12.48 12.48 12.48c3.76 0 6.6-1.24 8.76-3.52 2.24-2.24 2.96-5.44 2.96-8.04 0-.52-.04-1.04-.12-1.48h-11.6z"/>
+            <path fill="#EA4335" d="M12.48 10.92v3.28h7.84c-.24 1.84-.9 3.32-2.12 4.4-1.2 1.08-2.68 1.88-5.72 1.88-5.04 0-9.12-4.12-9.12-9.2s4.08-9.2 9.12-9.2c2.72 0 4.84 1.08 6.36 2.48l2.44-2.44C19.28 1.12 16.32 0 12.48 0 5.64 0 0 5.64 0 12.48s5.64 12.48 12.48 12.48c3.76 0 6.6-1.24 8.76-3.52 2.24-2.24 2.96-5.44 2.96-8.04 0-.52-.04-1.04-.12-1.48h-11.6z" />
           </svg>
           <span className="text-[#d4af37] font-cinzel text-xs tracking-[0.2em] font-bold">以 Google 帳號揭示身分</span>
-          
+
           {loading && (
             <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
               <div className="w-5 h-5 border-2 border-[#d4af37] border-t-transparent rounded-full animate-spin"></div>

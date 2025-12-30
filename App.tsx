@@ -14,18 +14,22 @@ import SettingsMenu from './components/SettingsMenu';
 import ThemeEffects from './components/ThemeEffects';
 import { useTheme } from './hooks/useTheme';
 import { useDisplaySettings } from './hooks/useDisplaySettings';
+import { useCardStyle } from './hooks/useCardStyle';
 import { useThemedSounds } from './components/SoundManager';
 import { createTarotSession, DeepSeekChat } from './services/geminiService';
 import { generateThemedCardArt, isThemeComplete, getCachedArt } from './services/imageService';
 import { initMobileApp, hapticFeedback, hapticNotification } from './services/mobileService';
 import { saveReading } from './services/historyService';
+import { checkFreeQuota, consumeFreeReading } from './services/userService';
 import { marked } from 'marked';
 import { toPng } from 'html-to-image';
 import ShareCardPreview from './components/ShareCardPreview';
+import UpgradeModal from './components/UpgradeModal';
 
 const App: React.FC = () => {
   const { currentTheme } = useTheme();
   const { settings: displaySettings } = useDisplaySettings();
+  const { currentStyleId, getCardImageUrl, getBackImageUrl, styleImages, isLoading: isLoadingCardStyle } = useCardStyle();
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [appState, setAppState] = useState<AppState>(AppState.AUTH);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -39,7 +43,8 @@ const App: React.FC = () => {
   const [userInput, setUserInput] = useState('');
   const [selectedSpreadId, setSelectedSpreadId] = useState<string | null>('three_card'); // 預設使用時間之流
   const [followUpCount, setFollowUpCount] = useState(0); // 追問次數計數器
-  const MAX_FREE_FOLLOWUPS = 2; // 免費用戶最多追問次數
+  const MAX_FREE_FOLLOWUPS = 0; // 免費用戶不開放追問功能
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false); // 升級 VIP 彈窗
 
   const [isCalibrating, setIsCalibrating] = useState(false);
   const [calibrationProgress, setCalibrationProgress] = useState(0);
@@ -47,6 +52,7 @@ const App: React.FC = () => {
   const [showHistory, setShowHistory] = useState(false);
   const isPerformingRef = useRef(false);
   const hasRecordedRef = useRef(false); // 防止重複記錄
+  const hasConsumedQuotaRef = useRef(false); // 防止重複扣除額度
 
   const { playSound } = useThemedSounds(currentTheme);
   const chatEndRef = useRef<HTMLDivElement>(null);
@@ -56,10 +62,15 @@ const App: React.FC = () => {
 
   const syncLocalAssets = useCallback(async (user: User) => {
     const theme = user.theme || AppTheme.BAROQUE;
-    const cachedBack = await getCachedArt(`${theme}_BACK_IMAGE`);
-    // 優先使用快取的自訂牌背，否則使用預設本地牌背
-    setCardBackImage(cachedBack || CARD_BACK_IMAGE);
-  }, []);
+    // 優先使用後台設定的牌面風格
+    const backFromStyle = getBackImageUrl();
+    if (backFromStyle) {
+      setCardBackImage(backFromStyle);
+    } else {
+      const cachedBack = await getCachedArt(`${theme}_BACK_IMAGE`);
+      setCardBackImage(cachedBack || CARD_BACK_IMAGE);
+    }
+  }, [getBackImageUrl]);
 
   // 監聽視窗大小變化
   useEffect(() => {
@@ -136,10 +147,25 @@ const App: React.FC = () => {
   const handleStartShuffle = async () => {
     if (!question.trim() || !selectedSpreadId) return;
 
+    // 🆕 額度檢查（非 VIP 用戶）
+    if (currentUser && !currentUser.isVip) {
+      const email = currentUser.email || currentUser.username;
+      const { canRead, remaining } = await checkFreeQuota(email);
+
+      if (!canRead) {
+        setShowUpgradeModal(true);
+        return;
+      }
+
+      // 更新本地狀態
+      setCurrentUser(prev => prev ? { ...prev, freeReadingsRemaining: remaining } : null);
+    }
+
     // 獲取選擇的牌陣定義
     const spreadDef = Object.values(SPREADS).find(s => s.id === selectedSpreadId);
     if (!spreadDef) return;
 
+    hasConsumedQuotaRef.current = false; // 重置額度扣除標記
     playSound('shuffle');
     setAppState(AppState.SHUFFLING);
 
@@ -154,6 +180,12 @@ const App: React.FC = () => {
     const theme = currentUser?.theme || AppTheme.BAROQUE;
 
     const updatedWithArt = await Promise.all(selected.map(async (s) => {
+      // 優先使用後台設定的牌面風格
+      const styleImage = getCardImageUrl(s.card.id);
+      if (styleImage) {
+        return { ...s, aiImage: styleImage };
+      }
+      // 否則使用主題快取或預設圖片
       const cached = await getCachedArt(`${theme}_${s.card.nameZh}`);
       return {
         ...s,
@@ -229,6 +261,18 @@ const App: React.FC = () => {
         }));
         const interpretationSummary = fullText.substring(0, 200);
         saveReading(question, cardsForRecord, currentUser?.theme || AppTheme.BAROQUE, interpretationSummary);
+
+        // 🆕 扣除免費額度（非 VIP 用戶）
+        if (currentUser && !currentUser.isVip && !hasConsumedQuotaRef.current) {
+          hasConsumedQuotaRef.current = true;
+          const email = currentUser.email || currentUser.username;
+          await consumeFreeReading(email);
+          // 更新本地狀態
+          setCurrentUser(prev => prev ? {
+            ...prev,
+            freeReadingsRemaining: Math.max(0, (prev.freeReadingsRemaining || 0) - 1)
+          } : null);
+        }
       }
     } catch (error) {
       setMessages([{ role: 'model', text: "命運之線纏繞過深，艾瑟瑞爾暫時無法窺視。請重啟儀式。" }]);
@@ -456,6 +500,14 @@ ${cleanedInterpretation}
       {/* 漢堡設定選單 */}
       <SettingsMenu />
 
+      {/* 🆕 升級 VIP 彈窗 */}
+      {showUpgradeModal && (
+        <UpgradeModal
+          onClose={() => setShowUpgradeModal(false)}
+          remainingQuota={currentUser?.freeReadingsRemaining || 0}
+        />
+      )}
+
       {appState === AppState.AUTH && <AuthForm onSuccess={handleAuthSuccess} />}
 
       {appState === AppState.WELCOME && (
@@ -518,6 +570,33 @@ ${cleanedInterpretation}
                 歷史記錄
               </button>
             </div>
+
+            {/* 🆕 免費額度顯示 */}
+            {currentUser && (
+              <div className="mt-6 text-center">
+                {currentUser.isVip ? (
+                  <p className="text-[#d4af37]/60 font-cinzel text-sm tracking-widest">
+                    👑 VIP 會員 · 無限次神諭
+                  </p>
+                ) : (
+                  <div
+                    className="inline-flex items-center gap-3 px-5 py-2 rounded-full border border-[#d4af37]/30 bg-black/30 cursor-pointer hover:border-[#d4af37]/60 transition-all"
+                    onClick={() => setShowUpgradeModal(true)}
+                  >
+                    <span className="text-[#d4af37]/60 font-cinzel text-sm tracking-widest">
+                      本月剩餘神諭次數
+                    </span>
+                    <span className={`font-cinzel font-black text-lg ${(currentUser.freeReadingsRemaining || 0) === 0
+                      ? 'text-red-400'
+                      : 'text-[#d4af37]'
+                      }`}>
+                      {currentUser.freeReadingsRemaining ?? 3}
+                    </span>
+                    <span className="text-[#d4af37]/40 text-xs">/ 3</span>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* 凱爾特十字 VIP 推廣區塊 */}
@@ -629,7 +708,7 @@ ${cleanedInterpretation}
               spread={spread}
               isFlipped={isFlipped}
               onFlipCard={flipCard}
-              cardBackImage={cardBackImage}
+              cardBackImage={getBackImageUrl() || cardBackImage}
               mode={displaySettings.mobileCardDisplayMode}
               spreadType={selectedSpreadId || undefined}
             />
@@ -639,7 +718,7 @@ ${cleanedInterpretation}
               spread={spread}
               isFlipped={isFlipped}
               onFlipCard={flipCard}
-              cardBackImage={cardBackImage}
+              cardBackImage={getBackImageUrl() || cardBackImage}
             />
           ) : selectedSpreadId === 'yearly' ? (
             /* 年度運勢特殊佈局 */
@@ -647,14 +726,15 @@ ${cleanedInterpretation}
               spread={spread}
               isFlipped={isFlipped}
               onFlipCard={flipCard}
-              cardBackImage={cardBackImage}
+              cardBackImage={getBackImageUrl() || cardBackImage}
             />
           ) : (
             /* 預設格子佈局 */
-            <div className={`grid gap-4 md:gap-10 w-full min-h-[300px] md:min-h-[400px] mb-2 pt-12 md:pt-0 ${spread.length <= 3 ? 'grid-cols-3' :
-              spread.length <= 5 ? 'grid-cols-3 md:grid-cols-5' :
-                spread.length <= 6 ? 'grid-cols-3 md:grid-cols-3' :
-                  'grid-cols-3 md:grid-cols-4'
+            <div className={`grid gap-4 md:gap-10 w-full min-h-[300px] md:min-h-[400px] mb-2 pt-12 md:pt-0 justify-items-center ${spread.length <= 3 ? 'grid-cols-3' :
+              spread.length === 4 ? 'grid-cols-2 md:grid-cols-4' :
+                spread.length <= 5 ? 'grid-cols-3 md:grid-cols-5' :
+                  spread.length <= 6 ? 'grid-cols-3 md:grid-cols-3' :
+                    'grid-cols-3 md:grid-cols-4'
               }`}>
               {spread.map((s, idx) => (
                 <div
@@ -664,12 +744,13 @@ ${cleanedInterpretation}
                 >
                   <p className="text-[#d4af37]/60 font-cinzel text-xs tracking-widest uppercase mb-4 text-center">{s.position}</p>
                   <TarotCard
-                    card={{ ...s.card, image: s.aiImage || s.card.image }}
+                    card={{ ...s.card, image: getCardImageUrl(s.card.id) || s.aiImage || s.card.image }}
                     isFlipped={isFlipped[idx]}
                     isReversed={s.isReversed}
                     onClick={() => flipCard(idx)}
                     size={isMobile ? 'sm' : (spread.length > 5 ? 'sm' : 'lg')}
-                    customBack={cardBackImage}
+                    customBack={getBackImageUrl() || cardBackImage}
+                    showNameLabel={displaySettings.showCardNameLabel}
                   />
                   {!isFlipped[idx] && (
                     <p className="mt-4 text-[#d4af37]/40 font-lora italic text-xs animate-pulse">點擊揭示命運</p>
@@ -710,7 +791,7 @@ ${cleanedInterpretation}
                         {msg.role === 'user' ? (
                           <div className="user-query-box">「 {msg.text} 」</div>
                         ) : (
-                          <div className="prose-mystic" dangerouslySetInnerHTML={{ __html: marked.parse(msg.text) }} />
+                          <div className="prose-mystic min-h-[200px]" dangerouslySetInnerHTML={{ __html: marked.parse(msg.text) }} />
                         )}
                       </div>
                     ))}
@@ -753,17 +834,11 @@ ${cleanedInterpretation}
                   {/* 追問次數顯示 */}
                   {!currentUser?.isVip && (
                     <div className="text-center">
-                      {followUpCount < MAX_FREE_FOLLOWUPS ? (
-                        <p className="text-[#d4af37]/40 font-cinzel text-sm tracking-widest">
-                          剩餘追問次數：<span className="text-[#d4af37]">{MAX_FREE_FOLLOWUPS - followUpCount}</span> / {MAX_FREE_FOLLOWUPS}
+                      <div className="inline-block px-6 py-3 rounded-full border border-yellow-500/30 bg-yellow-500/5">
+                        <p className="text-yellow-500/80 font-cinzel text-sm tracking-widest">
+                          🔒 想要深度追問請<span className="underline cursor-pointer hover:text-yellow-500" onClick={() => setShowUpgradeModal(true)}>升級 VIP</span>
                         </p>
-                      ) : (
-                        <div className="inline-block px-6 py-3 rounded-full border border-yellow-500/30 bg-yellow-500/5">
-                          <p className="text-yellow-500/80 font-cinzel text-sm tracking-widest">
-                            🔒 免費追問次數已用完 · <span className="underline cursor-pointer hover:text-yellow-500">升級 VIP</span>
-                          </p>
-                        </div>
-                      )}
+                      </div>
                     </div>
                   )}
                   {currentUser?.isVip && (

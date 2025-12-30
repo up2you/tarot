@@ -12,6 +12,7 @@ interface YearlyLayoutProps {
     isFlipped: boolean[];
     onFlipCard: (index: number) => void;
     cardBackImage: string;
+    showCardNameLabel?: boolean;  // 新增：是否顯示牌卡名稱標籤
 }
 
 const MONTHS = ['一月', '二月', '三月', '四月', '五月', '六月',
@@ -21,7 +22,8 @@ const YearlyLayout: React.FC<YearlyLayoutProps> = ({
     spread,
     isFlipped,
     onFlipCard,
-    cardBackImage
+    cardBackImage,
+    showCardNameLabel = true,  // 預設顯示
 }) => {
     // 確保有 12 張牌
     if (spread.length !== 12) {
@@ -61,6 +63,7 @@ const YearlyLayout: React.FC<YearlyLayoutProps> = ({
                             onClick={() => onFlipCard(idx)}
                             size="sm"
                             customBack={cardBackImage}
+                            showNameLabel={showCardNameLabel}
                         />
 
                         {!isFlipped[idx] && (

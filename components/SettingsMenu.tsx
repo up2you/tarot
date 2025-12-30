@@ -22,7 +22,6 @@ const SettingsMenu: React.FC = () => {
     const audioRef = useRef<HTMLAudioElement | null>(null);
 
     const musicInfo = THEME_MUSIC[currentTheme];
-    const currentThemeInfo = themes.find(t => t.id === currentTheme)!;
 
     // 檢查音樂檔案是否存在
     useEffect(() => {
@@ -131,8 +130,8 @@ const SettingsMenu: React.FC = () => {
                                 <button
                                     onClick={toggleMusic}
                                     className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all ${isPlaying
-                                            ? 'bg-[#d4af37] border-[#d4af37] text-black'
-                                            : 'border-[#d4af37]/50 text-[#d4af37]'
+                                        ? 'bg-[#d4af37] border-[#d4af37] text-black'
+                                        : 'border-[#d4af37]/50 text-[#d4af37]'
                                         }`}
                                 >
                                     {hasAudio === false ? '🔇' : isPlaying ? '⏸' : '▶'}

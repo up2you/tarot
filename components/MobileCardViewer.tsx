@@ -15,6 +15,7 @@ interface MobileCardViewerProps {
     cardBackImage: string;
     mode: MobileCardDisplayMode;
     spreadType?: string; // 'celtic_cross' | 'yearly' | 'three_card' 等
+    showCardNameLabel?: boolean;  // 新增：是否顯示牌卡名稱標籤
 }
 
 // 凱爾特十字分組定義
@@ -40,6 +41,7 @@ const MobileCardViewer: React.FC<MobileCardViewerProps> = ({
     cardBackImage,
     mode,
     spreadType,
+    showCardNameLabel = true,  // 預設顯示
 }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [currentGroup, setCurrentGroup] = useState(0);
@@ -112,8 +114,8 @@ const MobileCardViewer: React.FC<MobileCardViewerProps> = ({
                     key={idx}
                     onClick={() => setCurrentIndex(idx)}
                     className={`w-2 h-2 rounded-full transition-all ${idx === currentIndex
-                            ? 'w-4 bg-[#d4af37]'
-                            : 'bg-[#d4af37]/30 hover:bg-[#d4af37]/50'
+                        ? 'w-4 bg-[#d4af37]'
+                        : 'bg-[#d4af37]/30 hover:bg-[#d4af37]/50'
                         }`}
                 />
             ))}
@@ -131,8 +133,8 @@ const MobileCardViewer: React.FC<MobileCardViewerProps> = ({
                         key={group.name}
                         onClick={() => switchGroup(idx)}
                         className={`px-4 py-2 rounded-full text-sm font-cinzel transition-all ${idx === currentGroup
-                                ? 'bg-[#d4af37] text-black font-bold'
-                                : 'border border-[#d4af37]/30 text-[#d4af37]/60 hover:bg-[#d4af37]/10'
+                            ? 'bg-[#d4af37] text-black font-bold'
+                            : 'border border-[#d4af37]/30 text-[#d4af37]/60 hover:bg-[#d4af37]/10'
                             }`}
                     >
                         {group.name}
@@ -178,6 +180,7 @@ const MobileCardViewer: React.FC<MobileCardViewerProps> = ({
                             onClick={() => onFlipCard(currentCard.index)}
                             size="lg"
                             customBack={cardBackImage}
+                            showNameLabel={showCardNameLabel}
                         />
                     </div>
 
@@ -245,6 +248,7 @@ const MobileCardViewer: React.FC<MobileCardViewerProps> = ({
                                 onClick={() => onFlipCard(currentCard.index)}
                                 size="lg"
                                 customBack={cardBackImage}
+                                showNameLabel={showCardNameLabel}
                             />
                         </div>
 

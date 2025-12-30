@@ -9,6 +9,7 @@ import { getSettings } from '../services/settingsService';
 
 const DEFAULT_SETTINGS: DisplaySettings = {
     mobileCardDisplayMode: 'grid', // 預設並列格子
+    showCardNameLabel: true,       // 預設顯示牌卡名稱
 };
 
 export function useDisplaySettings() {
@@ -22,6 +23,7 @@ export function useDisplaySettings() {
                 const appSettings = await getSettings();
                 setSettings({
                     mobileCardDisplayMode: appSettings.mobile_display_mode || 'grid',
+                    showCardNameLabel: appSettings.show_card_name_label ?? true,
                 });
             } catch (error) {
                 console.error('Failed to load display settings from Supabase:', error);

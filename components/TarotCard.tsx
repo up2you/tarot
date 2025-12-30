@@ -10,6 +10,7 @@ interface TarotCardProps {
   className?: string;
   size?: 'xs' | 'sm' | 'md' | 'lg';
   customBack?: string;
+  showNameLabel?: boolean;  // 新增：是否顯示牌名標籤
 }
 
 const TarotCard: React.FC<TarotCardProps> = ({
@@ -20,6 +21,7 @@ const TarotCard: React.FC<TarotCardProps> = ({
   className = "",
   size = 'md',
   customBack,
+  showNameLabel = true,  // 預設顯示
 }) => {
   const [showLight, setShowLight] = useState(false);
 
@@ -114,18 +116,20 @@ const TarotCard: React.FC<TarotCardProps> = ({
                 />
               </div>
 
-              {/* 牌名標籤 - 根據尺寸調整 */}
-              <div className={`absolute left-1/2 -translate-x-1/2 w-[88%] transition-all duration-1000 ${isFlipped ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'} ${size === 'xs' ? 'bottom-1' : size === 'sm' ? 'bottom-1' : 'bottom-6'}`}>
-                <div className={`bg-[#fdfcf0]/90 backdrop-blur-md border border-[#d4af37] shadow-[0_15px_30px_rgba(0,0,0,1)] rounded-sm text-center ${size === 'xs' ? 'py-0.5 px-0.5' : size === 'sm' ? 'py-0.5 px-1' : 'py-2 px-1'}`}>
-                  <p className={`text-black font-cinzel font-black leading-tight ${size === 'xs' ? 'text-[8px] tracking-[0.1em]' : size === 'sm' ? 'text-[10px] tracking-[0.1em]' : 'text-xl tracking-[0.2em]'}`}>{card.nameZh}</p>
-                  {size === 'lg' || size === 'md' ? (
-                    <>
-                      <div className="w-1/3 h-px bg-black/20 mx-auto my-1"></div>
-                      <p className="text-black/60 uppercase font-cinzel font-bold text-[8px] tracking-[0.4em]">{card.name}</p>
-                    </>
-                  ) : null}
+              {/* 牌名標籤 - 根據設定和尺寸調整 */}
+              {showNameLabel && (
+                <div className={`absolute left-1/2 -translate-x-1/2 w-[88%] transition-all duration-1000 ${isFlipped ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'} ${size === 'xs' ? 'bottom-1' : size === 'sm' ? 'bottom-1' : 'bottom-6'}`}>
+                  <div className={`bg-[#fdfcf0]/90 backdrop-blur-md border border-[#d4af37] shadow-[0_15px_30px_rgba(0,0,0,1)] rounded-sm text-center ${size === 'xs' ? 'py-0.5 px-0.5' : size === 'sm' ? 'py-0.5 px-1' : 'py-2 px-1'}`}>
+                    <p className={`text-black font-cinzel font-black leading-tight ${size === 'xs' ? 'text-[8px] tracking-[0.1em]' : size === 'sm' ? 'text-[10px] tracking-[0.1em]' : 'text-xl tracking-[0.2em]'}`}>{card.nameZh}</p>
+                    {size === 'lg' || size === 'md' ? (
+                      <>
+                        <div className="w-1/3 h-px bg-black/20 mx-auto my-1"></div>
+                        <p className="text-black/60 uppercase font-cinzel font-bold text-[8px] tracking-[0.4em]">{card.name}</p>
+                      </>
+                    ) : null}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           )}
         </div>

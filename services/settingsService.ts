@@ -13,6 +13,8 @@ export interface AppSettings {
     allow_registration: boolean;
     allow_free_reading: boolean;
     mobile_display_mode: 'grid' | 'fullscreen' | 'carousel';
+    show_card_name_label: boolean;
+    active_card_style: string;  // 新增：當前使用的牌面風格 ID
     updated_at: string;
 }
 
@@ -24,6 +26,8 @@ const DEFAULT_SETTINGS: AppSettings = {
     allow_registration: true,
     allow_free_reading: true,
     mobile_display_mode: 'grid',
+    show_card_name_label: true,
+    active_card_style: 'classic',  // 預設經典風格
     updated_at: new Date().toISOString(),
 };
 

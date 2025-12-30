@@ -21,13 +21,15 @@ interface CelticCrossLayoutProps {
     isFlipped: boolean[];
     onFlipCard: (index: number) => void;
     cardBackImage: string;
+    showCardNameLabel?: boolean;  // 新增：是否顯示牌卡名稱標籤
 }
 
 const CelticCrossLayout: React.FC<CelticCrossLayoutProps> = ({
     spread,
     isFlipped,
     onFlipCard,
-    cardBackImage
+    cardBackImage,
+    showCardNameLabel = true,  // 預設顯示
 }) => {
     // 確保有 10 張牌
     if (spread.length !== 10) {
@@ -53,6 +55,7 @@ const CelticCrossLayout: React.FC<CelticCrossLayoutProps> = ({
                         onClick={() => onFlipCard(index)}
                         size="xs"
                         customBack={cardBackImage}
+                        showNameLabel={showCardNameLabel}
                     />
                 </div>
                 {!isFlipped[index] && (

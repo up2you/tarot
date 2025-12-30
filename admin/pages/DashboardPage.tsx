@@ -1,8 +1,10 @@
 /**
- * 後台總覽頁面
+ * 後台總覽頁面 - 使用 Supabase 真實數據
  */
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { getUserStats, UserStats } from '../../services/adminService';
+import { getSettings } from '../../services/settingsService';
 
 // 統計卡片元件
 const StatCard: React.FC<{
@@ -11,39 +13,52 @@ const StatCard: React.FC<{
     value: string | number;
     change?: string;
     changeType?: 'up' | 'down' | 'neutral';
-}> = ({ icon, label, value, change, changeType = 'neutral' }) => (
+    isLoading?: boolean;
+}> = ({ icon, label, value, change, changeType = 'neutral', isLoading }) => (
     <div className="bg-gray-800 rounded-xl p-6 border border-gray-700">
         <div className="flex items-center justify-between mb-4">
             <span className="text-3xl">{icon}</span>
             {change && (
                 <span className={`text-sm px-2 py-1 rounded ${changeType === 'up' ? 'bg-green-500/20 text-green-400' :
-                        changeType === 'down' ? 'bg-red-500/20 text-red-400' :
-                            'bg-gray-600 text-gray-300'
+                    changeType === 'down' ? 'bg-red-500/20 text-red-400' :
+                        'bg-gray-600 text-gray-300'
                     }`}>
                     {changeType === 'up' ? '↑' : changeType === 'down' ? '↓' : ''} {change}
                 </span>
             )}
         </div>
-        <p className="text-3xl font-bold text-white mb-1">{value}</p>
+        {isLoading ? (
+            <div className="h-9 w-20 bg-gray-700 rounded animate-pulse mb-1"></div>
+        ) : (
+            <p className="text-3xl font-bold text-white mb-1">{value}</p>
+        )}
         <p className="text-gray-400 text-sm">{label}</p>
     </div>
 );
 
 const DashboardPage: React.FC = () => {
-    // TODO: 從 Supabase 獲取真實數據
-    const stats = {
-        todayVisitors: 128,
-        totalUsers: 1542,
-        vipUsers: 45,
-        todayRevenue: 'NT$ 2,850',
-        todayReadings: 76,
-        maintenanceMode: false,
-    };
+    const [isLoading, setIsLoading] = useState(true);
+    const [stats, setStats] = useState<UserStats | null>(null);
+    const [maintenanceMode, setMaintenanceMode] = useState(false);
+
+    useEffect(() => {
+        const loadData = async () => {
+            setIsLoading(true);
+            const [userStats, settings] = await Promise.all([
+                getUserStats(),
+                getSettings(),
+            ]);
+            setStats(userStats);
+            setMaintenanceMode(settings.maintenance_mode);
+            setIsLoading(false);
+        };
+        loadData();
+    }, []);
 
     return (
         <div className="space-y-6">
             {/* 維護模式提示 */}
-            {stats.maintenanceMode && (
+            {maintenanceMode && (
                 <div className="bg-yellow-500/20 border border-yellow-500/50 rounded-xl p-4 flex items-center gap-4">
                     <span className="text-2xl">⚠️</span>
                     <div>
@@ -55,10 +70,10 @@ const DashboardPage: React.FC = () => {
 
             {/* 快速統計 */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <StatCard icon="👥" label="今日訪客" value={stats.todayVisitors} change="+12%" changeType="up" />
-                <StatCard icon="🎴" label="今日占卜" value={stats.todayReadings} change="+8%" changeType="up" />
-                <StatCard icon="👑" label="VIP 用戶" value={stats.vipUsers} change="+3" changeType="up" />
-                <StatCard icon="💰" label="今日收入" value={stats.todayRevenue} change="+15%" changeType="up" />
+                <StatCard icon="👥" label="總用戶數" value={stats?.totalUsers ?? '-'} isLoading={isLoading} />
+                <StatCard icon="👑" label="VIP 用戶" value={stats?.vipUsers ?? '-'} isLoading={isLoading} />
+                <StatCard icon="🎴" label="今日活躍" value={stats?.activeToday ?? '-'} isLoading={isLoading} />
+                <StatCard icon="🆕" label="本月新增" value={stats?.newThisMonth ?? '-'} isLoading={isLoading} />
             </div>
 
             {/* 第二行 */}

@@ -44,10 +44,13 @@ export enum AppTheme {
 export interface User {
   username: string;
   displayName?: string;
+  email?: string;                    // Supabase email
+  supabaseId?: string;               // Supabase user_profiles.id
   joinedDate: number;
   readingsCount: number;
   spending: number;
   isVip: boolean;
+  freeReadingsRemaining?: number;    // 剩餘免費占卜次數
   bio?: string;
   theme: AppTheme;
   provider?: 'local' | 'google';
@@ -99,4 +102,5 @@ export type MobileCardDisplayMode = 'grid' | 'fullscreen' | 'carousel';
 // 顯示設定
 export interface DisplaySettings {
   mobileCardDisplayMode: MobileCardDisplayMode;
+  showCardNameLabel: boolean;  // 是否顯示牌卡名稱標籤
 }

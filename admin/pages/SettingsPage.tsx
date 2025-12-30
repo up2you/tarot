@@ -5,6 +5,7 @@
 import React, { useState, useEffect } from 'react';
 import { MobileCardDisplayMode } from '../../types';
 import { getSettings, updateSettings } from '../../services/settingsService';
+import { CARD_STYLES } from '../../constants/cardStyles';
 
 
 
@@ -20,6 +21,8 @@ const SettingsPage: React.FC = () => {
     const [allowRegistration, setAllowRegistration] = useState(true);
     const [allowFreeReading, setAllowFreeReading] = useState(true);
     const [mobileDisplayMode, setMobileDisplayMode] = useState<MobileCardDisplayMode>('grid');
+    const [showCardNameLabel, setShowCardNameLabel] = useState(true);
+    const [activeCardStyle, setActiveCardStyle] = useState('classic');  // 新增
 
     // 載入設定
     useEffect(() => {
@@ -34,6 +37,8 @@ const SettingsPage: React.FC = () => {
                 setAllowFreeReading(settings.allow_free_reading);
 
                 setMobileDisplayMode(settings.mobile_display_mode || 'grid');
+                setShowCardNameLabel(settings.show_card_name_label ?? true);
+                setActiveCardStyle(settings.active_card_style || 'classic');  // 新增
             } catch (error) {
                 console.error('Failed to load settings:', error);
             } finally {
@@ -60,6 +65,7 @@ const SettingsPage: React.FC = () => {
                 allow_registration: allowRegistration,
                 allow_free_reading: allowFreeReading,
                 mobile_display_mode: mobileDisplayMode,
+                show_card_name_label: showCardNameLabel,  // 新增
             });
 
             if (success) {
@@ -136,6 +142,57 @@ const SettingsPage: React.FC = () => {
                             <div className="text-gray-400 text-xs mt-1">{desc}</div>
                         </button>
                     ))}
+                </div>
+            </div>
+
+            {/* 🎨 牌卡顯示設定 */}
+            <div className="bg-gray-800 rounded-xl p-6 border border-gray-700">
+                <h3 className="text-xl font-bold text-white flex items-center gap-2 mb-2">
+                    🎨 牌卡顯示設定
+                </h3>
+                <p className="text-gray-400 text-sm mb-6">
+                    控制牌卡的顯示樣式
+                </p>
+
+                <div className="flex items-center justify-between">
+                    <div>
+                        <p className="text-white font-medium">顯示牌卡名稱標籤</p>
+                        <p className="text-gray-400 text-sm">關閉後只顯示純圖片，適合已內含文字的牌面</p>
+                    </div>
+                    <button
+                        onClick={() => {
+                            setShowCardNameLabel(!showCardNameLabel);
+                            updateSettings({ show_card_name_label: !showCardNameLabel });
+                        }}
+                        className={`w-12 h-6 rounded-full relative transition-all ${showCardNameLabel ? 'bg-green-500' : 'bg-gray-600'}`}
+                    >
+                        <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${showCardNameLabel ? 'right-1' : 'left-1'}`} />
+                    </button>
+                </div>
+
+                {/* 牌面風格選擇 */}
+                <div className="mt-6 pt-6 border-t border-gray-700">
+                    <p className="text-white font-medium mb-2">🎤 當前牌面風格</p>
+                    <p className="text-gray-400 text-sm mb-4">全站使用的牌面圖片樣式，請先在「牌面管理」上傳圖片</p>
+                    <select
+                        value={activeCardStyle}
+                        onChange={(e) => {
+                            setActiveCardStyle(e.target.value);
+                            updateSettings({ active_card_style: e.target.value });
+                        }}
+                        className="w-full bg-gray-900 border border-gray-600 rounded-lg px-4 py-3 text-white"
+                    >
+                        {CARD_STYLES.map((style) => (
+                            <option key={style.id} value={style.id}>
+                                {style.nameZh} ({style.name}){style.id === 'classic' ? ' - 內建' : ''}
+                            </option>
+                        ))}
+                    </select>
+                    {activeCardStyle !== 'classic' && (
+                        <p className="text-yellow-500/60 text-xs mt-2">
+                            ⚠️ 請確保已在「牌面管理」中上傳此風格的22張牌+牌背
+                        </p>
+                    )}
                 </div>
             </div>
 
