@@ -7,6 +7,9 @@ import { supabase } from './supabaseClient';
 
 const BUCKET_NAME = 'card-images';
 
+// 快取 bucket 狀態，避免重複檢查
+let bucketVerified = false;
+
 export interface CardImageInfo {
     styleId: string;
     cardIndex: number;  // 0-21 for Major Arcana, -1 for back
@@ -15,23 +18,33 @@ export interface CardImageInfo {
 }
 
 /**
- * 確保 storage bucket 存在
+ * 檢查 bucket 是否可用（不嘗試創建，因為前端沒有權限）
+ * Bucket 需要在 Supabase Dashboard 手動創建
  */
 const ensureBucket = async (): Promise<boolean> => {
-    try {
-        const { data: buckets } = await supabase.storage.listBuckets();
-        const exists = buckets?.some(b => b.name === BUCKET_NAME);
+    // 如果已驗證過，直接返回
+    if (bucketVerified) {
+        return true;
+    }
 
-        if (!exists) {
-            const { error } = await supabase.storage.createBucket(BUCKET_NAME, {
-                public: true,
-                fileSizeLimit: 5 * 1024 * 1024, // 5MB
-            });
-            if (error) {
-                console.error('[CardStorage] Failed to create bucket:', error);
+    try {
+        // 嘗試列出 bucket 根目錄來驗證 bucket 存在
+        const { error } = await supabase.storage
+            .from(BUCKET_NAME)
+            .list('', { limit: 1 });
+
+        if (error) {
+            // 如果是 bucket 不存在的錯誤，顯示提示
+            if (error.message?.includes('not found') || error.message?.includes('does not exist')) {
+                console.error(`[CardStorage] Bucket "${BUCKET_NAME}" 不存在，請在 Supabase Dashboard 手動創建`);
                 return false;
             }
+            // 其他錯誤可能是權限問題，但 bucket 可能存在
+            console.warn('[CardStorage] Bucket check warning:', error.message);
         }
+
+        // 標記為已驗證
+        bucketVerified = true;
         return true;
     } catch (err) {
         console.error('[CardStorage] ensureBucket error:', err);
