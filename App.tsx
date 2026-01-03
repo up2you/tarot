@@ -404,30 +404,56 @@ const App: React.FC = () => {
     }
   };
 
-  // 🆕 根據問題推測場景
+  // 🆕 根據問題推測場景（使用資料庫中實際的 scenario_key）
   const detectScenario = (q: string): string => {
     const lower = q.toLowerCase();
-    if (lower.includes('愛') || lower.includes('戀') || lower.includes('感情') || lower.includes('對象') || lower.includes('交往')) {
-      if (lower.includes('單身') || lower.includes('桃花')) return 'love_single';
-      if (lower.includes('復合') || lower.includes('前')) return 'love_reconcile';
+
+    // 愛情相關
+    if (lower.includes('愛') || lower.includes('戀') || lower.includes('感情') || lower.includes('對象') || lower.includes('交往') || lower.includes('喜歡')) {
+      if (lower.includes('單身') || lower.includes('桃花') || lower.includes('暗戀') || lower.includes('追')) return 'love_crush';
+      if (lower.includes('復合') || lower.includes('前任') || lower.includes('分手')) return 'love_breakup';
       if (lower.includes('結婚') || lower.includes('婚姻')) return 'love_marriage';
-      return 'love_relationship';
+      if (lower.includes('吵架') || lower.includes('衝突')) return 'love_conflict';
+      if (lower.includes('外遇') || lower.includes('出軌')) return 'love_affair';
+      return 'love_current';
     }
-    if (lower.includes('工作') || lower.includes('事業') || lower.includes('職場') || lower.includes('升遷')) {
-      if (lower.includes('找工作') || lower.includes('求職')) return 'career_job_search';
-      if (lower.includes('離職') || lower.includes('轉職')) return 'career_change';
-      return 'career_development';
+
+    // 工作事業相關
+    if (lower.includes('工作') || lower.includes('事業') || lower.includes('職場') || lower.includes('公司') || lower.includes('老闆')) {
+      if (lower.includes('找工作') || lower.includes('求職') || lower.includes('面試')) return 'career_seeking';
+      if (lower.includes('離職') || lower.includes('轉職') || lower.includes('換工作')) return 'career_change';
+      if (lower.includes('升遷') || lower.includes('晉升')) return 'career_promotion';
+      if (lower.includes('加薪') || lower.includes('薪水')) return 'career_raise';
+      if (lower.includes('創業') || lower.includes('開店')) return 'career_startup';
+      if (lower.includes('合夥') || lower.includes('夥伴')) return 'career_partner';
+      if (lower.includes('衝突') || lower.includes('同事')) return 'career_conflict';
+      return 'career_current';
     }
-    if (lower.includes('錢') || lower.includes('財') || lower.includes('投資') || lower.includes('理財')) {
-      return 'money_general';
+
+    // 財運相關
+    if (lower.includes('錢') || lower.includes('財') || lower.includes('投資') || lower.includes('理財') || lower.includes('賺') || lower.includes('買')) {
+      if (lower.includes('投資') || lower.includes('股票')) return 'money_invest';
+      if (lower.includes('買房') || lower.includes('房子')) return 'money_property';
+      if (lower.includes('彩券') || lower.includes('樂透') || lower.includes('運氣')) return 'money_luck';
+      return 'money_current';
     }
-    if (lower.includes('考試') || lower.includes('學習') || lower.includes('成績')) {
+
+    // 學業考試相關
+    if (lower.includes('考試') || lower.includes('學習') || lower.includes('成績') || lower.includes('課業') || lower.includes('學校')) {
       return 'study_exam';
     }
-    if (lower.includes('健康') || lower.includes('身體')) {
-      return 'health_general';
+
+    // 健康相關
+    if (lower.includes('健康') || lower.includes('身體') || lower.includes('病') || lower.includes('醫')) {
+      if (lower.includes('手術') || lower.includes('開刀')) return 'health_surgery';
+      if (lower.includes('懷孕') || lower.includes('寶寶')) return 'health_pregnancy';
+      if (lower.includes('心理') || lower.includes('壓力') || lower.includes('焦慮')) return 'health_mental';
+      if (lower.includes('康復') || lower.includes('恢復')) return 'health_recovery';
+      return 'health_body';
     }
-    return 'general';
+
+    // 預設使用通用財運（因為大多數問題都跟財運有關）
+    return 'money_current';
   };
 
   // 🆕 映射位置名稱到 key
