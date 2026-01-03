@@ -51,6 +51,7 @@ const App: React.FC = () => {
   const MAX_FREE_FOLLOWUPS = 0; // 免費用戶不開放追問功能
   const [showUpgradeModal, setShowUpgradeModal] = useState(false); // 升級 VIP 彈窗
   const [currentPage, setCurrentPage] = useState<'main' | 'profile' | 'cardStyles' | 'pricing'>('main'); // 🆕 當前頁面
+  const [previousPage, setPreviousPage] = useState<'main' | 'profile'>('main'); // 🆕 記錄上一層頁面
 
   const [isCalibrating, setIsCalibrating] = useState(false);
   const [calibrationProgress, setCalibrationProgress] = useState(0);
@@ -91,6 +92,8 @@ const App: React.FC = () => {
   useEffect(() => {
     const handleNavigate = (e: CustomEvent) => {
       const page = e.detail;
+      // 從選單進入的頁面，設定 previousPage 為 'main'
+      setPreviousPage('main');
       if (page === 'profile') setCurrentPage('profile');
       else if (page === 'cardStyles') setCurrentPage('cardStyles');
       else if (page === 'pricing') setCurrentPage('pricing');
@@ -681,6 +684,8 @@ ${cleanedInterpretation}
         <UserProfilePage
           onClose={() => setCurrentPage('main')}
           onNavigate={(page) => {
+            // 從個人中心進入的子頁面，設定 previousPage 為 'profile'
+            setPreviousPage('profile');
             if (page === 'pricing') setCurrentPage('pricing');
             else if (page === 'cardStyles') setCurrentPage('cardStyles');
             else setCurrentPage('main');
@@ -690,13 +695,13 @@ ${cleanedInterpretation}
 
       {currentPage === 'cardStyles' && (
         <CardStyleShop
-          onClose={() => setCurrentPage('main')}
+          onClose={() => setCurrentPage(previousPage)}
         />
       )}
 
       {currentPage === 'pricing' && (
         <PricingPage
-          onClose={() => setCurrentPage('main')}
+          onClose={() => setCurrentPage(previousPage)}
         />
       )}
 
