@@ -157,7 +157,7 @@ const SettingsMenu: React.FC = () => {
                         </div>
 
                         {/* 主題設定區塊 */}
-                        <div className="p-4">
+                        <div className="p-4 border-b border-[#d4af37]/20">
                             <p className="text-xs font-cinzel tracking-widest text-[#d4af37]/60 uppercase mb-3">
                                 🎨 主題風格
                             </p>
@@ -191,6 +191,63 @@ const SettingsMenu: React.FC = () => {
                                         )}
                                     </button>
                                 ))}
+                            </div>
+                        </div>
+
+                        {/* 功能導航區塊 */}
+                        <div className="p-4">
+                            <p className="text-xs font-cinzel tracking-widest text-[#d4af37]/60 uppercase mb-3">
+                                📍 功能選單
+                            </p>
+                            <div className="space-y-2">
+                                <a
+                                    href="/profile"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        window.dispatchEvent(new CustomEvent('navigate', { detail: 'profile' }));
+                                        setIsOpen(false);
+                                    }}
+                                    className="w-full p-3 rounded-xl text-left transition-all flex items-center gap-3 hover:bg-white/5"
+                                >
+                                    <span className="text-xl">👤</span>
+                                    <span className="text-sm text-[#d4af37]">個人中心</span>
+                                </a>
+                                <a
+                                    href="/card-styles"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        window.dispatchEvent(new CustomEvent('navigate', { detail: 'cardStyles' }));
+                                        setIsOpen(false);
+                                    }}
+                                    className="w-full p-3 rounded-xl text-left transition-all flex items-center gap-3 hover:bg-white/5"
+                                >
+                                    <span className="text-xl">🎴</span>
+                                    <span className="text-sm text-[#d4af37]">牌面風格商店</span>
+                                </a>
+                                <a
+                                    href="/pricing"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        window.dispatchEvent(new CustomEvent('navigate', { detail: 'pricing' }));
+                                        setIsOpen(false);
+                                    }}
+                                    className="w-full p-3 rounded-xl text-left transition-all flex items-center gap-3 hover:bg-white/5"
+                                >
+                                    <span className="text-xl">💎</span>
+                                    <span className="text-sm text-[#d4af37]">升級 VIP / 購買點數</span>
+                                </a>
+                                <a
+                                    href="/admin"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        window.open('/admin.html', '_blank');
+                                        setIsOpen(false);
+                                    }}
+                                    className="w-full p-3 rounded-xl text-left transition-all flex items-center gap-3 hover:bg-white/5 opacity-60"
+                                >
+                                    <span className="text-xl">⚙️</span>
+                                    <span className="text-sm text-[#d4af37]">後台管理</span>
+                                </a>
                             </div>
                         </div>
                     </div>

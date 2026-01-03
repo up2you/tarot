@@ -3,7 +3,8 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { AppState, CardReading, ChatMessage, User, AppTheme } from './types';
 import { MAJOR_ARCANA, SPREADS, CARD_BACK_IMAGE } from './constants';
 import TarotCard from './components/TarotCard';
-import AuthForm from './components/AuthForm';
+import AuthPage from './components/AuthPage';
+import { getSupabaseUser, getSupabaseUserProfile, onSupabaseAuthStateChange } from './services/supabaseAuthService';
 import CardManager from './components/CardManager';
 import HistoryPanel from './components/HistoryPanel';
 import SpreadSelector from './components/SpreadSelector';
@@ -21,6 +22,7 @@ import { generateThemedCardArt, isThemeComplete, getCachedArt } from './services
 import { initMobileApp, hapticFeedback, hapticNotification } from './services/mobileService';
 import { saveReading } from './services/historyService';
 import { checkFreeQuota, consumeFreeReading } from './services/userService';
+import { generateFreeReading } from './services/oracleService';
 import { marked } from 'marked';
 import { toPng } from 'html-to-image';
 import ShareCardPreview from './components/ShareCardPreview';
@@ -103,6 +105,39 @@ const App: React.FC = () => {
     sessionStorage.setItem('ethereal_user', JSON.stringify(user));
     setAppState(AppState.WELCOME);
     syncLocalAssets(user);
+  };
+
+  // 🆕 Supabase 認證成功處理
+  const handleSupabaseAuthSuccess = async () => {
+    playSound('draw');
+
+    try {
+      const supabaseUser = await getSupabaseUser();
+      if (!supabaseUser) return;
+
+      const profile = await getSupabaseUserProfile(supabaseUser.id);
+
+      // 轉換為 App 的 User 類型
+      const appUser: User = {
+        username: supabaseUser.email,
+        email: supabaseUser.email,
+        displayName: profile?.display_name || supabaseUser.email.split('@')[0],
+        isVip: profile?.subscription_type ? ['monthly', 'yearly', 'lifetime'].includes(profile.subscription_type) : false,
+        freeReadingsRemaining: 3 - (profile?.credits_balance || 0),
+        theme: AppTheme.BAROQUE,
+        provider: 'google', // Supabase 認證視為 Google 類型
+        joinedDate: new Date(supabaseUser.created_at).getTime(),
+        readingsCount: 0,
+        spending: 0,
+      };
+
+      setCurrentUser(appUser);
+      sessionStorage.setItem('ethereal_user', JSON.stringify(appUser));
+      setAppState(AppState.WELCOME);
+      syncLocalAssets(appUser);
+    } catch (error) {
+      console.error('Auth success handling failed:', error);
+    }
   };
 
   const performConsecration = async (theme: AppTheme) => {
@@ -235,20 +270,41 @@ const App: React.FC = () => {
     }, 100);
 
     try {
-      const chat = createTarotSession(question, spread);
-      setAiChat(chat);
-
-      // 使用串流回應，逐步更新顯示
       let fullText = '';
-      await chat.sendMessageStream(
-        { message: "神諭已降臨，請艾瑟瑞爾揭示真相。" },
-        (chunk, accumulated) => {
-          fullText = accumulated;
-          setMessages([{ role: 'model', text: accumulated }]);
-          // 自動滾動到底部
-          setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }), 50);
-        }
-      );
+
+      // 🆕 判斷使用神諭資料庫或 AI
+      if (currentUser?.isVip) {
+        // VIP 用戶：使用 AI 串流解讀
+        const chat = createTarotSession(question, spread);
+        setAiChat(chat);
+
+        await chat.sendMessageStream(
+          { message: "神諭已降臨，請艾瑟瑞爾揭示真相。" },
+          (chunk, accumulated) => {
+            fullText = accumulated;
+            setMessages([{ role: 'model', text: accumulated }]);
+            setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }), 50);
+          }
+        );
+      } else {
+        // 免費用戶：使用神諭資料庫（預生成解讀）
+        const scenarioKey = detectScenario(question); // 根據問題推測場景
+        const cards = spread.map((s, idx) => ({
+          cardId: s.card.id,
+          cardName: s.card.nameZh,
+          isReversed: s.isReversed,
+          positionKey: mapPositionToKey(s.position, idx),
+        }));
+
+        setMessages([{ role: 'model', text: '✨ 正在從神諭之書中尋找指引...' }]);
+
+        const oracleResult = await generateFreeReading(cards, scenarioKey);
+
+        // 組合成完整解讀文字
+        fullText = formatOracleReading(spread, oracleResult);
+        setMessages([{ role: 'model', text: fullText }]);
+        setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }), 50);
+      }
 
       // 自動儲存占卜記錄到本地
       if (!hasRecordedRef.current && fullText) {
@@ -262,12 +318,11 @@ const App: React.FC = () => {
         const interpretationSummary = fullText.substring(0, 200);
         saveReading(question, cardsForRecord, currentUser?.theme || AppTheme.BAROQUE, interpretationSummary);
 
-        // 🆕 扣除免費額度（非 VIP 用戶）
+        // 扣除免費額度（非 VIP 用戶）
         if (currentUser && !currentUser.isVip && !hasConsumedQuotaRef.current) {
           hasConsumedQuotaRef.current = true;
           const email = currentUser.email || currentUser.username;
           await consumeFreeReading(email);
-          // 更新本地狀態
           setCurrentUser(prev => prev ? {
             ...prev,
             freeReadingsRemaining: Math.max(0, (prev.freeReadingsRemaining || 0) - 1)
@@ -275,10 +330,72 @@ const App: React.FC = () => {
         }
       }
     } catch (error) {
+      console.error('Interpretation error:', error);
       setMessages([{ role: 'model', text: "命運之線纏繞過深，艾瑟瑞爾暫時無法窺視。請重啟儀式。" }]);
     } finally {
       setIsTyping(false);
     }
+  };
+
+  // 🆕 根據問題推測場景
+  const detectScenario = (q: string): string => {
+    const lower = q.toLowerCase();
+    if (lower.includes('愛') || lower.includes('戀') || lower.includes('感情') || lower.includes('對象') || lower.includes('交往')) {
+      if (lower.includes('單身') || lower.includes('桃花')) return 'love_single';
+      if (lower.includes('復合') || lower.includes('前')) return 'love_reconcile';
+      if (lower.includes('結婚') || lower.includes('婚姻')) return 'love_marriage';
+      return 'love_relationship';
+    }
+    if (lower.includes('工作') || lower.includes('事業') || lower.includes('職場') || lower.includes('升遷')) {
+      if (lower.includes('找工作') || lower.includes('求職')) return 'career_job_search';
+      if (lower.includes('離職') || lower.includes('轉職')) return 'career_change';
+      return 'career_development';
+    }
+    if (lower.includes('錢') || lower.includes('財') || lower.includes('投資') || lower.includes('理財')) {
+      return 'money_general';
+    }
+    if (lower.includes('考試') || lower.includes('學習') || lower.includes('成績')) {
+      return 'study_exam';
+    }
+    if (lower.includes('健康') || lower.includes('身體')) {
+      return 'health_general';
+    }
+    return 'general';
+  };
+
+  // 🆕 映射位置名稱到 key
+  const mapPositionToKey = (positionName: string, index: number): string => {
+    const keyMap: Record<string, string> = {
+      '過去': 'past', '現在': 'present', '未來': 'future',
+      '自己': 'self', '對方': 'other', '結果': 'outcome',
+      '障礙': 'obstacle', '建議': 'advice', '環境': 'environment',
+      '潛意識': 'subconscious'
+    };
+    return keyMap[positionName] || ['past', 'present', 'future', 'self', 'other', 'outcome', 'advice', 'obstacle', 'environment', 'subconscious'][index % 10];
+  };
+
+  // 🆕 格式化神諭解讀結果
+  const formatOracleReading = (
+    cards: (CardReading & { aiImage?: string })[],
+    result: { interpretations: { position: string; text: string }[]; relationships: string[]; summary: string }
+  ): string => {
+    let text = '## ✨ 神諭啟示\n\n';
+
+    // 每張牌的解讀
+    cards.forEach((card, idx) => {
+      const interp = result.interpretations[idx];
+      text += `### 【${interp?.position || card.position}】${card.card.nameZh}${card.isReversed ? '（逆位）' : '（正位）'}\n\n`;
+      text += (interp?.text || '此刻的能量正在流動中...') + '\n\n';
+    });
+
+    // 總結
+    if (result.summary) {
+      text += '---\n\n';
+      text += '### 📿 總體指引\n\n';
+      text += result.summary + '\n';
+    }
+
+    return text;
   };
 
   const handleResetCeremony = () => {
@@ -508,7 +625,9 @@ ${cleanedInterpretation}
         />
       )}
 
-      {appState === AppState.AUTH && <AuthForm onSuccess={handleAuthSuccess} />}
+      {appState === AppState.AUTH && (
+        <AuthPage onAuthSuccess={handleSupabaseAuthSuccess} />
+      )}
 
       {appState === AppState.WELCOME && (
         <div className="max-w-4xl w-full mt-6 md:mt-20 animate-fade-up">
