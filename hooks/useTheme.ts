@@ -46,7 +46,7 @@ export const THEMES: Theme[] = [
 const THEME_STORAGE_KEY = 'aetheris-ui-theme';
 
 export function useTheme() {
-    const [currentTheme, setCurrentTheme] = useState<ThemeId>('baroque');
+    const [currentTheme, setCurrentTheme] = useState<ThemeId>('celestial');
 
     // 初始化時從 localStorage 讀取
     useEffect(() => {
