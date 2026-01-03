@@ -37,23 +37,37 @@ const UserProfilePage: React.FC<UserProfilePageProps> = ({ onClose, onNavigate }
     const loadData = async () => {
         setIsLoading(true);
 
-        const user = await getSupabaseUser();
-        if (!user) {
-            setIsLoading(false);
-            return;
+        try {
+            const user = await getSupabaseUser();
+            if (!user) {
+                setIsLoading(false);
+                return;
+            }
+
+            // 取得用戶 Profile
+            const userProfile = await getSupabaseUserProfile(user.id);
+            setProfile(userProfile);
+
+            // 取得擁有的牌面風格（可能失敗，忽略錯誤）
+            try {
+                const styles = await getStylesWithOwnership(user.id);
+                setOwnedStyles(styles.filter(s => s.is_owned));
+            } catch (e) {
+                console.log('[UserProfilePage] getStylesWithOwnership failed, using empty array');
+                setOwnedStyles([]);
+            }
+
+            // 取得最近占卜記錄（可能失敗，忽略錯誤）
+            try {
+                const readings = await getUserReadings(user.id, 5);
+                setRecentReadings(readings);
+            } catch (e) {
+                console.log('[UserProfilePage] getUserReadings failed, using empty array');
+                setRecentReadings([]);
+            }
+        } catch (err) {
+            console.error('[UserProfilePage] loadData error:', err);
         }
-
-        // 取得用戶 Profile
-        const userProfile = await getSupabaseUserProfile(user.id);
-        setProfile(userProfile);
-
-        // 取得擁有的牌面風格
-        const styles = await getStylesWithOwnership(user.id);
-        setOwnedStyles(styles.filter(s => s.is_owned));
-
-        // 取得最近占卜記錄
-        const readings = await getUserReadings(user.id, 5);
-        setRecentReadings(readings);
 
         setIsLoading(false);
     };
@@ -162,8 +176,8 @@ const UserProfilePage: React.FC<UserProfilePageProps> = ({ onClose, onNavigate }
                             key={tab}
                             onClick={() => setActiveTab(tab as any)}
                             className={`px-4 py-2 rounded-lg font-bold transition-all ${activeTab === tab
-                                    ? 'bg-amber-500 text-black'
-                                    : 'bg-gray-800 text-gray-400 hover:text-white'
+                                ? 'bg-amber-500 text-black'
+                                : 'bg-gray-800 text-gray-400 hover:text-white'
                                 }`}
                         >
                             {tab === 'overview' && '📊 總覽'}
@@ -261,8 +275,8 @@ const UserProfilePage: React.FC<UserProfilePageProps> = ({ onClose, onNavigate }
                                     <div
                                         key={style.id}
                                         className={`bg-gray-800 rounded-xl overflow-hidden border-2 ${profile.active_card_style === style.style_key
-                                                ? 'border-amber-500'
-                                                : 'border-gray-700'
+                                            ? 'border-amber-500'
+                                            : 'border-gray-700'
                                             }`}
                                     >
                                         <div className="h-24 bg-gray-700 flex items-center justify-center text-4xl">
@@ -312,8 +326,8 @@ const UserProfilePage: React.FC<UserProfilePageProps> = ({ onClose, onNavigate }
                                             </div>
                                             <div className="text-right">
                                                 <span className={`text-xs px-2 py-1 rounded ${reading.interpretation_type === 'ai'
-                                                        ? 'bg-purple-500/20 text-purple-400'
-                                                        : 'bg-gray-600/20 text-gray-400'
+                                                    ? 'bg-purple-500/20 text-purple-400'
+                                                    : 'bg-gray-600/20 text-gray-400'
                                                     }`}>
                                                     {reading.interpretation_type === 'ai' ? 'AI 解讀' : '神諭解讀'}
                                                 </span>
