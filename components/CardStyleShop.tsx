@@ -19,9 +19,10 @@ import { supabase } from '../services/supabaseClient';
 
 interface CardStyleShopProps {
     onStyleChange?: (styleKey: string) => void;
+    onClose?: () => void;
 }
 
-const CardStyleShop: React.FC<CardStyleShopProps> = ({ onStyleChange }) => {
+const CardStyleShop: React.FC<CardStyleShopProps> = ({ onStyleChange, onClose }) => {
     const [styles, setStyles] = useState<StyleWithOwnership[]>([]);
     const [activeStyleKey, setActiveStyleKey] = useState('classic');
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -44,16 +45,29 @@ const CardStyleShop: React.FC<CardStyleShopProps> = ({ onStyleChange }) => {
             setUserId(user.id);
 
             // 取得風格（含擁有狀態）
-            const stylesData = await getStylesWithOwnership(user.id);
-            setStyles(stylesData);
+            try {
+                const stylesData = await getStylesWithOwnership(user.id);
+                setStyles(stylesData);
+            } catch (e) {
+                console.log('[CardStyleShop] getStylesWithOwnership failed');
+                setStyles([]);
+            }
 
             // 取得當前使用的風格
-            const active = await getActiveStyle(user.id);
-            setActiveStyleKey(active);
+            try {
+                const active = await getActiveStyle(user.id);
+                setActiveStyleKey(active);
+            } catch (e) {
+                setActiveStyleKey('classic');
+            }
         } else {
             // 未登入用戶只顯示免費風格
-            const freeStyles = await getFreeStyles();
-            setStyles(freeStyles.map(s => ({ ...s, is_owned: true })));
+            try {
+                const freeStyles = await getFreeStyles();
+                setStyles(freeStyles.map(s => ({ ...s, is_owned: true })));
+            } catch (e) {
+                setStyles([]);
+            }
         }
 
         setIsLoading(false);
@@ -121,6 +135,16 @@ const CardStyleShop: React.FC<CardStyleShopProps> = ({ onStyleChange }) => {
             )}
 
             <div className="max-w-7xl mx-auto">
+                {/* 返回按鈕 */}
+                {onClose && (
+                    <button
+                        onClick={onClose}
+                        className="mb-6 flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
+                    >
+                        <span>←</span> 返回
+                    </button>
+                )}
+
                 {/* 標題 */}
                 <div className="text-center mb-8">
                     <h1 className="text-4xl font-bold text-white mb-2">🎴 牌面風格商店</h1>
@@ -137,8 +161,8 @@ const CardStyleShop: React.FC<CardStyleShopProps> = ({ onStyleChange }) => {
                     <button
                         onClick={() => setSelectedCategory(null)}
                         className={`px-4 py-2 rounded-full transition-all ${selectedCategory === null
-                                ? 'bg-amber-500 text-black'
-                                : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                            ? 'bg-amber-500 text-black'
+                            : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
                             }`}
                     >
                         全部
@@ -148,8 +172,8 @@ const CardStyleShop: React.FC<CardStyleShopProps> = ({ onStyleChange }) => {
                             key={key}
                             onClick={() => setSelectedCategory(key)}
                             className={`px-4 py-2 rounded-full transition-all ${selectedCategory === key
-                                    ? 'bg-amber-500 text-black'
-                                    : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                                ? 'bg-amber-500 text-black'
+                                : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
                                 }`}
                         >
                             {cat.icon} {cat.name_zh}
@@ -170,10 +194,10 @@ const CardStyleShop: React.FC<CardStyleShopProps> = ({ onStyleChange }) => {
                             <div
                                 key={style.id}
                                 className={`relative bg-gray-800 rounded-xl overflow-hidden border-2 transition-all cursor-pointer hover:scale-105 ${activeStyleKey === style.style_key
-                                        ? 'border-amber-500 shadow-lg shadow-amber-500/20'
-                                        : style.is_owned
-                                            ? 'border-green-500/50'
-                                            : 'border-gray-700'
+                                    ? 'border-amber-500 shadow-lg shadow-amber-500/20'
+                                    : style.is_owned
+                                        ? 'border-green-500/50'
+                                        : 'border-gray-700'
                                     }`}
                                 onClick={() => setPreviewStyle(style)}
                             >

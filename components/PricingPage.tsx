@@ -17,9 +17,10 @@ import { supabase } from '../services/supabaseClient';
 
 interface PricingPageProps {
     onPurchase?: (planType: string) => void;
+    onClose?: () => void;
 }
 
-const PricingPage: React.FC<PricingPageProps> = ({ onPurchase }) => {
+const PricingPage: React.FC<PricingPageProps> = ({ onPurchase, onClose }) => {
     const [plans, setPlans] = useState<PricingPlan[]>([]);
     const [userAccess, setUserAccess] = useState<UserAccess | null>(null);
     const [userSub, setUserSub] = useState<UserSubscription | null>(null);
@@ -36,16 +37,29 @@ const PricingPage: React.FC<PricingPageProps> = ({ onPurchase }) => {
         setIsLoading(true);
 
         // 取得價格方案
-        const pricingPlans = await getPricingPlans();
-        setPlans(pricingPlans);
+        try {
+            const pricingPlans = await getPricingPlans();
+            setPlans(pricingPlans);
+        } catch (e) {
+            console.log('[PricingPage] getPricingPlans failed');
+            setPlans([]);
+        }
 
         // 取得用戶狀態
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
-            const access = await checkUserAccess(user.id);
-            setUserAccess(access);
-            const sub = await getUserSubscription(user.id);
-            setUserSub(sub);
+            try {
+                const access = await checkUserAccess(user.id);
+                setUserAccess(access);
+            } catch (e) {
+                console.log('[PricingPage] checkUserAccess failed');
+            }
+            try {
+                const sub = await getUserSubscription(user.id);
+                setUserSub(sub);
+            } catch (e) {
+                console.log('[PricingPage] getUserSubscription failed');
+            }
         }
 
         setIsLoading(false);
@@ -108,6 +122,16 @@ const PricingPage: React.FC<PricingPageProps> = ({ onPurchase }) => {
             )}
 
             <div className="max-w-6xl mx-auto">
+                {/* 返回按鈕 */}
+                {onClose && (
+                    <button
+                        onClick={onClose}
+                        className="mb-6 flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
+                    >
+                        <span>←</span> 返回
+                    </button>
+                )}
+
                 {/* 標題 */}
                 <div className="text-center mb-12">
                     <h1 className="text-4xl font-bold text-white mb-4">
@@ -131,8 +155,8 @@ const PricingPage: React.FC<PricingPageProps> = ({ onPurchase }) => {
                         <div
                             key={plan.id}
                             className={`relative bg-gray-800 rounded-2xl p-6 border-2 transition-all ${plan.is_popular
-                                    ? 'border-amber-500 shadow-lg shadow-amber-500/20'
-                                    : 'border-gray-700 hover:border-gray-600'
+                                ? 'border-amber-500 shadow-lg shadow-amber-500/20'
+                                : 'border-gray-700 hover:border-gray-600'
                                 } ${selectedPlan === plan.plan_type ? 'ring-2 ring-amber-400' : ''
                                 }`}
                         >
@@ -197,8 +221,8 @@ const PricingPage: React.FC<PricingPageProps> = ({ onPurchase }) => {
                             <button
                                 onClick={() => handlePurchase(plan.plan_type)}
                                 className={`w-full py-3 rounded-xl font-bold transition-all ${plan.is_popular
-                                        ? 'bg-amber-500 text-black hover:bg-amber-400'
-                                        : 'bg-gray-700 text-white hover:bg-gray-600'
+                                    ? 'bg-amber-500 text-black hover:bg-amber-400'
+                                    : 'bg-gray-700 text-white hover:bg-gray-600'
                                     }`}
                             >
                                 {plan.credits_amount ? '購買點數' : '立即訂閱'}
