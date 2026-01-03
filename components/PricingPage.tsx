@@ -103,14 +103,6 @@ const PricingPage: React.FC<PricingPageProps> = ({ onPurchase, onClose }) => {
         return '';
     };
 
-    if (isLoading) {
-        return (
-            <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-                <div className="text-amber-400 text-xl">載入中...</div>
-            </div>
-        );
-    }
-
     return (
         <div className="min-h-screen bg-gradient-to-b from-gray-900 via-purple-900/20 to-gray-900 py-12 px-4">
             {/* 訊息提示 */}
@@ -150,86 +142,104 @@ const PricingPage: React.FC<PricingPageProps> = ({ onPurchase, onClose }) => {
                 </div>
 
                 {/* 價格方案 */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {plans.map((plan) => (
-                        <div
-                            key={plan.id}
-                            className={`relative bg-gray-800 rounded-2xl p-6 border-2 transition-all ${plan.is_popular
-                                ? 'border-amber-500 shadow-lg shadow-amber-500/20'
-                                : 'border-gray-700 hover:border-gray-600'
-                                } ${selectedPlan === plan.plan_type ? 'ring-2 ring-amber-400' : ''
-                                }`}
-                        >
-                            {/* 推薦標籤 */}
-                            {plan.is_popular && (
-                                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                                    <span className="bg-amber-500 text-black px-4 py-1 rounded-full text-sm font-bold">
-                                        最受歡迎
-                                    </span>
+                {isLoading ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {[...Array(3)].map((_, i) => (
+                            <div key={i} className="bg-gray-800 rounded-2xl p-6 border-2 border-gray-700 animate-pulse">
+                                <div className="h-12 w-12 bg-gray-700 rounded-full mx-auto mb-4" />
+                                <div className="h-6 bg-gray-700 rounded w-2/3 mx-auto mb-4" />
+                                <div className="h-8 bg-gray-700 rounded w-1/2 mx-auto mb-6" />
+                                <div className="space-y-2">
+                                    <div className="h-4 bg-gray-700 rounded" />
+                                    <div className="h-4 bg-gray-700 rounded" />
+                                    <div className="h-4 bg-gray-700 rounded w-3/4" />
                                 </div>
-                            )}
-
-                            {/* 方案圖示和名稱 */}
-                            <div className="text-center mb-6">
-                                <div className="text-4xl mb-3">{getPlanIcon(plan.plan_type)}</div>
-                                <h3 className="text-xl font-bold text-white">{plan.name_zh}</h3>
-                                <p className="text-gray-400 text-sm mt-1">{getPlanDescription(plan)}</p>
+                                <div className="h-12 bg-gray-700 rounded-xl mt-6" />
                             </div>
-
-                            {/* 價格 */}
-                            <div className="text-center mb-6">
-                                {plan.original_price && (
-                                    <div className="text-gray-500 line-through text-lg">
-                                        {formatPrice(plan.original_price)}
-                                    </div>
-                                )}
-                                <div className="text-3xl font-bold text-white">
-                                    {formatPrice(plan.price)}
-                                </div>
-                                {plan.subscription_months === 12 && (
-                                    <div className="text-amber-400 text-sm">
-                                        平均每月 NT$ {Math.round(plan.price / 12)}
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* 特點列表 */}
-                            <ul className="space-y-3 mb-6">
-                                <li className="flex items-center text-gray-300">
-                                    <span className="text-green-400 mr-2">✓</span>
-                                    AI 個人化深度解讀
-                                </li>
-                                <li className="flex items-center text-gray-300">
-                                    <span className="text-green-400 mr-2">✓</span>
-                                    所有牌陣類型
-                                </li>
-                                {(plan.subscription_months || 0) >= 1 && (
-                                    <li className="flex items-center text-gray-300">
-                                        <span className="text-green-400 mr-2">✓</span>
-                                        無限次追問功能
-                                    </li>
-                                )}
-                                {plan.plan_type === 'lifetime' && (
-                                    <li className="flex items-center text-amber-400">
-                                        <span className="mr-2">👑</span>
-                                        永久免費升級
-                                    </li>
-                                )}
-                            </ul>
-
-                            {/* 購買按鈕 */}
-                            <button
-                                onClick={() => handlePurchase(plan.plan_type)}
-                                className={`w-full py-3 rounded-xl font-bold transition-all ${plan.is_popular
-                                    ? 'bg-amber-500 text-black hover:bg-amber-400'
-                                    : 'bg-gray-700 text-white hover:bg-gray-600'
+                        ))}
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {plans.map((plan) => (
+                            <div
+                                key={plan.id}
+                                className={`relative bg-gray-800 rounded-2xl p-6 border-2 transition-all ${plan.is_popular
+                                    ? 'border-amber-500 shadow-lg shadow-amber-500/20'
+                                    : 'border-gray-700 hover:border-gray-600'
+                                    } ${selectedPlan === plan.plan_type ? 'ring-2 ring-amber-400' : ''
                                     }`}
                             >
-                                {plan.credits_amount ? '購買點數' : '立即訂閱'}
-                            </button>
-                        </div>
-                    ))}
-                </div>
+                                {/* 推薦標籤 */}
+                                {plan.is_popular && (
+                                    <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                                        <span className="bg-amber-500 text-black px-4 py-1 rounded-full text-sm font-bold">
+                                            最受歡迎
+                                        </span>
+                                    </div>
+                                )}
+
+                                {/* 方案圖示和名稱 */}
+                                <div className="text-center mb-6">
+                                    <div className="text-4xl mb-3">{getPlanIcon(plan.plan_type)}</div>
+                                    <h3 className="text-xl font-bold text-white">{plan.name_zh}</h3>
+                                    <p className="text-gray-400 text-sm mt-1">{getPlanDescription(plan)}</p>
+                                </div>
+
+                                {/* 價格 */}
+                                <div className="text-center mb-6">
+                                    {plan.original_price && (
+                                        <div className="text-gray-500 line-through text-lg">
+                                            {formatPrice(plan.original_price)}
+                                        </div>
+                                    )}
+                                    <div className="text-3xl font-bold text-white">
+                                        {formatPrice(plan.price)}
+                                    </div>
+                                    {plan.subscription_months === 12 && (
+                                        <div className="text-amber-400 text-sm">
+                                            平均每月 NT$ {Math.round(plan.price / 12)}
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* 特點列表 */}
+                                <ul className="space-y-3 mb-6">
+                                    <li className="flex items-center text-gray-300">
+                                        <span className="text-green-400 mr-2">✓</span>
+                                        AI 個人化深度解讀
+                                    </li>
+                                    <li className="flex items-center text-gray-300">
+                                        <span className="text-green-400 mr-2">✓</span>
+                                        所有牌陣類型
+                                    </li>
+                                    {(plan.subscription_months || 0) >= 1 && (
+                                        <li className="flex items-center text-gray-300">
+                                            <span className="text-green-400 mr-2">✓</span>
+                                            無限次追問功能
+                                        </li>
+                                    )}
+                                    {plan.plan_type === 'lifetime' && (
+                                        <li className="flex items-center text-amber-400">
+                                            <span className="mr-2">👑</span>
+                                            永久免費升級
+                                        </li>
+                                    )}
+                                </ul>
+
+                                {/* 購買按鈕 */}
+                                <button
+                                    onClick={() => handlePurchase(plan.plan_type)}
+                                    className={`w-full py-3 rounded-xl font-bold transition-all ${plan.is_popular
+                                        ? 'bg-amber-500 text-black hover:bg-amber-400'
+                                        : 'bg-gray-700 text-white hover:bg-gray-600'
+                                        }`}
+                                >
+                                    {plan.credits_amount ? '購買點數' : '立即訂閱'}
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                )}
 
                 {/* 底部說明 */}
                 <div className="mt-12 text-center text-gray-500 text-sm">
