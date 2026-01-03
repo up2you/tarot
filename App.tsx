@@ -433,9 +433,13 @@ const App: React.FC = () => {
     // 財運相關
     if (lower.includes('錢') || lower.includes('財') || lower.includes('投資') || lower.includes('理財') || lower.includes('賺') || lower.includes('買')) {
       if (lower.includes('投資') || lower.includes('股票')) return 'money_invest';
-      if (lower.includes('買房') || lower.includes('房子')) return 'money_property';
-      if (lower.includes('彩券') || lower.includes('樂透') || lower.includes('運氣')) return 'money_luck';
-      return 'money_current';
+      if (lower.includes('買房') || lower.includes('房子') || lower.includes('房產')) return 'money_property';
+      if (lower.includes('彩券') || lower.includes('樂透') || lower.includes('運氣') || lower.includes('橫財')) return 'money_luck';
+      if (lower.includes('生意') || lower.includes('做生意') || lower.includes('開店')) return 'money_business';
+      if (lower.includes('借') || lower.includes('貸款')) return 'money_loan';
+      if (lower.includes('債') || lower.includes('還錢')) return 'money_debt';
+      if (lower.includes('意外') || lower.includes('中獎')) return 'money_windfall';
+      return 'money_salary'; // 預設使用薪水財運
     }
 
     // 學業考試相關
@@ -452,8 +456,8 @@ const App: React.FC = () => {
       return 'health_body';
     }
 
-    // 預設使用通用財運（因為大多數問題都跟財運有關）
-    return 'money_current';
+    // 預設使用薪水財運（因為大多數問題都跟財運有關）
+    return 'money_salary';
   };
 
   // 🆕 映射位置名稱到 key
