@@ -103,19 +103,11 @@ const UserProfilePage: React.FC<UserProfilePageProps> = ({ onClose, onNavigate }
             'free': { color: 'from-gray-500 to-gray-400', icon: '🆓', text: '免費用戶' },
         };
 
-        const badge = badges[profile.subscription_type] || badges['free'];
+        const badge = badges[displayProfile.subscription_type] || badges['free'];
         return badge;
     };
 
-    if (isLoading) {
-        return (
-            <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-                <div className="text-amber-400 text-xl animate-pulse">載入中...</div>
-            </div>
-        );
-    }
-
-    if (!profile) {
+    if (!isLoading && !profile) {
         return (
             <div className="min-h-screen bg-gray-900 flex items-center justify-center">
                 <div className="text-center">
@@ -130,6 +122,19 @@ const UserProfilePage: React.FC<UserProfilePageProps> = ({ onClose, onNavigate }
             </div>
         );
     }
+
+    // 使用預設值避免 profile 為 null 時的錯誤
+    const displayProfile = profile || {
+        user_id: '',
+        email: '載入中...',
+        display_name: '載入中...',
+        avatar_url: null,
+        subscription_type: 'free',
+        subscription_expires_at: null,
+        credits_balance: 0,
+        active_card_style: 'classic',
+        created_at: new Date().toISOString(),
+    };
 
     const badge = getSubscriptionBadge();
 
@@ -151,19 +156,19 @@ const UserProfilePage: React.FC<UserProfilePageProps> = ({ onClose, onNavigate }
                     <div className="flex items-center gap-6">
                         {/* 頭像 */}
                         <div className="w-20 h-20 rounded-full bg-gradient-to-br from-amber-500 to-purple-600 flex items-center justify-center text-3xl">
-                            {profile.avatar_url ? (
-                                <img src={profile.avatar_url} alt="Avatar" className="w-full h-full rounded-full object-cover" />
+                            {displayProfile.avatar_url ? (
+                                <img src={displayProfile.avatar_url} alt="Avatar" className="w-full h-full rounded-full object-cover" />
                             ) : (
-                                profile.display_name?.[0]?.toUpperCase() || '🔮'
+                                displayProfile.display_name?.[0]?.toUpperCase() || '🔮'
                             )}
                         </div>
 
                         {/* 資訊 */}
                         <div className="flex-1">
                             <h1 className="text-2xl font-bold text-white mb-1">
-                                {profile.display_name || '神秘旅人'}
+                                {displayProfile.display_name || '神秘旅人'}
                             </h1>
-                            <p className="text-gray-400 text-sm mb-2">{profile.email}</p>
+                            <p className="text-gray-400 text-sm mb-2">{displayProfile.email}</p>
 
                             {/* 會員徽章 */}
                             {badge && (
@@ -213,7 +218,7 @@ const UserProfilePage: React.FC<UserProfilePageProps> = ({ onClose, onNavigate }
                             </div>
                             <div className="bg-gray-800 rounded-xl p-4 border border-gray-700">
                                 <p className="text-gray-400 text-sm">點數餘額</p>
-                                <p className="text-2xl font-bold text-amber-400 mt-1">{profile.credits_balance}</p>
+                                <p className="text-2xl font-bold text-amber-400 mt-1">{displayProfile.credits_balance}</p>
                             </div>
                             <div className="bg-gray-800 rounded-xl p-4 border border-gray-700">
                                 <p className="text-gray-400 text-sm">擁有風格</p>
@@ -221,7 +226,7 @@ const UserProfilePage: React.FC<UserProfilePageProps> = ({ onClose, onNavigate }
                             </div>
                             <div className="bg-gray-800 rounded-xl p-4 border border-gray-700">
                                 <p className="text-gray-400 text-sm">當前風格</p>
-                                <p className="text-lg font-bold text-white mt-1">{profile.active_card_style || 'classic'}</p>
+                                <p className="text-lg font-bold text-white mt-1">{displayProfile.active_card_style || 'classic'}</p>
                             </div>
                         </div>
 
@@ -254,17 +259,17 @@ const UserProfilePage: React.FC<UserProfilePageProps> = ({ onClose, onNavigate }
                                     <span className="text-gray-400">會員類型</span>
                                     <span className="text-white">{badge?.text}</span>
                                 </div>
-                                {profile.subscription_expires_at && (
+                                {displayProfile.subscription_expires_at && (
                                     <div className="flex justify-between">
                                         <span className="text-gray-400">到期時間</span>
                                         <span className="text-white">
-                                            {new Date(profile.subscription_expires_at).toLocaleDateString('zh-TW')}
+                                            {new Date(displayProfile.subscription_expires_at).toLocaleDateString('zh-TW')}
                                         </span>
                                     </div>
                                 )}
                                 <div className="flex justify-between">
                                     <span className="text-gray-400">點數餘額</span>
-                                    <span className="text-amber-400">{profile.credits_balance} 點</span>
+                                    <span className="text-amber-400">{displayProfile.credits_balance} 點</span>
                                 </div>
                             </div>
                         </div>
