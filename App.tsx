@@ -27,6 +27,9 @@ import { marked } from 'marked';
 import { toPng } from 'html-to-image';
 import ShareCardPreview from './components/ShareCardPreview';
 import UpgradeModal from './components/UpgradeModal';
+import UserProfilePage from './components/UserProfilePage';
+import CardStyleShop from './components/CardStyleShop';
+import PricingPage from './components/PricingPage';
 
 const App: React.FC = () => {
   const { currentTheme } = useTheme();
@@ -47,6 +50,7 @@ const App: React.FC = () => {
   const [followUpCount, setFollowUpCount] = useState(0); // 追問次數計數器
   const MAX_FREE_FOLLOWUPS = 0; // 免費用戶不開放追問功能
   const [showUpgradeModal, setShowUpgradeModal] = useState(false); // 升級 VIP 彈窗
+  const [currentPage, setCurrentPage] = useState<'main' | 'profile' | 'cardStyles' | 'pricing'>('main'); // 🆕 當前頁面
 
   const [isCalibrating, setIsCalibrating] = useState(false);
   const [calibrationProgress, setCalibrationProgress] = useState(0);
@@ -81,6 +85,20 @@ const App: React.FC = () => {
     };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // 🆕 監聽導航事件（來自 SettingsMenu）
+  useEffect(() => {
+    const handleNavigate = (e: CustomEvent) => {
+      const page = e.detail;
+      if (page === 'profile') setCurrentPage('profile');
+      else if (page === 'cardStyles') setCurrentPage('cardStyles');
+      else if (page === 'pricing') setCurrentPage('pricing');
+      else setCurrentPage('main');
+    };
+
+    window.addEventListener('navigate', handleNavigate as EventListener);
+    return () => window.removeEventListener('navigate', handleNavigate as EventListener);
   }, []);
 
   // 🆕 監聽 Supabase 認證狀態變化（處理 OAuth callback）
@@ -658,11 +676,35 @@ ${cleanedInterpretation}
         />
       )}
 
-      {appState === AppState.AUTH && (
+      {/* 🆕 頁面切換 */}
+      {currentPage === 'profile' && (
+        <UserProfilePage
+          onClose={() => setCurrentPage('main')}
+          onNavigate={(page) => {
+            if (page === 'pricing') setCurrentPage('pricing');
+            else if (page === 'cardStyles') setCurrentPage('cardStyles');
+            else setCurrentPage('main');
+          }}
+        />
+      )}
+
+      {currentPage === 'cardStyles' && (
+        <CardStyleShop
+          onClose={() => setCurrentPage('main')}
+        />
+      )}
+
+      {currentPage === 'pricing' && (
+        <PricingPage
+          onClose={() => setCurrentPage('main')}
+        />
+      )}
+
+      {currentPage === 'main' && appState === AppState.AUTH && (
         <AuthPage onAuthSuccess={handleSupabaseAuthSuccess} />
       )}
 
-      {appState === AppState.WELCOME && (
+      {currentPage === 'main' && appState === AppState.WELCOME && (
         <div className="max-w-4xl w-full mt-6 md:mt-20 animate-fade-up">
           <header className="mb-8 md:mb-20 text-center animate-float">
             <h1 className="text-5xl md:text-8xl font-cinzel font-black tracking-tighter gold-text-shimmer mb-2">AETHERIS</h1>
@@ -802,7 +844,7 @@ ${cleanedInterpretation}
         </div>
       )}
 
-      {appState === AppState.SELECT_SPREAD && currentUser && (
+      {currentPage === 'main' && appState === AppState.SELECT_SPREAD && currentUser && (
         <SpreadSelector
           isVip={currentUser.isVip}
           onSelectSpread={handleSelectSpread}
@@ -822,7 +864,7 @@ ${cleanedInterpretation}
         <HistoryPanel onClose={() => setShowHistory(false)} />
       )}
 
-      {appState === AppState.SHUFFLING && (
+      {currentPage === 'main' && appState === AppState.SHUFFLING && (
         <div className="py-32 flex flex-col items-center gap-8">
           <div className="relative w-48 h-72">
             {[...Array(5)].map((_, i) => (
@@ -851,7 +893,7 @@ ${cleanedInterpretation}
         </div>
       )}
 
-      {(appState === AppState.SPREADING || appState === AppState.INTERACTIVE) && (
+      {currentPage === 'main' && (appState === AppState.SPREADING || appState === AppState.INTERACTIVE) && (
         <div className="w-full max-w-7xl flex flex-col items-center gap-4">
 
           {/* 手機非 Grid 模式：使用 MobileCardViewer */}
