@@ -83,7 +83,9 @@ const App: React.FC = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // 🆕 監聽 Supabase 認證狀態變化（處理 OAuth callback）
   useEffect(() => {
+    // 檢查 sessionStorage 中的已保存用戶
     const savedUser = sessionStorage.getItem('ethereal_user');
     if (savedUser) {
       const user = JSON.parse(savedUser);
@@ -91,6 +93,37 @@ const App: React.FC = () => {
       setAppState(AppState.WELCOME);
       syncLocalAssets(user);
     }
+
+    // 設置 Supabase 認證狀態監聽器
+    const { data: { subscription } } = onSupabaseAuthStateChange(async (authUser) => {
+      if (authUser) {
+        // 用戶已登入（包括 OAuth callback 返回）
+        const profile = await getSupabaseUserProfile(authUser.id);
+
+        const appUser: User = {
+          username: authUser.email,
+          email: authUser.email,
+          displayName: profile?.display_name || authUser.email.split('@')[0],
+          isVip: profile?.subscription_type ? ['monthly', 'yearly', 'lifetime'].includes(profile.subscription_type) : false,
+          freeReadingsRemaining: 3 - (profile?.credits_balance || 0),
+          theme: AppTheme.BAROQUE,
+          provider: 'google',
+          joinedDate: new Date(authUser.created_at).getTime(),
+          readingsCount: 0,
+          spending: 0,
+        };
+
+        setCurrentUser(appUser);
+        sessionStorage.setItem('ethereal_user', JSON.stringify(appUser));
+        setAppState(AppState.WELCOME);
+        syncLocalAssets(appUser);
+      }
+    });
+
+    // 清理訂閱
+    return () => {
+      subscription?.unsubscribe();
+    };
   }, [syncLocalAssets]);
 
   const refreshAssets = async () => {
