@@ -23,7 +23,15 @@ const SettingsMenu: React.FC = () => {
     const [hasAudio, setHasAudio] = useState<boolean | null>(null);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [userEmail, setUserEmail] = useState<string | null>(null);
+    const [isAdmin, setIsAdmin] = useState(false);
     const audioRef = useRef<HTMLAudioElement | null>(null);
+
+    // 🔒 管理員郵箱列表（只有這些郵箱才能看到後台管理）
+    const ADMIN_EMAILS = [
+        'admin@majorarcana.app',
+        'divine.seeker@google.com', // 請替換成你的管理員郵箱
+        // 在這裡添加更多管理員郵箱
+    ];
 
     const musicInfo = THEME_MUSIC[currentTheme];
 
@@ -47,9 +55,11 @@ const SettingsMenu: React.FC = () => {
             if (user) {
                 setIsLoggedIn(true);
                 setUserEmail(user.email || null);
+                setIsAdmin(ADMIN_EMAILS.includes(user.email || ''));
             } else {
                 setIsLoggedIn(false);
                 setUserEmail(null);
+                setIsAdmin(false);
             }
         };
         checkAuth();
@@ -59,9 +69,11 @@ const SettingsMenu: React.FC = () => {
             if (session?.user) {
                 setIsLoggedIn(true);
                 setUserEmail(session.user.email || null);
+                setIsAdmin(ADMIN_EMAILS.includes(session.user.email || ''));
             } else {
                 setIsLoggedIn(false);
                 setUserEmail(null);
+                setIsAdmin(false);
             }
         });
 
@@ -274,18 +286,22 @@ const SettingsMenu: React.FC = () => {
                                     <span className="text-xl">💎</span>
                                     <span className="text-sm text-[#d4af37]">升級 VIP / 購買點數</span>
                                 </a>
-                                <a
-                                    href="/admin"
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        window.open('/admin.html', '_blank');
-                                        setIsOpen(false);
-                                    }}
-                                    className="w-full p-3 rounded-xl text-left transition-all flex items-center gap-3 hover:bg-white/5 opacity-60"
-                                >
-                                    <span className="text-xl">⚙️</span>
-                                    <span className="text-sm text-[#d4af37]">後台管理</span>
-                                </a>
+
+                                {/* 🔒 後台管理 - 只有管理員可見 */}
+                                {isAdmin && (
+                                    <a
+                                        href="/admin"
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            window.open('/admin.html', '_blank');
+                                            setIsOpen(false);
+                                        }}
+                                        className="w-full p-3 rounded-xl text-left transition-all flex items-center gap-3 hover:bg-white/5 opacity-60"
+                                    >
+                                        <span className="text-xl">⚙️</span>
+                                        <span className="text-sm text-[#d4af37]">後台管理</span>
+                                    </a>
+                                )}
 
                                 {/* 登入/登出區塊 */}
                                 <div className="border-t border-[#d4af37]/20 mt-2 pt-2">
