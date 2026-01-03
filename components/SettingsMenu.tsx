@@ -28,8 +28,8 @@ const SettingsMenu: React.FC = () => {
 
     // 🔒 管理員郵箱列表（只有這些郵箱才能看到後台管理）
     const ADMIN_EMAILS = [
+        'alexintab@gmail.com',  // 主管理員
         'admin@majorarcana.app',
-        'divine.seeker@google.com', // 請替換成你的管理員郵箱
         // 在這裡添加更多管理員郵箱
     ];
 
