@@ -44,8 +44,23 @@ const UserProfilePage: React.FC<UserProfilePageProps> = ({ onClose, onNavigate }
                 return;
             }
 
-            // 取得用戶 Profile
-            const userProfile = await getSupabaseUserProfile(user.id);
+            // 取得用戶 Profile（可能失敗，使用預設值）
+            let userProfile = await getSupabaseUserProfile(user.id);
+
+            // 如果沒有 profile，創建一個預設的
+            if (!userProfile) {
+                userProfile = {
+                    user_id: user.id,
+                    email: user.email,
+                    display_name: user.email.split('@')[0],
+                    avatar_url: null,
+                    subscription_type: 'free',
+                    subscription_expires_at: null,
+                    credits_balance: 0,
+                    active_card_style: 'classic',
+                    created_at: user.created_at,
+                };
+            }
             setProfile(userProfile);
 
             // 取得擁有的牌面風格（可能失敗，忽略錯誤）
