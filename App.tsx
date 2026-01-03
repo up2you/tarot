@@ -243,7 +243,10 @@ const App: React.FC = () => {
   const handleStartShuffle = async () => {
     if (!question.trim() || !selectedSpreadId) return;
 
-    // 🆕 額度檢查（非 VIP 用戶）
+    // 🆕 神諭資料庫對所有人免費使用（額度限制已移除）
+    // VIP 用戶使用 AI 解讀，免費用戶使用神諭資料庫
+    // 如需恢復額度限制，取消下方註釋
+    /*
     if (currentUser && !currentUser.isVip) {
       const email = currentUser.email || currentUser.username;
       const { canRead, remaining } = await checkFreeQuota(email);
@@ -253,9 +256,9 @@ const App: React.FC = () => {
         return;
       }
 
-      // 更新本地狀態
       setCurrentUser(prev => prev ? { ...prev, freeReadingsRemaining: remaining } : null);
     }
+    */
 
     // 獲取選擇的牌陣定義
     const spreadDef = Object.values(SPREADS).find(s => s.id === selectedSpreadId);
@@ -379,7 +382,9 @@ const App: React.FC = () => {
         const interpretationSummary = fullText.substring(0, 200);
         saveReading(question, cardsForRecord, currentUser?.theme || AppTheme.BAROQUE, interpretationSummary);
 
-        // 扣除免費額度（非 VIP 用戶）
+        // 🆕 額度扣除已停用（神諭資料庫免費使用）
+        // 如需恢復額度扣除，取消下方註釋
+        /*
         if (currentUser && !currentUser.isVip && !hasConsumedQuotaRef.current) {
           hasConsumedQuotaRef.current = true;
           const email = currentUser.email || currentUser.username;
@@ -389,6 +394,7 @@ const App: React.FC = () => {
             freeReadingsRemaining: Math.max(0, (prev.freeReadingsRemaining || 0) - 1)
           } : null);
         }
+        */
       }
     } catch (error) {
       console.error('Interpretation error:', error);
