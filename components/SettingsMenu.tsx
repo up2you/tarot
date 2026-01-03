@@ -5,6 +5,8 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { useTheme, ThemeId } from '../hooks/useTheme';
+import { supabase } from '../services/supabaseClient';
+import { supabaseSignOut } from '../services/supabaseAuthService';
 
 // 音樂配置（與 BackgroundMusic 相同）
 const THEME_MUSIC: Record<ThemeId, { path: string; name: string }> = {
@@ -19,6 +21,8 @@ const SettingsMenu: React.FC = () => {
     const [isPlaying, setIsPlaying] = useState(false);
     const [volume, setVolume] = useState(0.3);
     const [hasAudio, setHasAudio] = useState<boolean | null>(null);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [userEmail, setUserEmail] = useState<string | null>(null);
     const audioRef = useRef<HTMLAudioElement | null>(null);
 
     const musicInfo = THEME_MUSIC[currentTheme];
@@ -35,6 +39,40 @@ const SettingsMenu: React.FC = () => {
         };
         checkAudio();
     }, [musicInfo.path]);
+
+    // 檢查登入狀態
+    useEffect(() => {
+        const checkAuth = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                setIsLoggedIn(true);
+                setUserEmail(user.email || null);
+            } else {
+                setIsLoggedIn(false);
+                setUserEmail(null);
+            }
+        };
+        checkAuth();
+
+        // 監聽 auth 狀態變化
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+            if (session?.user) {
+                setIsLoggedIn(true);
+                setUserEmail(session.user.email || null);
+            } else {
+                setIsLoggedIn(false);
+                setUserEmail(null);
+            }
+        });
+
+        return () => subscription.unsubscribe();
+    }, []);
+
+    // 處理登出
+    const handleLogout = async () => {
+        await supabaseSignOut();
+        window.location.reload();
+    };
 
     // 當主題變化時切換音樂
     useEffect(() => {
@@ -248,6 +286,35 @@ const SettingsMenu: React.FC = () => {
                                     <span className="text-xl">⚙️</span>
                                     <span className="text-sm text-[#d4af37]">後台管理</span>
                                 </a>
+
+                                {/* 登入/登出區塊 */}
+                                <div className="border-t border-[#d4af37]/20 mt-2 pt-2">
+                                    {isLoggedIn ? (
+                                        <>
+                                            <div className="px-3 py-2 text-xs text-gray-400 truncate">
+                                                {userEmail}
+                                            </div>
+                                            <button
+                                                onClick={handleLogout}
+                                                className="w-full p-3 rounded-xl text-left transition-all flex items-center gap-3 hover:bg-red-500/10"
+                                            >
+                                                <span className="text-xl">🚪</span>
+                                                <span className="text-sm text-red-400">登出</span>
+                                            </button>
+                                        </>
+                                    ) : (
+                                        <button
+                                            onClick={() => {
+                                                window.dispatchEvent(new CustomEvent('navigate', { detail: 'auth' }));
+                                                setIsOpen(false);
+                                            }}
+                                            className="w-full p-3 rounded-xl text-left transition-all flex items-center gap-3 hover:bg-white/5"
+                                        >
+                                            <span className="text-xl">🔑</span>
+                                            <span className="text-sm text-green-400">登入 / 註冊</span>
+                                        </button>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     </div>

@@ -97,6 +97,13 @@ const App: React.FC = () => {
       if (page === 'profile') setCurrentPage('profile');
       else if (page === 'cardStyles') setCurrentPage('cardStyles');
       else if (page === 'pricing') setCurrentPage('pricing');
+      else if (page === 'auth') {
+        // 導航到登入頁面
+        setCurrentPage('main');
+        setAppState(AppState.AUTH);
+        setCurrentUser(null);
+        sessionStorage.removeItem('ethereal_user');
+      }
       else setCurrentPage('main');
     };
 
