@@ -422,69 +422,109 @@ const App: React.FC = () => {
     }
   };
 
-  // 🆕 根據問題推測場景（使用資料庫中實際的 scenario_key）
+  // 🆕 根據問題推測場景（完整覆蓋 50 個 scenario_key）
   const detectScenario = (q: string): string => {
     const lower = q.toLowerCase();
 
-    // 🎓 學業考試相關（最優先判斷）
+    // ==================== 🏠 房產相關（優先判斷）====================
+    if (lower.includes('房') || lower.includes('租') || lower.includes('買房') ||
+      lower.includes('搬家') || lower.includes('住') || lower.includes('居')) {
+      return 'money_property';
+    }
+
+    // ==================== 🎓 學業相關 ====================
     if (lower.includes('考') || lower.includes('成績') || lower.includes('課業') ||
       lower.includes('學校') || lower.includes('畢業') || lower.includes('大學') ||
-      lower.includes('高中') || lower.includes('研究所') || lower.includes('留學') ||
-      lower.includes('錄取') || lower.includes('上榜') || lower.includes('升學') ||
-      lower.includes('國考') || lower.includes('證照') || lower.includes('補習')) {
+      lower.includes('高中') || lower.includes('研究所') || lower.includes('升學') ||
+      lower.includes('國考') || lower.includes('補習') || lower.includes('論文')) {
+      if (lower.includes('留學') || lower.includes('出國')) return 'study_abroad';
+      if (lower.includes('錄取') || lower.includes('上榜') || lower.includes('升學')) return 'study_admission';
+      if (lower.includes('證照') || lower.includes('認證') || lower.includes('執照')) return 'study_cert';
+      if (lower.includes('比賽') || lower.includes('競賽') || lower.includes('競爭')) return 'study_compete';
+      if (lower.includes('論文') || lower.includes('報告')) return 'study_thesis';
+      if (lower.includes('學') && (lower.includes('技') || lower.includes('能'))) return 'study_skill';
       return 'study_exam';
     }
 
-    // 💕 愛情相關
+    // ==================== 💕 愛情相關 ====================
     if (lower.includes('愛') || lower.includes('戀') || lower.includes('感情') ||
       lower.includes('對象') || lower.includes('交往') || lower.includes('喜歡') ||
       lower.includes('男友') || lower.includes('女友') || lower.includes('老公') ||
-      lower.includes('老婆') || lower.includes('另一半')) {
-      if (lower.includes('單身') || lower.includes('桃花') || lower.includes('暗戀') || lower.includes('追')) return 'love_crush';
-      if (lower.includes('復合') || lower.includes('前任') || lower.includes('分手')) return 'love_breakup';
-      if (lower.includes('結婚') || lower.includes('婚姻')) return 'love_marriage';
-      if (lower.includes('吵架') || lower.includes('衝突')) return 'love_conflict';
-      if (lower.includes('外遇') || lower.includes('出軌')) return 'love_affair';
-      return 'love_crush'; // 預設使用暗戀/追求
+      lower.includes('老婆') || lower.includes('另一半') || lower.includes('曖昧') ||
+      lower.includes('告白') || lower.includes('約會') || lower.includes('脫單')) {
+      if (lower.includes('單身') || lower.includes('桃花') || lower.includes('脫單')) return 'love_single';
+      if (lower.includes('暗戀') || lower.includes('喜歡的人')) return 'love_crush';
+      if (lower.includes('追') || lower.includes('告白') || lower.includes('表白')) return 'love_pursuit';
+      if (lower.includes('約會') || lower.includes('交往') || lower.includes('在一起')) return 'love_dating';
+      if (lower.includes('復合') || lower.includes('重新') || lower.includes('回來')) return 'love_reunion';
+      if (lower.includes('分手') || lower.includes('離開') || lower.includes('放棄')) return 'love_breakup';
+      if (lower.includes('結婚') || lower.includes('婚姻') || lower.includes('求婚')) return 'love_marriage';
+      if (lower.includes('吵架') || lower.includes('衝突') || lower.includes('冷戰')) return 'love_conflict';
+      if (lower.includes('外遇') || lower.includes('出軌') || lower.includes('劈腿')) return 'love_affair';
+      return 'love_feelings'; // 一般感情狀況
     }
 
-    // 💼 工作事業相關
+    // ==================== 👥 人際關係相關 ====================
+    if (lower.includes('朋友') || lower.includes('家人') || lower.includes('父母') ||
+      lower.includes('同事') || lower.includes('主管') || lower.includes('客戶') ||
+      lower.includes('長輩') || lower.includes('鄰居') || lower.includes('對手') ||
+      lower.includes('兄弟') || lower.includes('姊妹') || lower.includes('親戚')) {
+      if (lower.includes('朋友') || lower.includes('友情')) return 'relation_friend';
+      if (lower.includes('家人') || lower.includes('父母') || lower.includes('兄弟') ||
+        lower.includes('姊妹') || lower.includes('親戚')) return 'relation_family';
+      if (lower.includes('同事') || lower.includes('同仁')) return 'relation_colleague';
+      if (lower.includes('客戶') || lower.includes('顧客')) return 'relation_client';
+      if (lower.includes('長輩') || lower.includes('主管') || lower.includes('老闆')) return 'relation_elder';
+      if (lower.includes('鄰居') || lower.includes('隔壁')) return 'relation_neighbor';
+      if (lower.includes('對手') || lower.includes('競爭') || lower.includes('敵人')) return 'relation_rival';
+      return 'relation_friend';
+    }
+
+    // ==================== 💼 工作事業相關 ====================
     if (lower.includes('工作') || lower.includes('事業') || lower.includes('職場') ||
-      lower.includes('公司') || lower.includes('老闆') || lower.includes('升遷') ||
-      lower.includes('離職') || lower.includes('面試') || lower.includes('求職')) {
-      if (lower.includes('找工作') || lower.includes('求職') || lower.includes('面試')) return 'career_seeking';
-      if (lower.includes('離職') || lower.includes('轉職') || lower.includes('換工作')) return 'career_change';
-      if (lower.includes('升遷') || lower.includes('晉升')) return 'career_promotion';
-      if (lower.includes('加薪') || lower.includes('薪水')) return 'career_raise';
-      if (lower.includes('創業') || lower.includes('開店')) return 'career_startup';
-      if (lower.includes('合夥') || lower.includes('夥伴')) return 'career_partner';
-      if (lower.includes('衝突') || lower.includes('同事')) return 'career_conflict';
+      lower.includes('公司') || lower.includes('上班') || lower.includes('升遷') ||
+      lower.includes('離職') || lower.includes('面試') || lower.includes('求職') ||
+      lower.includes('創業') || lower.includes('退休')) {
+      if (lower.includes('找工作') || lower.includes('求職') || lower.includes('應徵')) return 'career_seeking';
+      if (lower.includes('面試') || lower.includes('筆試')) return 'career_interview';
+      if (lower.includes('離職') || lower.includes('轉職') || lower.includes('換工作') || lower.includes('跳槽')) return 'career_change';
+      if (lower.includes('升遷') || lower.includes('晉升') || lower.includes('升職')) return 'career_promotion';
+      if (lower.includes('加薪') || lower.includes('調薪')) return 'career_raise';
+      if (lower.includes('創業') || lower.includes('開店') || lower.includes('自己做')) return 'career_startup';
+      if (lower.includes('合夥') || lower.includes('夥伴') || lower.includes('合作')) return 'career_partner';
+      if (lower.includes('衝突') || lower.includes('不合')) return 'career_conflict';
+      if (lower.includes('退休') || lower.includes('養老')) return 'career_retire';
       return 'career_current';
     }
 
-    // 💰 財運相關
+    // ==================== 💰 財運相關 ====================
     if (lower.includes('錢') || lower.includes('財') || lower.includes('投資') ||
-      lower.includes('理財') || lower.includes('賺') || lower.includes('萬')) {
-      if (lower.includes('投資') || lower.includes('股票')) return 'money_invest';
-      if (lower.includes('買房') || lower.includes('房子') || lower.includes('房產')) return 'money_property';
-      if (lower.includes('彩券') || lower.includes('樂透') || lower.includes('運氣') || lower.includes('橫財')) return 'money_luck';
-      if (lower.includes('生意') || lower.includes('做生意')) return 'money_business';
-      if (lower.includes('借') || lower.includes('貸款')) return 'money_loan';
-      if (lower.includes('債') || lower.includes('還錢')) return 'money_debt';
-      if (lower.includes('意外') || lower.includes('中獎')) return 'money_windfall';
+      lower.includes('理財') || lower.includes('賺') || lower.includes('萬') ||
+      lower.includes('存款') || lower.includes('收入') || lower.includes('支出')) {
+      if (lower.includes('投資') || lower.includes('股票') || lower.includes('基金')) return 'money_invest';
+      if (lower.includes('彩券') || lower.includes('樂透') || lower.includes('中獎') || lower.includes('運氣')) return 'money_luck';
+      if (lower.includes('意外') || lower.includes('橫財') || lower.includes('飛來')) return 'money_windfall';
+      if (lower.includes('生意') || lower.includes('做生意') || lower.includes('買賣')) return 'money_business';
+      if (lower.includes('借') || lower.includes('貸款') || lower.includes('信貸')) return 'money_loan';
+      if (lower.includes('債') || lower.includes('還錢') || lower.includes('欠')) return 'money_debt';
+      if (lower.includes('虧') || lower.includes('損失') || lower.includes('賠')) return 'money_loss';
+      if (lower.includes('規劃') || lower.includes('計劃') || lower.includes('預算')) return 'money_plan';
       return 'money_salary';
     }
 
-    // 🏥 健康相關
-    if (lower.includes('健康') || lower.includes('身體') || lower.includes('病') || lower.includes('醫')) {
+    // ==================== 🏥 健康相關 ====================
+    if (lower.includes('健康') || lower.includes('身體') || lower.includes('病') ||
+      lower.includes('醫') || lower.includes('痛') || lower.includes('不舒服')) {
       if (lower.includes('手術') || lower.includes('開刀')) return 'health_surgery';
-      if (lower.includes('懷孕') || lower.includes('寶寶')) return 'health_pregnancy';
-      if (lower.includes('心理') || lower.includes('壓力') || lower.includes('焦慮')) return 'health_mental';
-      if (lower.includes('康復') || lower.includes('恢復')) return 'health_recovery';
+      if (lower.includes('懷孕') || lower.includes('寶寶') || lower.includes('孕')) return 'health_pregnancy';
+      if (lower.includes('生產') || lower.includes('生小孩')) return 'health_birth';
+      if (lower.includes('心理') || lower.includes('壓力') || lower.includes('焦慮') ||
+        lower.includes('憂鬱') || lower.includes('情緒')) return 'health_mental';
+      if (lower.includes('康復') || lower.includes('恢復') || lower.includes('痊癒')) return 'health_recovery';
       return 'health_body';
     }
 
-    // 預設使用財運
+    // ==================== 預設：一般財運 ====================
     return 'money_salary';
   };
 
