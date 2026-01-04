@@ -500,7 +500,8 @@ const App: React.FC = () => {
     // ==================== 💰 財運相關 ====================
     if (lower.includes('錢') || lower.includes('財') || lower.includes('投資') ||
       lower.includes('理財') || lower.includes('賺') || lower.includes('萬') ||
-      lower.includes('存款') || lower.includes('收入') || lower.includes('支出')) {
+      lower.includes('存款') || lower.includes('收入') || lower.includes('支出') ||
+      lower.includes('生意') || lower.includes('成交') || lower.includes('買賣')) {
       if (lower.includes('投資') || lower.includes('股票') || lower.includes('基金')) return 'money_invest';
       if (lower.includes('彩券') || lower.includes('樂透') || lower.includes('中獎') || lower.includes('運氣')) return 'money_luck';
       if (lower.includes('意外') || lower.includes('橫財') || lower.includes('飛來')) return 'money_windfall';
