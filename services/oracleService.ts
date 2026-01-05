@@ -263,6 +263,24 @@ export const generateFreeReading = async (
                 const summary = await getReadingSummary(patternKey);
                 result.summary = summary || '這個牌陣揭示了方向的線索，請靜心感受牌面指出的道路。';
             }
+        } else if (scenarioKey === 'house_rent') {
+            // 租屋指引專用總結邏輯
+            const mainCard = result.interpretations.find(i => i.position === '未來' || i.position === '單張' || i.position === '現在');
+
+            const extractAdvice = (text: string) => {
+                const match = text.match(/【建議：(.+?)】/);
+                return match ? match[1] : null;
+            };
+
+            const advice = mainCard ? extractAdvice(mainCard.text) : null;
+
+            if (advice) {
+                result.summary = `# 艾瑟瑞爾的最終神諭：${advice}\n\n綜合牌面能量，針對這間房子的最終建議是「${advice}」。請相信你的直覺與這份指引，做出最適合當下的選擇。`;
+            } else {
+                const patternKey = analyzePattern(cards);
+                const summary = await getReadingSummary(patternKey);
+                result.summary = summary || '這間房子有其獨特的氣場，請細讀牌面訊息，感受它是否與你的頻率共振。';
+            }
         } else {
             // 一般場景使用預設總結
             const patternKey = analyzePattern(cards);

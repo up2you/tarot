@@ -588,7 +588,12 @@ const App: React.FC = () => {
     }
 
     // ==================== 🏠 房產相關 ====================
-    if ((lower.includes('房') || lower.includes('租') || lower.includes('買房') ||
+    // 租屋指引 (優先於買房/一般房產)
+    if (lower.includes('租') || lower.includes('租屋') || lower.includes('房東') || lower.includes('簽約')) {
+      return 'house_rent';
+    }
+
+    if ((lower.includes('房') || lower.includes('買房') ||
       lower.includes('置產') || lower.includes('地段')) &&
       !lower.includes('搬') && !lower.includes('家人') && !lower.includes('風水')) {
       return 'money_property';

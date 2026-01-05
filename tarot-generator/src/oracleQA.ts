@@ -58,7 +58,8 @@ const SCENARIOS = [
     { key: 'career_current', category: '事業', name: '目前工作', keywords: ['工作', '事業', '職場'] },
 
     // 財運相關
-    { key: 'money_property', category: '財運', name: '房產', keywords: ['房', '租', '買房', '搬家'] },
+    { key: 'money_property', category: '財運', name: '買房/房產', keywords: ['買房', '搬家', '房產', '置產'] },
+    { key: 'house_rent', category: '財運', name: '租屋', keywords: ['租', '租屋', '房東', '簽約'] },
     { key: 'money_invest', category: '財運', name: '投資', keywords: ['投資', '股票', '基金'] },
     { key: 'money_luck', category: '財運', name: '運氣', keywords: ['彩券', '樂透', '中獎'] },
     { key: 'money_windfall', category: '財運', name: '意外之財', keywords: ['意外', '橫財'] },
@@ -231,9 +232,15 @@ const TEST_QUESTIONS: Record<string, string[]> = {
     // ==================== 💰 財運金錢 ====================
     'money_property': [
         '這間房子適合買嗎？',
-        '今天看的房子適合租下嗎？',
         '現在是買房的好時機嗎？',
         '這個地段值得投資嗎？'
+    ],
+    'house_rent': [
+        '今天看的房子適合租下嗎？',
+        '這間房子適合租嗎？',
+        '我可以和這位房東簽約嗎？',
+        '這間租屋處的風水如何？',
+        '房東人好相處嗎？'
     ],
     'money_invest': [
         '現在適合買股票嗎？',
@@ -563,7 +570,12 @@ class OracleQA {
         }
 
         // ==================== 🏠 房產相關 ====================
-        if ((lower.includes('房') || lower.includes('租') || lower.includes('買房') ||
+        // 租屋指引 (優先於買房/一般房產)
+        if (lower.includes('租') || lower.includes('租屋') || lower.includes('房東') || lower.includes('簽約')) {
+            return 'house_rent';
+        }
+
+        if ((lower.includes('房') || lower.includes('買房') ||
             lower.includes('置產') || lower.includes('地段')) &&
             !lower.includes('搬') && !lower.includes('家人') && !lower.includes('風水')) {
             return 'money_property';
