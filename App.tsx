@@ -432,6 +432,17 @@ const App: React.FC = () => {
       return 'money_property';
     }
 
+    // ==================== 🚗 車輛/交易相關 ====================
+    if (lower.includes('車') || lower.includes('汽車') || lower.includes('機車') ||
+      lower.includes('賣') || lower.includes('賣出') || lower.includes('出售')) {
+      // 如果包含車輛相關詞，使用契約場景
+      if (lower.includes('車') || lower.includes('汽車') || lower.includes('機車')) {
+        return 'general_contract'; // 使用契約場景處理車輛交易
+      }
+      // 一般買賣交易
+      return 'money_business';
+    }
+
     // ==================== 🎓 學業相關 ====================
     if (lower.includes('考') || lower.includes('成績') || lower.includes('課業') ||
       lower.includes('學校') || lower.includes('畢業') || lower.includes('大學') ||
