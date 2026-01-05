@@ -263,6 +263,35 @@ export const generateFreeReading = async (
                 const summary = await getReadingSummary(patternKey);
                 result.summary = summary || '這個牌陣揭示了方向的線索，請靜心感受牌面指出的道路。';
             }
+        } else if (scenarioKey === 'general_decision') {
+            // 決策指引專用總結邏輯
+            const mainCard = result.interpretations.find(i => i.position === '未來' || i.position === '單張' || i.position === '結果');
+
+            // 嘗試提取【最終回答：XXX】
+            const extractAnswer = (text: string) => {
+                const match = text.match(/【最終回答：(.+?)】/);
+                // 移除可能的額外說明，只取冒號後的關鍵字
+                if (match) {
+                    return match[1].split('】')[0];
+                }
+                return null;
+            };
+
+            const answer = mainCard ? extractAnswer(mainCard.text) : null;
+
+            if (answer && mainCard) { // 確保有找到答案
+                // 提取建議部分 (如果在標籤後有文字)
+                const textParts = mainCard.text.split(/【最終回答：.+?】/);
+                const adviceRaw = textParts.length > 1 ? textParts[1].trim() : '';
+                // 如果後續沒有建議，就使用預設引言
+                const finalAdvice = adviceRaw || '根據牌面的指引，命運的方向已經顯現。';
+
+                result.summary = `# 艾瑟瑞爾的最終回答：${answer}\n\n${finalAdvice}`;
+            } else {
+                const patternKey = analyzePattern(cards);
+                const summary = await getReadingSummary(patternKey);
+                result.summary = summary || '這個決定需要更深層的直覺，請靜心感受牌面傳遞的微妙平衡。';
+            }
         } else if (scenarioKey === 'house_rent') {
             // 租屋指引專用總結邏輯
             const mainCard = result.interpretations.find(i => i.position === '未來' || i.position === '單張' || i.position === '現在');

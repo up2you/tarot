@@ -85,7 +85,7 @@ const SCENARIOS = [
     { key: 'general_move', category: '通用', name: '搬遷', keywords: ['搬家', '移民', '遷居'] },
     { key: 'general_luck', category: '通用', name: '運勢', keywords: ['運氣', '時機', '順利'] },
     { key: 'general_future', category: '通用', name: '未來展望', keywords: ['未來', '前途', '展望'] },
-    { key: 'general_decision', category: '通用', name: '決策', keywords: ['該不該', '適合', '可以嗎'] },
+    { key: 'general_decision', category: '通用', name: '決策', keywords: ['該不該', '適合', '可以嗎', '可不可能', '可不可以', '能不能', '會不會'] },
     { key: 'general_compete', category: '通用', name: '競爭', keywords: ['比賽', '競賽', '贏', '輸'] },
     { key: 'general_spiritual', category: '通用', name: '靈異風水', keywords: ['風水', '靈異', '神明'] },
     { key: 'general_gamble', category: '通用', name: '賭博', keywords: ['賭', '機率'] },
@@ -359,7 +359,11 @@ const TEST_QUESTIONS: Record<string, string[]> = {
         '我該選A還是B？',
         '這個決定是正確的嗎？',
         '現在是行動的好時機嗎？',
-        '我該冒這個險嗎？'
+        '我該冒這個險嗎？',
+        '這件事可不可能成功？',
+        '我能不能達成這個目標？',
+        '這樣做可不可以？',
+        '我們能不能在一起？'
     ],
 
     // ==================== 🏃 競爭比賽 ====================
@@ -762,7 +766,17 @@ class OracleQA {
             lower.includes('冷這個險') || lower.includes('這個險') ||
             (lower.includes('時機') && !lower.includes('重大')) ||
             (lower.includes('好時機') && !lower.includes('重大')) ||
-            (lower.includes('決定') && lower.includes('正確'))) {
+            (lower.includes('決定') && lower.includes('正確')) ||
+            lower.includes('可不可能') || lower.includes('可不可以') ||
+            lower.includes('能不能') || lower.includes('會不會') ||
+            lower.includes('可以嗎') || lower.includes('行不行')) {
+            // 排除特定場景的干擾（例如「會不會復合」應歸類為復合）
+            if (lower.includes('復合') || lower.includes('回頭') || lower.includes('前任')) return 'love_reunion';
+            if (lower.includes('在一起') || lower.includes('交往')) return 'love_dating';
+            if (lower.includes('喜歡') || lower.includes('愛')) return 'love_feelings';
+            if (lower.includes('賺錢') || lower.includes('投資')) return 'money_invest';
+            if (lower.includes('懷孕') || lower.includes('生')) return 'health_pregnancy';
+
             return 'general_decision';
         }
 
