@@ -126,7 +126,7 @@ class DirectionGenerator {
                 if (content) {
                     // 簡單清理
                     content = content.trim();
-                    const escapedContent = content.replace(/'/g, "''").replace(/\n/g, '\\n');
+                    const escapedContent = content.replace(/'/g, "''"); // SQL only needs single quote escaping, newlines are fine in string literals
 
                     console.log(`✅ ${card.nameZh} (${isReversed ? '逆' : '正'}) -> ${content.split('\n')[0]}`);
 

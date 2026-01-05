@@ -238,9 +238,38 @@ export const generateFreeReading = async (
         }
 
         // 3. 取得總結
-        const patternKey = analyzePattern(cards);
-        const summary = await getReadingSummary(patternKey);
-        result.summary = summary || '這個牌陣揭示了重要的訊息，請細細體會每張牌帶來的指引。';
+        if (scenarioKey === 'general_direction') {
+            // 方位指引專用總結邏輯：優先採用「未來/Future」或「單張/Single」的建議
+            const futureCard = result.interpretations.find(i => i.position === '未來' || i.position === '單張');
+            const presentCard = result.interpretations.find(i => i.position === '現在');
+
+            let direction = '';
+            // 嘗試從文本中提取【方位：XXX】
+            const extractDirection = (text: string) => {
+                const match = text.match(/【方位：(.+?)】/);
+                return match ? match[1] : null;
+            };
+
+            const futureDir = futureCard ? extractDirection(futureCard.text) : null;
+            const presentDir = presentCard ? extractDirection(presentCard.text) : null;
+
+            if (futureDir) {
+                result.summary = `# 艾瑟瑞爾的最終神諭：${futureDir}\n\n根據牌陣流動，雖然過程中有變數，但最終指引明確指向「${futureDir}」。相信未來的召喚，這是你靈魂真正渴望的方向。`;
+            } else if (presentDir) {
+                result.summary = `# 艾瑟瑞爾的最終神諭：${presentDir}\n\n當下最重要的是「${presentDir}」。把握現在的動能，這一步將決定後續的發展。`;
+            } else {
+                // 依然使用各種 Pattern 分析作為備案
+                const patternKey = analyzePattern(cards);
+                const summary = await getReadingSummary(patternKey);
+                result.summary = summary || '這個牌陣揭示了方向的線索，請靜心感受牌面指出的道路。';
+            }
+        } else {
+            // 一般場景使用預設總結
+            const patternKey = analyzePattern(cards);
+            const summary = await getReadingSummary(patternKey);
+            result.summary = summary || '這個牌陣揭示了重要的訊息，請細細體會每張牌帶來的指引。';
+        }
+        // result.summary = summary || '...'; // Removed original assignment
 
         return result;
     } catch (err) {
