@@ -367,17 +367,17 @@ const App: React.FC = () => {
         // 組合成完整解讀文字
         fullText = formatOracleReading(spread, oracleResult);
 
-        // 🆕 模擬打字機效果
+        // 🆕 模擬打字機效果（調整為較慢速度，接近 AI 串流）
         const typewriterEffect = async (text: string) => {
           const chunks: string[] = [];
-          const chunkSize = 15; // 每次顯示 15 個字
+          const chunkSize = 3; // 每次顯示 3 個字（更慢）
           for (let i = 0; i < text.length; i += chunkSize) {
             chunks.push(text.substring(0, i + chunkSize));
           }
 
           for (const chunk of chunks) {
             setMessages([{ role: 'model', text: chunk }]);
-            await new Promise(resolve => setTimeout(resolve, 30)); // 30ms 間隔
+            await new Promise(resolve => setTimeout(resolve, 50)); // 50ms 間隔（更慢）
             chatEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
           }
           // 確保最終顯示完整文字
