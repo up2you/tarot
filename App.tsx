@@ -843,7 +843,8 @@ const App: React.FC = () => {
       text += result.summary + '\n';
     }
 
-    return text;
+    // 🛡️ 最終淨化：移除所有多餘的轉義符號，將字面上的 "\\n" 轉為真正的換行
+    return text.replace(/\\n/g, '\n');
   };
 
   const handleResetCeremony = () => {
