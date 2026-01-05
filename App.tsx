@@ -234,6 +234,10 @@ const App: React.FC = () => {
     isPerformingRef.current = false;
   };
 
+  /* 
+  // [DISABLED] 自動 AI 繪圖功能
+  // 原因：用戶表示所有牌面皆使用後台管理的靜態圖片 (10+種風格)，無需 Google AI 即時運算
+  // 這也徹底解決了需要 GEMINI_API_KEY 的問題
   useEffect(() => {
     // 只有在以下情況才執行自動補完儀式 (AI 繪圖)：
     // 1. 已登入且有設定主題 (currentUser.theme)
@@ -245,6 +249,7 @@ const App: React.FC = () => {
       }
     }
   }, [currentUser?.theme, appState, currentStyleId]);
+  */
 
   const handleStartShuffle = async () => {
     if (!question.trim() || !selectedSpreadId) return;
