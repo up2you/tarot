@@ -422,11 +422,59 @@ const App: React.FC = () => {
     }
   };
 
-  // 🆕 根據問題推測場景（完整覆蓋 50 個 scenario_key）
+  // 🆕 根據問題推測場景（完整覆蓋 50+ scenario_key，已整合 QA 審核建議）
   const detectScenario = (q: string): string => {
     const lower = q.toLowerCase();
 
-    // ==================== 🏠 房產相關（優先判斷）====================
+    // ==================== 🏥 健康相關（優先判斷）====================
+    // QA 報告：懷孕、手術等關鍵詞經常被誤判為 money_salary
+    if (lower.includes('懷孕') || lower.includes('備孕') || lower.includes('受孕') ||
+      lower.includes('生育') || lower.includes('懷胎') || lower.includes('孕') ||
+      lower.includes('生孩子') || lower.includes('懷寶寶')) {
+      return 'health_pregnancy';
+    }
+    if (lower.includes('手術') || lower.includes('開刀') || lower.includes('術後') ||
+      lower.includes('康復') || lower.includes('恢復') || lower.includes('癒合')) {
+      return 'health_surgery';
+    }
+    if (lower.includes('健康') || lower.includes('身體') || lower.includes('病') ||
+      lower.includes('醫') || lower.includes('痛') || lower.includes('不舒服')) {
+      if (lower.includes('心理') || lower.includes('壓力') || lower.includes('焦慮') ||
+        lower.includes('憂鬱') || lower.includes('情緒')) return 'health_mental';
+      if (lower.includes('生產') || lower.includes('生小孩')) return 'health_birth';
+      return 'health_body';
+    }
+
+    // ==================== ⚖️ 法律相關（優先判斷）====================
+    // QA 報告：官司、訴訟等關鍵詞被誤判為 money_salary
+    if (lower.includes('官司') || lower.includes('訴訟') || lower.includes('法律') ||
+      lower.includes('法院') || lower.includes('律師') || lower.includes('勝訴') ||
+      lower.includes('敗訴') || lower.includes('判決') || lower.includes('開庭')) {
+      return 'general_legal';
+    }
+
+    // ==================== 💍 婚姻相關（優先判斷）==================== 
+    // QA 報告：結婚、求婚等關鍵詞被誤判為 money_salary
+    if (lower.includes('結婚') || lower.includes('婚姻') || lower.includes('求婚') ||
+      lower.includes('訂婚') || lower.includes('婚約') || lower.includes('婚配')) {
+      return 'love_marriage';
+    }
+
+    // ==================== 🎓 留學相關（優先判斷）====================
+    // QA 報告：留學相關被誤判為 money_salary
+    if (lower.includes('留學') || lower.includes('出國讀書') || lower.includes('海外學習') ||
+      lower.includes('留學簽證') || lower.includes('學生簽證')) {
+      return 'study_abroad';
+    }
+
+    // ==================== 🌹 桃花運相關（優先判斷）====================
+    // QA 報告：桃花運等關鍵詞被誤判為 money_salary
+    if (lower.includes('桃花') || lower.includes('戀愛運') || lower.includes('姻緣') ||
+      lower.includes('感情運') || lower.includes('愛情運')) {
+      return 'love_single';
+    }
+
+    // ==================== 🏠 房產相關 ====================
     if (lower.includes('房') || lower.includes('租') || lower.includes('買房') ||
       lower.includes('搬家') || lower.includes('住') || lower.includes('居')) {
       return 'money_property';
@@ -434,21 +482,31 @@ const App: React.FC = () => {
 
     // ==================== 🚗 車輛/交易相關 ====================
     if (lower.includes('車') || lower.includes('汽車') || lower.includes('機車') ||
-      lower.includes('賣') || lower.includes('賣出') || lower.includes('出售')) {
-      // 如果包含車輛相關詞，使用契約場景
-      if (lower.includes('車') || lower.includes('汽車') || lower.includes('機車')) {
-        return 'general_contract'; // 使用契約場景處理車輛交易
+      lower.includes('賣') || lower.includes('賣出') || lower.includes('出售') ||
+      lower.includes('買車') || lower.includes('購車')) {
+      if (lower.includes('買車') || lower.includes('購車') || lower.includes('適合買')) {
+        return 'general_contract';
       }
-      // 一般買賣交易
+      if (lower.includes('車') || lower.includes('汽車') || lower.includes('機車')) {
+        return 'general_contract';
+      }
       return 'money_business';
+    }
+
+    // ==================== 📝 合約相關 ====================
+    // QA 報告：合約、簽約等關鍵詞被誤判
+    if (lower.includes('合約') || lower.includes('簽約') || lower.includes('契約') ||
+      lower.includes('簽訂') || lower.includes('合同') || lower.includes('協議')) {
+      return 'general_contract';
     }
 
     // ==================== 🎓 學業相關 ====================
     if (lower.includes('考') || lower.includes('成績') || lower.includes('課業') ||
       lower.includes('學校') || lower.includes('畢業') || lower.includes('大學') ||
-      lower.includes('高中') || lower.includes('研究所') || lower.includes('升學') ||
-      lower.includes('國考') || lower.includes('補習') || lower.includes('論文')) {
-      if (lower.includes('留學') || lower.includes('出國')) return 'study_abroad';
+      lower.includes('高中') || lower.includes('研究所') || lower.includes('國考') ||
+      lower.includes('補習') || lower.includes('論文') || lower.includes('多益') ||
+      lower.includes('雅思') || lower.includes('托福') || lower.includes('推甄')) {
+      if (lower.includes('推甄') || lower.includes('甄試') || lower.includes('申請入學')) return 'study_admission';
       if (lower.includes('錄取') || lower.includes('上榜') || lower.includes('升學')) return 'study_admission';
       if (lower.includes('證照') || lower.includes('認證') || lower.includes('執照')) return 'study_cert';
       if (lower.includes('比賽') || lower.includes('競賽') || lower.includes('競爭')) return 'study_compete';
@@ -462,17 +520,21 @@ const App: React.FC = () => {
       lower.includes('對象') || lower.includes('交往') || lower.includes('喜歡') ||
       lower.includes('男友') || lower.includes('女友') || lower.includes('老公') ||
       lower.includes('老婆') || lower.includes('另一半') || lower.includes('曖昧') ||
-      lower.includes('告白') || lower.includes('約會') || lower.includes('脫單')) {
-      if (lower.includes('單身') || lower.includes('桃花') || lower.includes('脫單')) return 'love_single';
-      if (lower.includes('暗戀') || lower.includes('喜歡的人')) return 'love_crush';
-      if (lower.includes('追') || lower.includes('告白') || lower.includes('表白')) return 'love_pursuit';
-      if (lower.includes('約會') || lower.includes('交往') || lower.includes('在一起')) return 'love_dating';
+      lower.includes('告白') || lower.includes('約會') || lower.includes('脫單') ||
+      lower.includes('暗戀') || lower.includes('追') || lower.includes('他對我') ||
+      lower.includes('她對我') || lower.includes('有感覺')) {
+      if (lower.includes('單身') || lower.includes('脫單')) return 'love_single';
+      if (lower.includes('暗戀') || lower.includes('喜歡的人') || lower.includes('有感覺') ||
+        lower.includes('他對我') || lower.includes('她對我')) return 'love_crush';
+      if (lower.includes('追') || lower.includes('告白') || lower.includes('表白') ||
+        lower.includes('追求') || lower.includes('追人')) return 'love_pursuit';
+      if (lower.includes('約會') || lower.includes('交往') || lower.includes('在一起') ||
+        lower.includes('順利') || lower.includes('長久')) return 'love_dating';
       if (lower.includes('復合') || lower.includes('重新') || lower.includes('回來')) return 'love_reunion';
       if (lower.includes('分手') || lower.includes('離開') || lower.includes('放棄')) return 'love_breakup';
-      if (lower.includes('結婚') || lower.includes('婚姻') || lower.includes('求婚')) return 'love_marriage';
       if (lower.includes('吵架') || lower.includes('衝突') || lower.includes('冷戰')) return 'love_conflict';
       if (lower.includes('外遇') || lower.includes('出軌') || lower.includes('劈腿')) return 'love_affair';
-      return 'love_feelings'; // 一般感情狀況
+      return 'love_feelings';
     }
 
     // ==================== 👥 人際關係相關 ====================
@@ -495,45 +557,50 @@ const App: React.FC = () => {
     if (lower.includes('工作') || lower.includes('事業') || lower.includes('職場') ||
       lower.includes('公司') || lower.includes('上班') || lower.includes('升遷') ||
       lower.includes('離職') || lower.includes('面試') || lower.includes('求職') ||
-      lower.includes('創業') || lower.includes('退休')) {
+      lower.includes('創業') || lower.includes('退休') || lower.includes('開店') ||
+      lower.includes('考績') || lower.includes('升職') || lower.includes('晉升')) {
       if (lower.includes('找工作') || lower.includes('求職') || lower.includes('應徵')) return 'career_seeking';
       if (lower.includes('面試') || lower.includes('筆試')) return 'career_interview';
       if (lower.includes('離職') || lower.includes('轉職') || lower.includes('換工作') || lower.includes('跳槽')) return 'career_change';
-      if (lower.includes('升遷') || lower.includes('晉升') || lower.includes('升職')) return 'career_promotion';
+      if (lower.includes('升遷') || lower.includes('晉升') || lower.includes('升職') || lower.includes('考績')) return 'career_promotion';
       if (lower.includes('加薪') || lower.includes('調薪')) return 'career_raise';
-      if (lower.includes('創業') || lower.includes('開店') || lower.includes('自己做')) return 'career_startup';
+      if (lower.includes('創業') || lower.includes('開店') || lower.includes('自己做') || lower.includes('經營')) return 'career_startup';
       if (lower.includes('合夥') || lower.includes('夥伴') || lower.includes('合作')) return 'career_partner';
       if (lower.includes('衝突') || lower.includes('不合')) return 'career_conflict';
       if (lower.includes('退休') || lower.includes('養老')) return 'career_retire';
       return 'career_current';
     }
 
+    // ==================== 🔍 尋物相關 ====================
+    if ((lower.includes('找') || lower.includes('遺失') || lower.includes('走失') ||
+      lower.includes('不見') || lower.includes('丟')) &&
+      (lower.includes('貓') || lower.includes('狗') || lower.includes('寵物') ||
+        lower.includes('錢包') || lower.includes('手機') || lower.includes('東西'))) {
+      return 'general_search';
+    }
+
+    // ==================== ✈️ 旅行相關 ====================
+    if (lower.includes('旅') || lower.includes('旅遊') || lower.includes('出國玩') ||
+      lower.includes('度假') || lower.includes('旅行')) {
+      return 'general_travel';
+    }
+
     // ==================== 💰 財運相關 ====================
     if (lower.includes('錢') || lower.includes('財') || lower.includes('投資') ||
       lower.includes('理財') || lower.includes('賺') || lower.includes('萬') ||
       lower.includes('存款') || lower.includes('收入') || lower.includes('支出') ||
-      lower.includes('生意') || lower.includes('成交') || lower.includes('買賣')) {
+      lower.includes('生意') || lower.includes('成交') || lower.includes('買賣') ||
+      lower.includes('股票') || lower.includes('基金') || lower.includes('簽單')) {
       if (lower.includes('投資') || lower.includes('股票') || lower.includes('基金')) return 'money_invest';
       if (lower.includes('彩券') || lower.includes('樂透') || lower.includes('中獎') || lower.includes('運氣')) return 'money_luck';
       if (lower.includes('意外') || lower.includes('橫財') || lower.includes('飛來')) return 'money_windfall';
-      if (lower.includes('生意') || lower.includes('做生意') || lower.includes('買賣')) return 'money_business';
+      if (lower.includes('生意') || lower.includes('做生意') || lower.includes('買賣') ||
+        lower.includes('簽單') || lower.includes('成交') || lower.includes('訂單')) return 'money_business';
       if (lower.includes('借') || lower.includes('貸款') || lower.includes('信貸')) return 'money_loan';
       if (lower.includes('債') || lower.includes('還錢') || lower.includes('欠')) return 'money_debt';
       if (lower.includes('虧') || lower.includes('損失') || lower.includes('賠')) return 'money_loss';
       if (lower.includes('規劃') || lower.includes('計劃') || lower.includes('預算')) return 'money_plan';
       return 'money_salary';
-    }
-
-    // ==================== 🏥 健康相關 ====================
-    if (lower.includes('健康') || lower.includes('身體') || lower.includes('病') ||
-      lower.includes('醫') || lower.includes('痛') || lower.includes('不舒服')) {
-      if (lower.includes('手術') || lower.includes('開刀')) return 'health_surgery';
-      if (lower.includes('懷孕') || lower.includes('寶寶') || lower.includes('孕')) return 'health_pregnancy';
-      if (lower.includes('生產') || lower.includes('生小孩')) return 'health_birth';
-      if (lower.includes('心理') || lower.includes('壓力') || lower.includes('焦慮') ||
-        lower.includes('憂鬱') || lower.includes('情緒')) return 'health_mental';
-      if (lower.includes('康復') || lower.includes('恢復') || lower.includes('痊癒')) return 'health_recovery';
-      return 'health_body';
     }
 
     // ==================== 預設：一般財運 ====================
