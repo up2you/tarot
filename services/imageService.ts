@@ -67,25 +67,31 @@ export const clearAllArt = async (): Promise<void> => {
   });
 };
 
-export const isThemeComplete = async (theme: AppTheme, cardList: {nameZh: string}[]): Promise<{complete: boolean, missing: string[]}> => {
+export const isThemeComplete = async (theme: AppTheme, cardList: { nameZh: string }[]): Promise<{ complete: boolean, missing: string[] }> => {
   const missing: string[] = [];
   const results = await Promise.all(cardList.map(async (card) => {
     const cached = await getCachedArt(`${theme}_${card.nameZh}`);
     return cached ? null : card.nameZh;
   }));
-  
-  results.forEach(res => { if(res) missing.push(res); });
-  
+
+  results.forEach(res => { if (res) missing.push(res); });
+
   const backCached = await getCachedArt(`${theme}_BACK_IMAGE`);
   if (!backCached) missing.push("Back");
-  
+
   return { complete: missing.length === 0, missing };
 };
 
 export async function generateThemedCardArt(theme: AppTheme, cardName: string, isBack: boolean = false): Promise<string> {
+  const apiKey = process.env.API_KEY || process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    console.warn("Skipping AI generation: No GEMINI_API_KEY found.");
+    return ""; // Return empty string to trigger fallback in UI
+  }
+
   const cacheKey = `${theme}_${isBack ? "BACK_IMAGE" : cardName}`;
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-  
+  const ai = new GoogleGenAI({ apiKey });
+
   let prompt = "";
   if (isBack) {
     prompt = `Tarot card back, 9:16 aspect ratio, Ornate Baroque style. Deep crimson velvet, heavy golden embossed lace, alchemical symbols, 8k oil painting texture.`;
@@ -108,6 +114,7 @@ export async function generateThemedCardArt(theme: AppTheme, cardName: string, i
     }
     throw new Error("API Limit Reached");
   } catch (error: any) {
-    throw error;
+    console.error("AI Generation failed:", error);
+    return ""; // Graceful fallback
   }
 }

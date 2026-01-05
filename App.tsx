@@ -235,10 +235,16 @@ const App: React.FC = () => {
   };
 
   useEffect(() => {
+    // 只有在以下情況才執行自動補完儀式 (AI 繪圖)：
+    // 1. 已登入且有設定主題 (currentUser.theme)
+    // 2. 當前使用的是「經典風格」 (currentStyleId === 'classic')
+    // 如果用戶切換到了自定義牌面 (如 'baroque-custom' 等)，則跳過 AI 生成，避免覆蓋或報錯
     if (currentUser?.theme && appState !== AppState.AUTH) {
-      performConsecration(currentUser.theme);
+      if (currentStyleId === 'classic') {
+        performConsecration(currentUser.theme);
+      }
     }
-  }, [currentUser?.theme, appState]);
+  }, [currentUser?.theme, appState, currentStyleId]);
 
   const handleStartShuffle = async () => {
     if (!question.trim() || !selectedSpreadId) return;
