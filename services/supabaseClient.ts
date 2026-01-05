@@ -11,7 +11,14 @@ if (!supabaseUrl || !supabaseAnonKey) {
     console.warn('[Supabase] Missing environment variables');
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+    auth: {
+        persistSession: true,           // 持久化 session 到 localStorage
+        detectSessionInUrl: true,       // 偵測 URL 中的 OAuth callback 參數
+        autoRefreshToken: true,         // 自動刷新 token
+        storageKey: 'supabase.auth.token', // 明確指定 storage key
+    }
+});
 
 // 管理員專用客戶端 (需要 Service Role Key)
 export const getAdminClient = () => {
