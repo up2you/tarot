@@ -58,7 +58,7 @@ export const getOracleInterpretation = async (
             .eq('orientation', orientation)
             .eq('scenario_key', scenarioKey)
             .eq('position_key', positionKey)
-            .single();
+            .maybeSingle();
 
         if (error) {
             console.error('[OracleService] getInterpretation failed:', error);
@@ -99,7 +99,7 @@ export const getBatchInterpretations = async (
                 .eq('orientation', query.orientation)
                 .eq('scenario_key', query.scenario_key)
                 .eq('position_key', query.position_key)
-                .single();
+                .maybeSingle();
 
             if (!error && data) {
                 const key = `${query.card_id}_${query.orientation}_${query.position_key}`;
@@ -136,7 +136,7 @@ export const getCardRelationship = async (
             .select('description')
             .eq('card_a_id', first)
             .eq('card_b_id', second)
-            .single();
+            .maybeSingle();
 
         if (error) {
             return null;
@@ -162,7 +162,7 @@ export const getReadingSummary = async (patternKey: string): Promise<string | nu
             .from('oracle_summaries')
             .select('summary')
             .eq('pattern_key', patternKey)
-            .single();
+            .maybeSingle();
 
         if (error) {
             return null;

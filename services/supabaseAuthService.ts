@@ -69,7 +69,7 @@ export const getSupabaseUserProfile = async (userId: string): Promise<SupabaseUs
             .from('user_profiles')
             .select('*')
             .eq('user_id', userId)
-            .single();
+            .maybeSingle();
 
         if (error) {
             return null;

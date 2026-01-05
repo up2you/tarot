@@ -10,9 +10,9 @@ import { supabaseSignOut } from '../services/supabaseAuthService';
 
 // 音樂配置（與 BackgroundMusic 相同）
 const THEME_MUSIC: Record<ThemeId, { path: string; name: string }> = {
-    baroque: { path: '/audio/baroque-ambient.mp3', name: '古典神殿' },
-    cyberpunk: { path: '/audio/cyberpunk-ambient.mp3', name: '霓虹迷城' },
-    celestial: { path: '/audio/celestial-ambient.mp3', name: '星辰低語' }
+    baroque: { path: '', name: '古典神殿' },
+    cyberpunk: { path: '', name: '霓虹迷城' },
+    celestial: { path: '', name: '星辰低語' }
 };
 
 const SettingsMenu: React.FC = () => {
@@ -38,6 +38,10 @@ const SettingsMenu: React.FC = () => {
     // 檢查音樂檔案是否存在
     useEffect(() => {
         const checkAudio = async () => {
+            if (!musicInfo.path) {
+                setHasAudio(false);
+                return;
+            }
             try {
                 const response = await fetch(musicInfo.path, { method: 'HEAD' });
                 setHasAudio(response.ok);

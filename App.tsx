@@ -855,7 +855,7 @@ const App: React.FC = () => {
     setAiChat(null);
     setMessages([]);
     setUserInput('');
-    setSelectedSpreadId(null); // 重置牌陣選擇
+    setSelectedSpreadId('three_card'); // 重置為預設牌陣(時間之流)
     setFollowUpCount(0); // 重置追問次數
     window.scrollTo({ top: 0, behavior: 'smooth' });
     if (currentUser) syncLocalAssets(currentUser);
