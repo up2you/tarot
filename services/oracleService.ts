@@ -56,6 +56,9 @@ const FALLBACK_SCENARIOS: Record<string, string> = {
 
     // 健康類 Fallback
     'health_gender': 'health_pregnancy',
+
+    // 感情類 Fallback
+    'love_cheating': 'love_affair', // 使用「第三者」的解釋
 };
 
 /**

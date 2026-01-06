@@ -33,6 +33,7 @@ export const ORACLE_SCENARIOS: OracleScenario[] = [
     { key: 'love_conflict', category: 'love', nameZh: '感情磨合', nameEn: 'Relationship conflict', description: '感情中遇到摩擦或問題' },
     { key: 'love_marriage', category: 'love', nameZh: '婚姻關係', nameEn: 'Marriage', description: '已婚或長期伴侶關係' },
     { key: 'love_affair', category: 'love', nameZh: '第三者', nameEn: 'Third party', description: '涉及第三者的感情問題' },
+    { key: 'love_cheating', category: 'love', nameZh: '外遇出軌', nameEn: 'Cheating/Affair', description: '懷疑背叛與三角關係' },
     { key: 'love_breakup', category: 'love', nameZh: '分手', nameEn: 'Breakup', description: '面臨或剛經歷分手' },
     { key: 'love_reunion', category: 'love', nameZh: '復合', nameEn: 'Reconciliation', description: '考慮與前任復合' },
     { key: 'love_feelings', category: 'love', nameZh: '對方心意', nameEn: 'Their feelings', description: '想了解對方的真實想法' },

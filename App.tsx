@@ -568,6 +568,13 @@ const App: React.FC = () => {
       return 'love_single';
     }
 
+    // ==================== 💔 愛情外遇/出軌（優先判斷）====================
+    if (lower.includes('外遇') || lower.includes('出軌') || lower.includes('偷吃') ||
+      lower.includes('劈腿') || lower.includes('小三') || lower.includes('第三者') ||
+      lower.includes('狐狸精') || lower.includes('紅杏出牆')) {
+      return 'love_cheating';
+    }
+
     // ==================== 💔 愛情分手/復合（優先判斷）====================
     if (lower.includes('分手') || lower.includes('該不該分') || lower.includes('離開他') ||
       lower.includes('離開她') || lower.includes('結束感情') || lower.includes('斷開')) {

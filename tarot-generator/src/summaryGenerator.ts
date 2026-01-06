@@ -129,6 +129,7 @@ const SCENARIOS = [
     { key: 'general_weather', nameZh: '天氣/活動' },
     { key: 'general_contract', nameZh: '合作/契約' },
     { key: 'health_gender', nameZh: '胎兒性別' },
+    { key: 'love_cheating', nameZh: '外遇出軌' },
 ];
 
 interface GenerationConfig {
@@ -183,6 +184,7 @@ class SummaryGenerator {
     private buildPrompt(scenario: { key: string, nameZh: string }, pattern: { key: string, nameZh: string, description: string }): string {
         const isGamble = scenario.key.startsWith('gamble_');
         const isGender = scenario.key === 'health_gender';
+        const isCheating = scenario.key === 'love_cheating';
 
         let extraInstructions = '';
         if (isGamble) {
@@ -206,6 +208,15 @@ class SummaryGenerator {
      - 陰性/柔和/孕育/水土能量 (如女皇、月亮、女祭司、聖杯、錢幣) -> 傾向 **女生**。
    - **格式要求**：總結的第一句話必須是「【預測結果：男生/女生】」，然後再解釋原因（例如：因為牌面能量充滿陽剛...）。
    - 語氣請保持溫柔與祝福，強調無論性別都是珍貴的禮物。
+`;
+        } else if (isCheating) {
+            extraInstructions = `
+6. **外遇風險專屬要求**：
+   - **核心任務**：評估「背叛/欺瞞」的能量強弱。
+     - 高風險牌 (逆位聖杯三、寶劍七、月亮、惡魔、高塔) -> 暗示隱瞞、多角關係或不誠實。
+     - 低風險/信任牌 (正位戀人、聖杯二、太陽、審判) -> 暗示誤會、坦誠或關係單純。
+   - **格式要求**：總結的第一句話必須是「【外遇風險評估：高/低/中】」，然後解釋原因。
+   - 語氣：客觀、冷靜，如果看見風險請委婉示警（如「似乎有隱瞞的事項...」），如果安全請給予定心丸。
 `;
         }
 
@@ -282,8 +293,8 @@ if (apiKey) {
     const GENERATION_CONFIG: GenerationConfig = {
         apiKey,
         outputDir: path.join(__dirname, '..', 'output', 'summaries'),
-        // scenarios: SCENARIOS.filter(s => s.key === 'health_gender'),
-        // filename: 'batch_summaries_gender.sql'
+        // scenarios: SCENARIOS.filter(s => s.key === 'love_cheating'),
+        // filename: 'batch_summaries_cheating.sql'
     };
     new SummaryGenerator(GENERATION_CONFIG).generateAll();
 } else {
