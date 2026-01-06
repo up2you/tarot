@@ -385,13 +385,25 @@ export const generateFreeReading = async (
                 result.summary = `# ${title}\n\n${cleanText}...\n\n${closing}`;
             } else {
                 const patternKey = analyzePattern(cards);
-                const summary = await getReadingSummary(patternKey);
+                // 嘗試取得「場景專用」的總結 (例如 career_seeking_all_upright)
+                const specificSummaryKey = `${scenarioKey}_${patternKey}`;
+                let summary = await getReadingSummary(specificSummaryKey);
+
+                if (!summary) {
+                    summary = await getReadingSummary(patternKey);
+                }
                 result.summary = (summary && summary.trim()) ? summary : '命運的星圖錯綜複雜，請相信此刻的際遇都有其深意。';
             }
         } else {
             // 其他一般場景使用預設總結
             const patternKey = analyzePattern(cards);
-            const summary = await getReadingSummary(patternKey);
+            // 同樣嘗試取得場景專用總結
+            const specificSummaryKey = `${scenarioKey}_${patternKey}`;
+            let summary = await getReadingSummary(specificSummaryKey);
+
+            if (!summary) {
+                summary = await getReadingSummary(patternKey);
+            }
             result.summary = (summary && summary.trim()) ? summary : '這個牌陣揭示了重要的訊息，請細細體會每張牌帶來的指引。';
         }
         // result.summary = summary || '...'; // Removed original assignment

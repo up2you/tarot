@@ -723,10 +723,12 @@ const App: React.FC = () => {
       return 'general_search';
     }
 
-    // ==================== ✈️ 旅行相關 ====================
+    // ==================== ✈️ 旅行/戶外/休閒相關 ====================
     if (lower.includes('旅') || lower.includes('旅遊') || lower.includes('出國玩') ||
       lower.includes('度假') || lower.includes('旅行') || lower.includes('航班') ||
-      lower.includes('機票') || lower.includes('行程') || (lower.includes('準時') && lower.includes('飛'))) {
+      lower.includes('機票') || lower.includes('行程') || (lower.includes('準時') && lower.includes('飛')) ||
+      lower.includes('露營') || lower.includes('爬山') || lower.includes('潛水') ||
+      lower.includes('釣魚') || lower.includes('滑雪') || lower.includes('衝浪')) {
       return 'general_travel';
     }
 
@@ -778,6 +780,8 @@ const App: React.FC = () => {
       lower.includes('冒險') || lower.includes('風險') || lower.includes('正確嗎') ||
       lower.includes('對不對') || lower.includes('該選') || lower.includes('有沒有利') ||
       lower.includes('冷這個險') || lower.includes('這個險') ||
+      lower.includes('可以嗎') || lower.includes('能不能') || lower.includes('妥當嗎') ||
+      lower.includes('好嗎') || lower.includes('行嗎') ||
       (lower.includes('時機') && !lower.includes('重大')) ||
       (lower.includes('好時機') && !lower.includes('重大')) ||
       (lower.includes('決定') && lower.includes('正確'))) {
@@ -807,8 +811,8 @@ const App: React.FC = () => {
       return 'general_gift';
     }
 
-    // ==================== 預設：一般財運 ====================
-    return 'money_salary';
+    // ==================== 預設：一般運勢 ====================
+    return 'general_luck';
   };
 
   // 🆕 映射位置名稱到 key
