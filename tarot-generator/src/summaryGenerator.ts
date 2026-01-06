@@ -128,6 +128,7 @@ const SCENARIOS = [
     { key: 'general_contact', nameZh: '聯絡/等待' },
     { key: 'general_weather', nameZh: '天氣/活動' },
     { key: 'general_contract', nameZh: '合作/契約' },
+    { key: 'health_gender', nameZh: '胎兒性別' },
 ];
 
 interface GenerationConfig {
