@@ -39,6 +39,22 @@ export interface ReadingSummary {
 // 解釋查詢
 // ============================================
 
+const FALLBACK_SCENARIOS: Record<string, string> = {
+    // 豐收類 Fallback
+    'harvest_farming': 'money_business',
+    'harvest_fishery': 'money_business',
+    'harvest_forestry': 'money_business',
+    'harvest_livestock': 'money_business',
+    'harvest_garden': 'general_luck',
+
+    // 博弈類 Fallback
+    'gamble_lottery': 'money_windfall',
+    'gamble_card': 'money_luck',
+    'gamble_sport': 'money_luck',
+    'gamble_casino': 'money_luck',
+    'gamble_luck': 'money_luck',
+};
+
 /**
  * 取得單牌解釋
  */
@@ -50,22 +66,38 @@ export const getOracleInterpretation = async (
 ): Promise<string | null> => {
     try {
         const orientation = isReversed ? 'reversed' : 'upright';
+        const tryFetch = async (key: string) => {
+            const { data, error } = await supabase
+                .from('oracle_interpretations')
+                .select('interpretation')
+                .eq('card_id', cardId)
+                .eq('orientation', orientation)
+                .eq('scenario_key', key)
+                .eq('position_key', positionKey)
+                .maybeSingle();
 
-        const { data, error } = await supabase
-            .from('oracle_interpretations')
-            .select('interpretation')
-            .eq('card_id', cardId)
-            .eq('orientation', orientation)
-            .eq('scenario_key', scenarioKey)
-            .eq('position_key', positionKey)
-            .maybeSingle();
+            if (error) return null;
+            return data?.interpretation || null;
+        };
 
-        if (error) {
-            console.error('[OracleService] getInterpretation failed:', error);
-            return null;
+        // 1. 嘗試原始場景
+        let text = await tryFetch(scenarioKey);
+        if (text) return text;
+
+        // 2. 嘗試 Fallback 場景
+        const fallbackKey = FALLBACK_SCENARIOS[scenarioKey];
+        if (fallbackKey) {
+            text = await tryFetch(fallbackKey);
+            if (text) return text;
         }
 
-        return data?.interpretation || null;
+        // 3. 嘗試通用運勢 (general_luck) 作為最後防線
+        if (scenarioKey !== 'general_luck' && fallbackKey !== 'general_luck') {
+            text = await tryFetch('general_luck');
+            if (text) return text;
+        }
+
+        return null;
     } catch (err) {
         console.error('[OracleService] getInterpretation error:', err);
         return null;
