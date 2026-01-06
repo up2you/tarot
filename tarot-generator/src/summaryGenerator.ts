@@ -98,6 +98,13 @@ const SCENARIOS = [
     { key: 'relation_elder', nameZh: '長輩關係' },
     { key: 'relation_rival', nameZh: '對手競爭' },
 
+    // 豐收類 (5)
+    { key: 'harvest_farming', nameZh: '農業 (豐收)' },
+    { key: 'harvest_fishery', nameZh: '漁業 (豐收)' },
+    { key: 'harvest_forestry', nameZh: '林業 (豐收)' },
+    { key: 'harvest_livestock', nameZh: '畜牧 (豐收)' },
+    { key: 'harvest_garden', nameZh: '園藝 (豐收)' },
+
     // 一般 (原有保留)
     { key: 'general_search', nameZh: '尋物/尋人' },
     { key: 'general_travel', nameZh: '旅行/出行' },
@@ -119,6 +126,8 @@ const SCENARIOS = [
 interface GenerationConfig {
     apiKey: string;
     outputDir: string;
+    scenarios?: { key: string, nameZh: string }[];
+    filename?: string;
 }
 
 class SummaryGenerator {
@@ -189,7 +198,9 @@ class SummaryGenerator {
         console.log('🚀 開始生成場景化總體指引...');
         const sqlStatements: string[] = [];
 
-        for (const scenario of SCENARIOS) {
+        const scenariosToProcess = this.config.scenarios || SCENARIOS;
+
+        for (const scenario of scenariosToProcess) {
             console.log(`\n📂 處理場景: ${scenario.nameZh} (${scenario.key})`);
 
             for (const pattern of PATTERNS) {
@@ -223,7 +234,7 @@ ON CONFLICT (pattern_key) DO UPDATE SET summary = EXCLUDED.summary;
             }
         }
 
-        const outputPath = path.join(this.config.outputDir, 'batch_summaries.sql');
+        const outputPath = path.join(this.config.outputDir, this.config.filename || 'batch_summaries.sql');
         fs.writeFileSync(outputPath, sqlStatements.join('\n\n'));
         console.log(`\n🎉 全部完成！SQL 已儲存至: ${outputPath}`);
     }
@@ -232,10 +243,13 @@ ON CONFLICT (pattern_key) DO UPDATE SET summary = EXCLUDED.summary;
 // 執行
 const apiKey = process.env.DEEPSEEK_API_KEY;
 if (apiKey) {
-    new SummaryGenerator({
+    const GENERATION_CONFIG: GenerationConfig = {
         apiKey,
-        outputDir: path.join(__dirname, '..', 'output', 'summaries')
-    }).generateAll();
+        outputDir: path.join(__dirname, '..', 'output', 'summaries'),
+        // scenarios: SCENARIOS, // Default to all
+        // filename: 'batch_summaries.sql' // Default
+    };
+    new SummaryGenerator(GENERATION_CONFIG).generateAll();
 } else {
     console.error('請設定 DEEPSEEK_API_KEY');
 }

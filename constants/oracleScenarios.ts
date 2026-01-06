@@ -18,6 +18,7 @@ export const ORACLE_CATEGORIES = {
     study: { nameZh: '學業', icon: '📚' },
     health: { nameZh: '健康', icon: '🏥' },
     relation: { nameZh: '人際', icon: '🤝' },
+    harvest: { nameZh: '豐收', icon: '🌾' },
 };
 
 export const ORACLE_SCENARIOS: OracleScenario[] = [
@@ -94,10 +95,19 @@ export const ORACLE_SCENARIOS: OracleScenario[] = [
     { key: 'relation_neighbor', category: 'relation', nameZh: '鄰居關係', nameEn: 'Neighbor', description: '與鄰居的關係' },
     { key: 'relation_elder', category: 'relation', nameZh: '長輩關係', nameEn: 'Elders', description: '與長輩的關係' },
     { key: 'relation_rival', category: 'relation', nameZh: '對手競爭', nameEn: 'Rival', description: '競爭對手' },
+
+    // ============================================
+    // 豐收類 (5)
+    // ============================================
+    { key: 'harvest_farming', category: 'harvest', nameZh: '農業', nameEn: 'Agriculture', description: '農作物種植與收成' },
+    { key: 'harvest_fishery', category: 'harvest', nameZh: '漁業', nameEn: 'Fishery', description: '出海捕撈與水產' },
+    { key: 'harvest_forestry', category: 'harvest', nameZh: '林業', nameEn: 'Forestry', description: '林木種植與採伐' },
+    { key: 'harvest_livestock', category: 'harvest', nameZh: '畜牧', nameEn: 'Husbandry', description: '家畜飼養與繁殖' },
+    { key: 'harvest_garden', category: 'harvest', nameZh: '園藝', nameEn: 'Gardening', description: '家庭園藝與種植' },
 ];
 
 // 取得場景總數
-export const TOTAL_SCENARIOS = ORACLE_SCENARIOS.length; // 50
+export const TOTAL_SCENARIOS = ORACLE_SCENARIOS.length; // 55
 
 // 按類別分組
 export const getScenariosByCategory = (category: string) =>
