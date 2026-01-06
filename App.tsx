@@ -485,9 +485,11 @@ const App: React.FC = () => {
 
     // ==================== 🏥 健康相關（最高優先級）====================
     // 胎兒性別 (優先於懷孕)
-    if ((lower.includes('性別') && (lower.includes('胎') || lower.includes('寶寶'))) ||
+    if ((lower.includes('性別') && (lower.includes('胎') || lower.includes('寶寶') || lower.includes('子女'))) ||
       lower.includes('生男') || lower.includes('生女') || lower.includes('男生女生') ||
-      lower.includes('是男是女') || (lower.includes('性別') && lower.includes('揭曉'))) {
+      lower.includes('是男是女') || lower.includes('是男還是女') || lower.includes('男還是女') ||
+      lower.includes('懷男') || lower.includes('懷女') ||
+      ((lower.includes('男') && lower.includes('女')) && (lower.includes('胎') || lower.includes('懷') || lower.includes('生')))) {
       return 'health_gender';
     }
     // 懷孕/生育
