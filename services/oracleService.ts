@@ -310,11 +310,89 @@ export const generateFreeReading = async (
                 const summary = await getReadingSummary(patternKey);
                 result.summary = summary || '這間房子有其獨特的氣場，請細讀牌面訊息，感受它是否與你的頻率共振。';
             }
+        } else if (scenarioKey.startsWith('love_') || scenarioKey.startsWith('relation_')) {
+            // 愛情與關係專用動態總結
+            const pastCard = cards.find(c => c.positionKey === 'past');
+            const presentCard = cards.find(c => c.positionKey === 'present');
+            const futureCard = cards.find(c => c.positionKey === 'future' || c.positionKey === 'outcome');
+            const otherCard = cards.find(c => c.positionKey === 'other'); // 對方
+
+            if (presentCard && futureCard) {
+                const getMsg = (pos: string) => {
+                    const interpret = result.interpretations.find(i => i.position === (getPositionByKey(pos)?.nameZh || pos));
+                    if (!interpret?.text) return '';
+                    // 取第一段，並移除常見開頭以利句子銜接
+                    return interpret.text.split('\n')[0]
+                        .replace(/^(在你們的關係中，|在感情上，|關於這段關係，)/, '')
+                        .substring(0, 150); // 避免過長
+                };
+
+                const presentMsg = getMsg(presentCard.positionKey);
+                const futureMsg = getMsg(futureCard.positionKey);
+                const pastMsg = pastCard ? getMsg(pastCard.positionKey) : '';
+
+                let narrative = '';
+
+                // 構建敘事邏輯
+                if (pastCard && pastMsg) {
+                    narrative += `雖然目前**${presentCard.cardName}**顯示${presentMsg}，但請不要忽略過去**${pastCard.cardName}**所留下的影響：${pastMsg}。\n\n`;
+                    narrative += `未來的關鍵在於**${futureCard.cardName}**：${futureMsg}`;
+                } else {
+                    // 沒有過去牌的情況 (例如只有單張或兩張牌)
+                    narrative += `目前**${presentCard.cardName}**的能量顯示${presentMsg}。\n\n`;
+                    narrative += `而未來的走向，**${futureCard.cardName}**指引著：${futureMsg}`;
+                }
+
+                // 如果有「對方」的牌，加入補充
+                if (otherCard) {
+                    const otherMsg = getMsg(otherCard.positionKey);
+                    if (otherMsg) {
+                        narrative += `\n\n同時，值得留意的是對方（${otherCard.cardName}）的狀態：${otherMsg}`;
+                    }
+                }
+
+                narrative += `\n\n這段關係的走向，關鍵在於誠實面對彼此的內心，愛會在真實中綻放。`;
+
+                result.summary = `# 艾瑟瑞爾的愛之神諭\n\n${narrative}`;
+            } else {
+                // 缺少關鍵牌位時的備案
+                const mainCard = result.interpretations.find(i => i.position === '未來' || i.position === '結果' || i.position === '單張');
+                const cleanText = mainCard?.text?.split('\n')[0] || '';
+                result.summary = `# 艾瑟瑞爾的愛之神諭\n\n${cleanText}...\n\n請相信直覺，答案已在心中。`;
+            }
+        } else if (
+            scenarioKey.startsWith('career_') ||
+            scenarioKey.startsWith('money_') ||
+            scenarioKey.startsWith('study_') ||
+            scenarioKey.startsWith('health_')
+        ) {
+            // 其他主要人生場景
+            const mainCard = result.interpretations.find(i => i.position === '未來' || i.position === '結果' || i.position === '單張');
+
+            if (mainCard && mainCard.text) {
+                const cleanText = mainCard.text.split('\n')[0].substring(0, 100);
+                let title = '艾瑟瑞爾的神諭';
+                let closing = '這段旅程的指引已經顯現，請相信內心的力量。';
+
+                if (scenarioKey.startsWith('career_')) {
+                    title = '艾瑟瑞爾的事業神諭';
+                    closing = '職涯的道路雖有起伏，但每一步都是積累。把握當下的動能，你的價值終將閃耀。';
+                } else if (scenarioKey.startsWith('money_')) {
+                    title = '艾瑟瑞爾的財富神諭';
+                    closing = '豐盛的能量正在流動，請保持理智與耐心，財富將隨智慧而來。';
+                }
+
+                result.summary = `# ${title}\n\n${cleanText}...\n\n${closing}`;
+            } else {
+                const patternKey = analyzePattern(cards);
+                const summary = await getReadingSummary(patternKey);
+                result.summary = (summary && summary.trim()) ? summary : '命運的星圖錯綜複雜，請相信此刻的際遇都有其深意。';
+            }
         } else {
-            // 一般場景使用預設總結
+            // 其他一般場景使用預設總結
             const patternKey = analyzePattern(cards);
             const summary = await getReadingSummary(patternKey);
-            result.summary = summary || '這個牌陣揭示了重要的訊息，請細細體會每張牌帶來的指引。';
+            result.summary = (summary && summary.trim()) ? summary : '這個牌陣揭示了重要的訊息，請細細體會每張牌帶來的指引。';
         }
         // result.summary = summary || '...'; // Removed original assignment
 
