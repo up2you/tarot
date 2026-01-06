@@ -34,7 +34,71 @@ const PATTERNS = [
 ];
 
 // 2. 引用現有的 Scenarios (從 file 複製過來以免讀取依賴問題)
+// 2. 引用現有的 Scenarios (完整 50 個場景)
 const SCENARIOS = [
+    // 感情類 (10)
+    { key: 'love_single', nameZh: '單身求緣' },
+    { key: 'love_crush', nameZh: '暗戀對象' },
+    { key: 'love_pursuit', nameZh: '追求中' },
+    { key: 'love_dating', nameZh: '熱戀期' },
+    { key: 'love_conflict', nameZh: '感情磨合' },
+    { key: 'love_marriage', nameZh: '婚姻關係' },
+    { key: 'love_affair', nameZh: '第三者' },
+    { key: 'love_breakup', nameZh: '分手' },
+    { key: 'love_reunion', nameZh: '復合' },
+    { key: 'love_feelings', nameZh: '對方心意' },
+
+    // 事業類 (10)
+    { key: 'career_seeking', nameZh: '求職' },
+    { key: 'career_interview', nameZh: '面試' },
+    { key: 'career_current', nameZh: '現職發展' },
+    { key: 'career_promotion', nameZh: '升遷' },
+    { key: 'career_raise', nameZh: '加薪' },
+    { key: 'career_startup', nameZh: '創業' },
+    { key: 'career_partner', nameZh: '合夥' },
+    { key: 'career_change', nameZh: '轉行' },
+    { key: 'career_retire', nameZh: '退休' },
+    { key: 'career_conflict', nameZh: '職場衝突' },
+
+    // 財運類 (10)
+    { key: 'money_salary', nameZh: '正財運' },
+    { key: 'money_windfall', nameZh: '偏財運' },
+    { key: 'money_invest', nameZh: '投資' },
+    { key: 'money_loan', nameZh: '借貸' },
+    { key: 'money_debt', nameZh: '債務' },
+    { key: 'money_property', nameZh: '買房' },
+    { key: 'money_plan', nameZh: '理財規劃' },
+    { key: 'money_loss', nameZh: '破財' },
+    { key: 'money_luck', nameZh: '橫財' },
+    { key: 'money_business', nameZh: '生意財' },
+
+    // 學業類 (7)
+    { key: 'study_admission', nameZh: '升學' },
+    { key: 'study_exam', nameZh: '考試' },
+    { key: 'study_cert', nameZh: '證照考試' },
+    { key: 'study_abroad', nameZh: '留學' },
+    { key: 'study_thesis', nameZh: '論文' },
+    { key: 'study_skill', nameZh: '技能學習' },
+    { key: 'study_compete', nameZh: '競賽' },
+
+    // 健康類 (6)
+    { key: 'health_body', nameZh: '身體健康' },
+    { key: 'health_mental', nameZh: '心理健康' },
+    { key: 'health_surgery', nameZh: '手術' },
+    { key: 'health_recovery', nameZh: '康復' },
+    { key: 'health_pregnancy', nameZh: '懷孕' },
+    { key: 'health_birth', nameZh: '生產' },
+
+    // 人際類 (7)
+    { key: 'relation_family', nameZh: '家庭關係' },
+    { key: 'relation_friend', nameZh: '朋友關係' },
+    { key: 'relation_colleague', nameZh: '同事關係' },
+    { key: 'relation_client', nameZh: '客戶關係' },
+    { key: 'relation_neighbor', nameZh: '鄰居關係' },
+    { key: 'relation_elder', nameZh: '長輩關係' },
+    { key: 'relation_rival', nameZh: '對手競爭' },
+
+    // 一般 (原有保留)
     { key: 'general_search', nameZh: '尋物/尋人' },
     { key: 'general_travel', nameZh: '旅行/出行' },
     { key: 'general_legal', nameZh: '法律/訴訟' },
@@ -50,14 +114,6 @@ const SCENARIOS = [
     { key: 'general_contact', nameZh: '聯絡/等待' },
     { key: 'general_weather', nameZh: '天氣/活動' },
     { key: 'general_contract', nameZh: '合作/契約' },
-    // 補上主要的幾項，確保完整
-    { key: 'love_single', nameZh: '單身愛情' },
-    { key: 'love_crush', nameZh: '暗戀' },
-    { key: 'love_dating', nameZh: '交往中' },
-    { key: 'love_breakup', nameZh: '分手/復合' },
-    { key: 'career_seeking', nameZh: '求職/面試' },
-    { key: 'career_promotion', nameZh: '升遷/發展' },
-    { key: 'money_invest', nameZh: '投資理財' },
 ];
 
 interface GenerationConfig {
@@ -97,7 +153,7 @@ class SummaryGenerator {
                 });
 
                 if (!response.ok) throw new Error(`API Error: ${response.status}`);
-                const data = await response.json();
+                const data = await response.json() as any;
                 return data.choices[0]?.message?.content || '';
             } catch (err) {
                 console.warn(`Retry ${i + 1}...`);
