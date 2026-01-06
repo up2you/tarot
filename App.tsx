@@ -654,6 +654,12 @@ const App: React.FC = () => {
       return 'house_rent';
     }
 
+    // ==================== 💼 競標/標案（優先判斷）====================
+    if (lower.includes('標案') || lower.includes('競標') || lower.includes('投標') ||
+      lower.includes('得標') || lower.includes('招標') || lower.includes('開標')) {
+      return 'career_bidding';
+    }
+
     if ((lower.includes('房') || lower.includes('買房') ||
       lower.includes('置產') || lower.includes('地段')) &&
       !lower.includes('搬') && !lower.includes('家人') && !lower.includes('風水')) {

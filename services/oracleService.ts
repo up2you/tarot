@@ -59,6 +59,9 @@ const FALLBACK_SCENARIOS: Record<string, string> = {
 
     // 感情類 Fallback
     'love_cheating': 'love_affair', // 使用「第三者」的解釋
+
+    // 事業類 Fallback
+    'career_bidding': 'career_seeking', // 使用「求職/面試」的評估解釋
 };
 
 /**

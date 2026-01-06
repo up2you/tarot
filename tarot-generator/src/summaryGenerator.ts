@@ -130,6 +130,7 @@ const SCENARIOS = [
     { key: 'general_contract', nameZh: '合作/契約' },
     { key: 'health_gender', nameZh: '胎兒性別' },
     { key: 'love_cheating', nameZh: '外遇出軌' },
+    { key: 'career_bidding', nameZh: '競標/標案' },
 ];
 
 interface GenerationConfig {
@@ -185,6 +186,7 @@ class SummaryGenerator {
         const isGamble = scenario.key.startsWith('gamble_');
         const isGender = scenario.key === 'health_gender';
         const isCheating = scenario.key === 'love_cheating';
+        const isBidding = scenario.key === 'career_bidding';
 
         let extraInstructions = '';
         if (isGamble) {
@@ -217,6 +219,15 @@ class SummaryGenerator {
      - 低風險/信任牌 (正位戀人、聖杯二、太陽、審判) -> 暗示誤會、坦誠或關係單純。
    - **格式要求**：總結的第一句話必須是「【外遇風險評估：高/低/中】」，然後解釋原因。
    - 語氣：客觀、冷靜，如果看見風險請委婉示警（如「似乎有隱瞞的事項...」），如果安全請給予定心丸。
+`;
+        } else if (isBidding) {
+            extraInstructions = `
+6. **競標/標案專屬要求**：
+   - **核心任務**：評估「得標機率」與「競爭態勢」。
+     - 優勢牌 (太陽、戰車、權杖六、皇帝、星星) -> 暗示實力強、勝算大。
+     - 劣勢/競爭牌 (權杖五、寶劍七、塔、月亮) -> 暗示競爭激烈、有黑箱或準備不足。
+   - **格式要求**：總結的第一句話必須是「【競標勝率評估：高/低/中】」，然後解釋原因。
+   - 語氣：專業、務實，針對不足之處給予策略建議（如「加強簡報說服力」、「注意細節條款」）。
 `;
         }
 
@@ -293,8 +304,8 @@ if (apiKey) {
     const GENERATION_CONFIG: GenerationConfig = {
         apiKey,
         outputDir: path.join(__dirname, '..', 'output', 'summaries'),
-        // scenarios: SCENARIOS.filter(s => s.key === 'love_cheating'),
-        // filename: 'batch_summaries_cheating.sql'
+        // scenarios: SCENARIOS.filter(s => s.key === 'career_bidding'),
+        // filename: 'batch_summaries_bidding.sql'
     };
     new SummaryGenerator(GENERATION_CONFIG).generateAll();
 } else {

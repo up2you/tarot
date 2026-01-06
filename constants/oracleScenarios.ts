@@ -51,6 +51,7 @@ export const ORACLE_SCENARIOS: OracleScenario[] = [
     { key: 'career_change', category: 'career', nameZh: '轉行', nameEn: 'Career change', description: '考慮換跑道' },
     { key: 'career_retire', category: 'career', nameZh: '退休', nameEn: 'Retirement', description: '退休規劃' },
     { key: 'career_conflict', category: 'career', nameZh: '職場衝突', nameEn: 'Workplace conflict', description: '與同事或上司的問題' },
+    { key: 'career_bidding', category: 'career', nameZh: '競標/標案', nameEn: 'Bidding/Tender', description: '政府標案或商業競標' },
 
     // ============================================
     // 財運類 (10)
