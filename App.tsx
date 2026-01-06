@@ -437,6 +437,52 @@ const App: React.FC = () => {
   const detectScenario = (q: string): string => {
     const lower = q.toLowerCase();
 
+    // ==================== 🌾 豐收/農業/漁牧相關（優先判斷）====================
+    if (lower.includes('農') || lower.includes('種植') || lower.includes('收成') ||
+      lower.includes('豐收') || lower.includes('作物') || lower.includes('水果') ||
+      lower.includes('橘子') || lower.includes('稻米') || lower.includes('高麗菜')) {
+      return 'harvest_farming';
+    }
+    if (lower.includes('漁') || lower.includes('捕魚') || lower.includes('出海') ||
+      lower.includes('水產') || lower.includes('養殖') || lower.includes('蝦') ||
+      lower.includes('魚獲') || lower.includes('漁獲')) {
+      return 'harvest_fishery';
+    }
+    if (lower.includes('畜牧') || lower.includes('養豬') || lower.includes('養牛') ||
+      lower.includes('養雞') || lower.includes('牲畜') || lower.includes('繁殖')) {
+      return 'harvest_livestock';
+    }
+    if (lower.includes('林業') || lower.includes('林木') || lower.includes('伐木')) {
+      return 'harvest_forestry';
+    }
+    if (lower.includes('園藝') || lower.includes('花草') || lower.includes('盆栽')) {
+      return 'harvest_garden';
+    }
+
+    // ==================== 🎲 博弈/賭運/彩券相關（優先判斷）====================
+    if (lower.includes('樂透') || lower.includes('彩券') || lower.includes('威力彩') ||
+      lower.includes('刮刮樂') || lower.includes('大樂透') || lower.includes('今彩')) {
+      return 'gamble_lottery';
+    }
+    if (lower.includes('撲克') || lower.includes('德州') || lower.includes('21點') ||
+      lower.includes('牌局') || lower.includes('梭哈')) {
+      return 'gamble_card';
+    }
+    if (lower.includes('運彩') || lower.includes('球賽') || lower.includes('賭球') ||
+      lower.includes('賽馬') || lower.includes('世足') || lower.includes('NBA') ||
+      lower.includes('MLB')) {
+      return 'gamble_sport';
+    }
+    if (lower.includes('賭場') || lower.includes('輪盤') || lower.includes('老虎機') ||
+      lower.includes('百家樂') || lower.includes('賭桌')) {
+      return 'gamble_casino';
+    }
+    if (lower.includes('賭') || lower.includes('博弈') || lower.includes('壓大') ||
+      lower.includes('壓小') || lower.includes('輸贏') || lower.includes('手氣') ||
+      lower.includes('下注') || lower.includes('簽牌')) {
+      return 'gamble_luck';
+    }
+
     // ==================== 🏥 健康相關（最高優先級）====================
     // 懷孕/生育
     if (lower.includes('懷孕') || lower.includes('備孕') || lower.includes('受孕') ||
