@@ -402,32 +402,37 @@ export const generateFreeReading = async (
             scenarioKey.startsWith('health_')
         ) {
             // 其他主要人生場景
-            const mainCard = result.interpretations.find(i => i.position === '未來' || i.position === '結果' || i.position === '單張');
+            // 其他主要人生場景
+            const patternKey = analyzePattern(cards);
+            // 優先嘗試取得「場景專用」的總結 (例如 career_seeking_all_upright, health_gender_all_upright)
+            const specificSummaryKey = `${scenarioKey}_${patternKey}`;
+            let summary = await getReadingSummary(specificSummaryKey);
 
-            if (mainCard && mainCard.text) {
-                const cleanText = mainCard.text.split('\n')[0].substring(0, 100);
-                let title = '艾瑟瑞爾的神諭';
-                let closing = '這段旅程的指引已經顯現，請相信內心的力量。';
-
-                if (scenarioKey.startsWith('career_')) {
-                    title = '艾瑟瑞爾的事業神諭';
-                    closing = '職涯的道路雖有起伏，但每一步都是積累。把握當下的動能，你的價值終將閃耀。';
-                } else if (scenarioKey.startsWith('money_')) {
-                    title = '艾瑟瑞爾的財富神諭';
-                    closing = '豐盛的能量正在流動，請保持理智與耐心，財富將隨智慧而來。';
-                }
-
-                result.summary = `# ${title}\n\n${cleanText}...\n\n${closing}`;
+            if (summary && summary.trim()) {
+                result.summary = summary;
             } else {
-                const patternKey = analyzePattern(cards);
-                // 嘗試取得「場景專用」的總結 (例如 career_seeking_all_upright)
-                const specificSummaryKey = `${scenarioKey}_${patternKey}`;
-                let summary = await getReadingSummary(specificSummaryKey);
+                // 如果沒有專用總結，才退回到使用「主牌解釋」作為總結
+                const mainCard = result.interpretations.find(i => i.position === '未來' || i.position === '結果' || i.position === '單張');
 
-                if (!summary) {
+                if (mainCard && mainCard.text) {
+                    const cleanText = mainCard.text.split('\n')[0].substring(0, 100);
+                    let title = '艾瑟瑞爾的神諭';
+                    let closing = '這段旅程的指引已經顯現，請相信內心的力量。';
+
+                    if (scenarioKey.startsWith('career_')) {
+                        title = '艾瑟瑞爾的事業神諭';
+                        closing = '職涯的道路雖有起伏，但每一步都是積累。把握當下的動能，你的價值終將閃耀。';
+                    } else if (scenarioKey.startsWith('money_')) {
+                        title = '艾瑟瑞爾的財富神諭';
+                        closing = '豐盛的能量正在流動，請保持理智與耐心，財富將隨智慧而來。';
+                    }
+
+                    result.summary = `# ${title}\n\n${cleanText}...\n\n${closing}`;
+                } else {
+                    // 如果連主牌解釋都沒有，使用通用 Pattern 總結
                     summary = await getReadingSummary(patternKey);
+                    result.summary = (summary && summary.trim()) ? summary : '命運的星圖錯綜複雜，請相信此刻的際遇都有其深意。';
                 }
-                result.summary = (summary && summary.trim()) ? summary : '命運的星圖錯綜複雜，請相信此刻的際遇都有其深意。';
             }
         } else {
             // 其他一般場景使用預設總結
