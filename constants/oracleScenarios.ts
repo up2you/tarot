@@ -19,6 +19,7 @@ export const ORACLE_CATEGORIES = {
     health: { nameZh: '健康', icon: '🏥' },
     relation: { nameZh: '人際', icon: '🤝' },
     harvest: { nameZh: '豐收', icon: '🌾' },
+    gamble: { nameZh: '博弈', icon: '🎲' },
 };
 
 export const ORACLE_SCENARIOS: OracleScenario[] = [
@@ -104,10 +105,19 @@ export const ORACLE_SCENARIOS: OracleScenario[] = [
     { key: 'harvest_forestry', category: 'harvest', nameZh: '林業', nameEn: 'Forestry', description: '林木種植與採伐' },
     { key: 'harvest_livestock', category: 'harvest', nameZh: '畜牧', nameEn: 'Husbandry', description: '家畜飼養與繁殖' },
     { key: 'harvest_garden', category: 'harvest', nameZh: '園藝', nameEn: 'Gardening', description: '家庭園藝與種植' },
+
+    // ============================================
+    // 博弈類 (5)
+    // ============================================
+    { key: 'gamble_lottery', category: 'gamble', nameZh: '樂透彩券', nameEn: 'Lottery', description: '購買彩券與樂透' },
+    { key: 'gamble_card', category: 'gamble', nameZh: '牌桌博弈', nameEn: 'Card Games', description: '撲克與牌局' },
+    { key: 'gamble_sport', category: 'gamble', nameZh: '運動彩券', nameEn: 'Sports Betting', description: '運彩與賽事' },
+    { key: 'gamble_casino', category: 'gamble', nameZh: '賭場運勢', nameEn: 'Casino', description: '賭場輪盤與手氣' },
+    { key: 'gamble_luck', category: 'gamble', nameZh: '手氣/偏財', nameEn: 'General Luck', description: '一般博弈與賭運' },
 ];
 
 // 取得場景總數
-export const TOTAL_SCENARIOS = ORACLE_SCENARIOS.length; // 55
+export const TOTAL_SCENARIOS = ORACLE_SCENARIOS.length; // 60
 
 // 按類別分組
 export const getScenariosByCategory = (category: string) =>

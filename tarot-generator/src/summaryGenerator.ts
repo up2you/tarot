@@ -105,6 +105,13 @@ const SCENARIOS = [
     { key: 'harvest_livestock', nameZh: '畜牧 (豐收)' },
     { key: 'harvest_garden', nameZh: '園藝 (豐收)' },
 
+    // 博弈類 (5)
+    { key: 'gamble_lottery', nameZh: '樂透彩券' },
+    { key: 'gamble_card', nameZh: '牌桌博弈' },
+    { key: 'gamble_sport', nameZh: '運動彩券' },
+    { key: 'gamble_casino', nameZh: '賭場運勢' },
+    { key: 'gamble_luck', nameZh: '手氣/偏財' },
+
     // 一般 (原有保留)
     { key: 'general_search', nameZh: '尋物/尋人' },
     { key: 'general_travel', nameZh: '旅行/出行' },
@@ -173,6 +180,24 @@ class SummaryGenerator {
     }
 
     private buildPrompt(scenario: { key: string, nameZh: string }, pattern: { key: string, nameZh: string, description: string }): string {
+        const isGamble = scenario.key.startsWith('gamble_');
+
+        let extraInstructions = '';
+        if (isGamble) {
+            extraInstructions = `
+6. **博弈專屬要求**：
+   - 必須明確給出「適合/不適合」進場的建議。
+   - 針對賭注策略，請給予類似「壓大/壓小」、「保守/積極」或「見好就收」的具體方向（使用隱喻或直接建議皆可）。
+   - 提及輸贏的運氣流動（例如：財運正旺或今日不宜）。
+`;
+        } else if (scenario.key.startsWith('harvest_')) {
+            extraInstructions = `
+6. **豐收專屬要求**：
+   - 使用與該領域相關的術語（如：漁獲、收成、茁壯）。
+   - 給予對產量或成果的具體預期。
+`;
+        }
+
         return `
 請為塔羅牌占卜的「總體指引」區塊撰寫一段總結文字。
 
@@ -187,7 +212,7 @@ class SummaryGenerator {
    - 如果有逆位，溫柔地指出需要調整的心態或注意的隱患，不要嚇唬使用者。
 3. **語氣**：溫暖、療癒、給予力量。
 4. **字數**：約 80-120 字。精簡有力。
-5. **格式**：直接輸出那段文字，不要有標題。
+5. **格式**：直接輸出那段文字，不要有標題。${extraInstructions}
 
 **範例（主題：愛情 / 模式：單張逆位）**：
 「雖然大體上的緣分正在靠近，但似乎有一點小小的自我懷疑正在阻礙你。這張逆位牌不是拒絕，而是邀請你先愛自己。調整好心態，別讓不安遮蔽了愛的可能，幸福其實就在轉角。」
@@ -246,8 +271,8 @@ if (apiKey) {
     const GENERATION_CONFIG: GenerationConfig = {
         apiKey,
         outputDir: path.join(__dirname, '..', 'output', 'summaries'),
-        // scenarios: SCENARIOS, // Default to all
-        // filename: 'batch_summaries.sql' // Default
+        // scenarios: SCENARIOS.filter(s => s.key.startsWith('gamble_')), // Only run new ones
+        // filename: 'batch_summaries_gamble.sql' 
     };
     new SummaryGenerator(GENERATION_CONFIG).generateAll();
 } else {
