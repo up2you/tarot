@@ -181,6 +181,7 @@ class SummaryGenerator {
 
     private buildPrompt(scenario: { key: string, nameZh: string }, pattern: { key: string, nameZh: string, description: string }): string {
         const isGamble = scenario.key.startsWith('gamble_');
+        const isGender = scenario.key === 'health_gender';
 
         let extraInstructions = '';
         if (isGamble) {
@@ -195,6 +196,15 @@ class SummaryGenerator {
 6. **豐收專屬要求**：
    - 使用與該領域相關的術語（如：漁獲、收成、茁壯）。
    - 給予對產量或成果的具體預期。
+`;
+        } else if (isGender) {
+            extraInstructions = `
+6. **性別預測專屬要求**：
+   - **這是最重要的**：請根據牌陣的「陰陽能量」給出性別預測。
+     - 陽性/剛強/行動/火風能量 (如皇帝、戰車、太陽、權杖、寶劍) -> 傾向 **男生**。
+     - 陰性/柔和/孕育/水土能量 (如女皇、月亮、女祭司、聖杯、錢幣) -> 傾向 **女生**。
+   - **格式要求**：總結的第一句話必須是「【預測結果：男生/女生】」，然後再解釋原因（例如：因為牌面能量充滿陽剛...）。
+   - 語氣請保持溫柔與祝福，強調無論性別都是珍貴的禮物。
 `;
         }
 
@@ -271,8 +281,8 @@ if (apiKey) {
     const GENERATION_CONFIG: GenerationConfig = {
         apiKey,
         outputDir: path.join(__dirname, '..', 'output', 'summaries'),
-        // scenarios: SCENARIOS.filter(s => s.key.startsWith('gamble_')), // Only run new ones
-        // filename: 'batch_summaries_gamble.sql' 
+        // scenarios: SCENARIOS.filter(s => s.key === 'health_gender'),
+        // filename: 'batch_summaries_gender.sql'
     };
     new SummaryGenerator(GENERATION_CONFIG).generateAll();
 } else {

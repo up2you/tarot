@@ -53,6 +53,9 @@ const FALLBACK_SCENARIOS: Record<string, string> = {
     'gamble_sport': 'money_luck',
     'gamble_casino': 'money_luck',
     'gamble_luck': 'money_luck',
+
+    // 健康類 Fallback
+    'health_gender': 'health_pregnancy',
 };
 
 /**

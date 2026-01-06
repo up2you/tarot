@@ -77,14 +77,14 @@ export const ORACLE_SCENARIOS: OracleScenario[] = [
     { key: 'study_compete', category: 'study', nameZh: '競賽', nameEn: 'Competition', description: '比賽競爭' },
 
     // ============================================
-    // 健康類 (6)
+    // 健康類 (7)
     // ============================================
     { key: 'health_body', category: 'health', nameZh: '身體健康', nameEn: 'Physical health', description: '整體身體狀況' },
     { key: 'health_mental', category: 'health', nameZh: '心理健康', nameEn: 'Mental health', description: '情緒和心理狀態' },
-    { key: 'health_surgery', category: 'health', nameZh: '手術', nameEn: 'Surgery', description: '手術相關' },
+    { key: 'health_surgery', category: 'health', nameZh: '手術醫療', nameEn: 'Surgery', description: '手術與治療' },
     { key: 'health_recovery', category: 'health', nameZh: '康復', nameEn: 'Recovery', description: '疾病康復' },
-    { key: 'health_pregnancy', category: 'health', nameZh: '懷孕', nameEn: 'Pregnancy', description: '懷孕相關' },
-    { key: 'health_birth', category: 'health', nameZh: '生產', nameEn: 'Childbirth', description: '生產相關' },
+    { key: 'health_pregnancy', category: 'health', nameZh: '懷孕生育', nameEn: 'Pregnancy', description: '備孕與懷孕' },
+    { key: 'health_gender', category: 'health', nameZh: '胎兒性別', nameEn: 'Gender Prediction', description: '生男或生女' },
 
     // ============================================
     // 人際類 (7)
