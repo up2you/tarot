@@ -1,5 +1,4 @@
-
-import { TarotCardData } from './types';
+import { TarotCardData, SpreadDefinition, SpreadCategory } from './types';
 
 // 使用本地牌組圖片 (card01)
 const CARD_DECK_PATH = '/card01';
@@ -32,24 +31,28 @@ export const MAJOR_ARCANA: TarotCardData[] = [
 // 牌背圖片路徑
 export const CARD_BACK_IMAGE = `${CARD_DECK_PATH}/back02.png`;
 
+
+
+// ...
+
 // 問題分類資訊
 export const SPREAD_CATEGORIES = {
-  love: { id: 'love', name: '感情', icon: '💕', color: '#ff6b9d' },
-  career: { id: 'career', name: '事業', icon: '💼', color: '#4a9eff' },
-  money: { id: 'money', name: '財運', icon: '💰', color: '#ffd700' },
-  self: { id: 'self', name: '自我', icon: '🌟', color: '#9b59b6' },
-  family: { id: 'family', name: '人際', icon: '🤝', color: '#2ecc71' },
-  general: { id: 'general', name: '通用', icon: '🔮', color: '#d4af37' },
+  love: { id: SpreadCategory.LOVE, name: '感情', icon: '💕', color: '#ff6b9d' },
+  career: { id: SpreadCategory.CAREER, name: '事業', icon: '💼', color: '#4a9eff' },
+  money: { id: SpreadCategory.MONEY, name: '財運', icon: '💰', color: '#ffd700' },
+  self: { id: SpreadCategory.SELF, name: '自我', icon: '🌟', color: '#9b59b6' },
+  family: { id: SpreadCategory.FAMILY, name: '人際', icon: '🤝', color: '#2ecc71' },
+  general: { id: SpreadCategory.GENERAL, name: '通用', icon: '🔮', color: '#d4af37' },
 };
 
 // 所有牌陣定義
-export const SPREADS = {
+export const SPREADS: Record<string, SpreadDefinition> = {
   // 💕 感情類
   LOVE_QUICK: {
     id: 'love_quick',
     name: 'Love Quick Read',
     nameZh: '戀愛快問',
-    category: 'love',
+    category: SpreadCategory.LOVE,
     description: '快速了解感情狀態',
     isVip: false,
     positions: [
@@ -62,7 +65,7 @@ export const SPREADS = {
     id: 'love_analysis',
     name: 'Relationship Analysis',
     nameZh: '關係解析',
-    category: 'love',
+    category: SpreadCategory.LOVE,
     description: '深入分析關係全貌',
     isVip: false,
     positions: [
@@ -77,7 +80,7 @@ export const SPREADS = {
     id: 'love_reunion',
     name: 'Reunion Possibility',
     nameZh: '復合可能',
-    category: 'love',
+    category: SpreadCategory.LOVE,
     description: '分手後的機會分析',
     isVip: false,
     positions: [
@@ -93,7 +96,7 @@ export const SPREADS = {
     id: 'career_direction',
     name: 'Career Direction',
     nameZh: '職涯方向',
-    category: 'career',
+    category: SpreadCategory.CAREER,
     description: '職業發展指引',
     isVip: false,
     positions: [
@@ -108,7 +111,7 @@ export const SPREADS = {
     id: 'money_quick',
     name: 'Fortune Quick Read',
     nameZh: '財運速看',
-    category: 'money',
+    category: SpreadCategory.MONEY,
     description: '近期財運趨勢',
     isVip: false,
     positions: [
@@ -123,7 +126,7 @@ export const SPREADS = {
     id: 'self_exploration',
     name: 'Soul Exploration',
     nameZh: '靈魂探索',
-    category: 'self',
+    category: SpreadCategory.SELF,
     description: '探索內在自我',
     isVip: false,
     positions: [
@@ -136,7 +139,7 @@ export const SPREADS = {
     id: 'self_lesson',
     name: 'Life Lesson',
     nameZh: '課題解析',
-    category: 'self',
+    category: SpreadCategory.SELF,
     description: '現階段的人生課題',
     isVip: false,
     positions: [
@@ -152,7 +155,7 @@ export const SPREADS = {
     id: 'family_harmony',
     name: 'Family Harmony',
     nameZh: '家庭和諧',
-    category: 'family',
+    category: SpreadCategory.FAMILY,
     description: '家庭關係分析',
     isVip: false,
     positions: [
@@ -166,7 +169,7 @@ export const SPREADS = {
     id: 'relationship',
     name: 'Interpersonal',
     nameZh: '人際關係',
-    category: 'family',
+    category: SpreadCategory.FAMILY,
     description: '與他人的關係分析',
     isVip: false,
     positions: [
@@ -181,7 +184,7 @@ export const SPREADS = {
     id: 'three_card',
     name: 'Past Present Future',
     nameZh: '時間之流',
-    category: 'general',
+    category: SpreadCategory.GENERAL,
     description: '過去、現在、未來',
     isVip: false,
     positions: [
@@ -194,9 +197,10 @@ export const SPREADS = {
     id: 'celtic_cross',
     name: 'Celtic Cross',
     nameZh: '凱爾特十字',
-    category: 'general',
+    category: SpreadCategory.GENERAL,
     description: '經典深度分析',
     isVip: false, // 暫時開放測試
+    defaultScenario: 'celtic_cross',
     positions: [
       { key: 'significator', name: '核心', description: '當前處境的核心' },
       { key: 'crossing', name: '障礙', description: '橫跨的挑戰或影響' },
@@ -214,9 +218,10 @@ export const SPREADS = {
     id: 'yearly',
     name: 'Year Ahead',
     nameZh: '年度運勢',
-    category: 'general',
+    category: SpreadCategory.GENERAL,
     description: '12個月預測',
     isVip: false, // 暫時開放測試
+    defaultScenario: 'yearly',
     positions: [
       { key: 'jan', name: '一月', description: '一月運勢' },
       { key: 'feb', name: '二月', description: '二月運勢' },

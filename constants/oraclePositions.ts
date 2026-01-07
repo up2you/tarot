@@ -81,7 +81,21 @@ export const ORACLE_POSITIONS: OraclePosition[] = [
         nameEn: 'Outcome',
         description: '最終可能的結局',
         prefix: '最終的可能結果是，'
-    }
+    },
+    // Monthly Positions
+    { key: 'jan', nameZh: '一月', nameEn: 'January', description: '一月運勢', prefix: '在一月，' },
+    { key: 'feb', nameZh: '二月', nameEn: 'February', description: '二月運勢', prefix: '在二月，' },
+    { key: 'mar', nameZh: '三月', nameEn: 'March', description: '三月運勢', prefix: '在三月，' },
+    { key: 'apr', nameZh: '四月', nameEn: 'April', description: '四月運勢', prefix: '在四月，' },
+    { key: 'may', nameZh: '五月', nameEn: 'May', description: '五月運勢', prefix: '在五月，' },
+    { key: 'jun', nameZh: '六月', nameEn: 'June', description: '六月運勢', prefix: '在六月，' },
+    { key: 'jul', nameZh: '七月', nameEn: 'July', description: '七月運勢', prefix: '在七月，' },
+    { key: 'aug', nameZh: '八月', nameEn: 'August', description: '八月運勢', prefix: '在八月，' },
+    { key: 'sep', nameZh: '九月', nameEn: 'September', description: '九月運勢', prefix: '在九月，' },
+    { key: 'oct', nameZh: '十月', nameEn: 'October', description: '十月運勢', prefix: '在十月，' },
+    { key: 'nov', nameZh: '十一月', nameEn: 'November', description: '十一月運勢', prefix: '在十一月，' },
+    { key: 'dec', nameZh: '十二月', nameEn: 'December', description: '十二月運勢', prefix: '在十二月，' },
+    { key: 'monthly', nameZh: '當月', nameEn: 'Monthly', description: '當月運勢', prefix: '這個月，' }
 ];
 
 // 取得位置總數

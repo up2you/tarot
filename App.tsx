@@ -252,7 +252,13 @@ const App: React.FC = () => {
   */
 
   const handleStartShuffle = async () => {
-    if (!question.trim() || !selectedSpreadId) return;
+    // 獲取選擇的牌陣定義
+    const spreadDef = Object.values(SPREADS).find(s => s.id === selectedSpreadId);
+
+    // 允許：1. 有問題 + 有牌陣 2. 有默認場景 + 有牌陣 (跳過問題檢查)
+    if (!selectedSpreadId || (!question.trim() && !spreadDef?.defaultScenario)) return;
+
+    if (!spreadDef) return;
 
     // 🆕 神諭資料庫對所有人免費使用（額度限制已移除）
     // VIP 用戶使用 AI 解讀，免費用戶使用神諭資料庫
@@ -271,8 +277,8 @@ const App: React.FC = () => {
     }
     */
 
-    // 獲取選擇的牌陣定義
-    const spreadDef = Object.values(SPREADS).find(s => s.id === selectedSpreadId);
+    // 獲取選擇的牌陣定義 (Duplicate removed)
+    // const spreadDef = Object.values(SPREADS).find(s => s.id === selectedSpreadId);
     if (!spreadDef) return;
 
     hasConsumedQuotaRef.current = false; // 重置額度扣除標記
@@ -363,7 +369,9 @@ const App: React.FC = () => {
         );
       } else {
         // 免費用戶：使用神諭資料庫（預生成解讀）
-        const scenarioKey = detectScenario(question); // 根據問題推測場景
+        const spreadDef = selectedSpreadId ? Object.values(SPREADS).find(s => s.id === selectedSpreadId) : null;
+        let scenarioKey = spreadDef?.defaultScenario || detectScenario(question); // 優先使用預設場景
+
         const cards = spread.map((s, idx) => ({
           cardId: s.card.id,
           cardName: s.card.nameZh,
@@ -888,7 +896,11 @@ const App: React.FC = () => {
       '過去': 'past', '現在': 'present', '未來': 'future',
       '自己': 'self', '對方': 'other', '結果': 'outcome',
       '障礙': 'obstacle', '建議': 'advice', '環境': 'environment',
-      '潛意識': 'subconscious'
+      '潛意識': 'subconscious',
+      // Yearly Positions
+      '一月': 'jan', '二月': 'feb', '三月': 'mar', '四月': 'apr',
+      '五月': 'may', '六月': 'jun', '七月': 'jul', '八月': 'aug',
+      '九月': 'sep', '十月': 'oct', '十一月': 'nov', '十二月': 'dec'
     };
     return keyMap[positionName] || ['past', 'present', 'future', 'self', 'other', 'outcome', 'advice', 'obstacle', 'environment', 'subconscious'][index % 10];
   };

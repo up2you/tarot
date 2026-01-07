@@ -93,6 +93,20 @@ export const getOracleInterpretation = async (
         let text = await tryFetch(scenarioKey);
         if (text) return text;
 
+        // 1.5 Yearly Spread Fallback Strategy
+        // 對於年度運勢，如果找不到特定月份（例如 jan, feb）的解釋
+        // 則嘗試使用共用的 "monthly" 解釋
+        if (scenarioKey === 'yearly') {
+            const originalPosition = positionKey;
+            // 暫時切換查詢條件為 monthly
+            positionKey = 'monthly';
+            text = await tryFetch('yearly');
+            // 恢復原始位置 Key 以避免副作用
+            positionKey = originalPosition;
+
+            if (text) return text;
+        }
+
         // 2. 嘗試 Fallback 場景
         const fallbackKey = FALLBACK_SCENARIOS[scenarioKey];
         if (fallbackKey) {

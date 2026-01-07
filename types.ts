@@ -94,6 +94,7 @@ export interface SpreadDefinition {
   positions: SpreadPosition[];
   description: string;
   isVip: boolean;
+  defaultScenario?: string;
 }
 
 // 手機牌陣顯示模式
