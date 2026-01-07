@@ -87,7 +87,7 @@ export const SPREADS: Record<string, SpreadDefinition> = {
       { key: 'past', name: '過去', description: '分開的原因' },
       { key: 'present', name: '現狀', description: '雙方目前的心態' },
       { key: 'obstacle', name: '障礙', description: '復合的阻礙' },
-      { key: 'possibility', name: '可能', description: '復合的機會' },
+      { key: 'outcome', name: '可能', description: '復合的機會' },
     ]
   },
 
@@ -100,8 +100,8 @@ export const SPREADS: Record<string, SpreadDefinition> = {
     description: '職業發展指引',
     isVip: false,
     positions: [
-      { key: 'current', name: '現況', description: '目前的職業狀態' },
-      { key: 'potential', name: '潛力', description: '你的優勢與可能' },
+      { key: 'present', name: '現況', description: '目前的職業狀態' },
+      { key: 'future', name: '潛力', description: '你的優勢與可能' },
       { key: 'advice', name: '建議', description: '下一步的方向' },
     ]
   },
@@ -115,8 +115,8 @@ export const SPREADS: Record<string, SpreadDefinition> = {
     description: '近期財運趨勢',
     isVip: false,
     positions: [
-      { key: 'income', name: '收入', description: '進財的可能' },
-      { key: 'expense', name: '支出', description: '花費的警示' },
+      { key: 'future', name: '收入', description: '進財的可能' },
+      { key: 'obstacle', name: '支出', description: '花費的警示' },
       { key: 'advice', name: '建議', description: '理財方向' },
     ]
   },
