@@ -320,6 +320,15 @@ const App: React.FC = () => {
   // 選擇牌陣
   const handleSelectSpread = (spreadId: string) => {
     setSelectedSpreadId(spreadId);
+
+    // 如果是預設場景牌陣 (如年度運勢)，自動填入問題
+    const spreadDef = Object.values(SPREADS).find(s => s.id === spreadId);
+    if (spreadDef?.defaultScenario) {
+      setQuestion(spreadDef.nameZh);
+    } else {
+      setQuestion(''); // 切換回一般牌陣時清空
+    }
+
     setAppState(AppState.WELCOME);
   };
 
