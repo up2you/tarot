@@ -130,9 +130,9 @@ export const SPREADS: Record<string, SpreadDefinition> = {
     description: '探索內在自我',
     isVip: false,
     positions: [
-      { key: 'conscious', name: '意識', description: '你意識到的自己' },
-      { key: 'subconscious', name: '潛意識', description: '隱藏的內在' },
-      { key: 'shadow', name: '陰影', description: '需要面對的課題' },
+      { key: 'self', name: '意識', description: '你意識到的自己' },
+      { key: 'present', name: '潛意識', description: '隱藏的內在' },
+      { key: 'obstacle', name: '陰影', description: '需要面對的課題' },
     ]
   },
   SELF_LESSON: {
