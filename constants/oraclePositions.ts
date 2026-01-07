@@ -95,7 +95,8 @@ export const ORACLE_POSITIONS: OraclePosition[] = [
     { key: 'oct', nameZh: '十月', nameEn: 'October', description: '十月運勢', prefix: '在十月，' },
     { key: 'nov', nameZh: '十一月', nameEn: 'November', description: '十一月運勢', prefix: '在十一月，' },
     { key: 'dec', nameZh: '十二月', nameEn: 'December', description: '十二月運勢', prefix: '在十二月，' },
-    { key: 'monthly', nameZh: '當月', nameEn: 'Monthly', description: '當月運勢', prefix: '這個月，' }
+    { key: 'monthly', nameZh: '當月', nameEn: 'Monthly', description: '當月運勢', prefix: '這個月，' },
+    { key: 'relation', nameZh: '關係', nameEn: 'Relation', description: '兩人的連結與互動', prefix: '在關係的連結上，' }
 ];
 
 // 取得位置總數

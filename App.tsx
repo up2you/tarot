@@ -911,6 +911,8 @@ const App: React.FC = () => {
       '自己': 'self', '對方': 'other', '結果': 'outcome',
       '障礙': 'obstacle', '建議': 'advice', '環境': 'environment',
       '潛意識': 'subconscious',
+      // Love Spread Mappings
+      '你的心': 'self', '對方的心': 'other', '連結': 'relation', '挑戰': 'obstacle', '指引': 'advice',
       // Yearly Positions
       '一月': 'jan', '二月': 'feb', '三月': 'mar', '四月': 'apr',
       '五月': 'may', '六月': 'jun', '七月': 'jul', '八月': 'aug',
