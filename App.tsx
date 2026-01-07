@@ -260,6 +260,11 @@ const App: React.FC = () => {
 
     if (!spreadDef) return;
 
+    // 🆕 如果是有默認場景的牌陣且問題為空，自動填入預設問題 (確保顯示正確)
+    if (!question.trim() && spreadDef.defaultScenario) {
+      setQuestion(spreadDef.nameZh);
+    }
+
     // 🆕 神諭資料庫對所有人免費使用（額度限制已移除）
     // VIP 用戶使用 AI 解讀，免費用戶使用神諭資料庫
     // 如需恢復額度限制，取消下方註釋
