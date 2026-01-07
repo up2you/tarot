@@ -295,7 +295,8 @@ const App: React.FC = () => {
     const selected = shuffled.slice(0, cardCount).map((card, index) => ({
       card,
       isReversed: Math.random() > 0.7,
-      position: spreadDef.positions[index].name
+      position: spreadDef.positions[index].name,
+      positionId: spreadDef.positions[index].key
     }));
 
     const theme = currentUser?.theme || AppTheme.BAROQUE;
@@ -390,7 +391,8 @@ const App: React.FC = () => {
           cardId: s.card.id,
           cardName: s.card.nameZh,
           isReversed: s.isReversed,
-          positionKey: mapPositionToKey(s.position, idx),
+          // 優先使用 positionId (對應 oraclePositions key)，若無則回退到中文映射
+          positionKey: s.positionId || mapPositionToKey(s.position, idx),
         }));
 
         setMessages([{ role: 'model', text: '✨ 正在從神諭之書中尋找指引...' }]);

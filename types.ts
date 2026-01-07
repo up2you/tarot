@@ -13,6 +13,7 @@ export interface CardReading {
   card: TarotCardData;
   isReversed: boolean;
   position: string;
+  positionId?: string; // 對應 oraclePositions 中的 key
 }
 
 // 本地儲存的占卜記錄

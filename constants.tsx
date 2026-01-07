@@ -56,9 +56,9 @@ export const SPREADS: Record<string, SpreadDefinition> = {
     description: '快速了解感情狀態',
     isVip: false,
     positions: [
-      { key: 'your_heart', name: '你的心', description: '你對這段關係的真實感受' },
-      { key: 'their_heart', name: '對方的心', description: '對方目前的態度' },
-      { key: 'connection', name: '連結', description: '兩人之間的能量' },
+      { key: 'self', name: '你的心', description: '你對這段關係的真實感受' },
+      { key: 'other', name: '對方的心', description: '對方目前的態度' },
+      { key: 'relation', name: '連結', description: '兩人之間的能量' },
     ]
   },
   LOVE_ANALYSIS: {
@@ -70,10 +70,10 @@ export const SPREADS: Record<string, SpreadDefinition> = {
     isVip: false,
     positions: [
       { key: 'self', name: '自己', description: '你在關係中的狀態' },
-      { key: 'partner', name: '對方', description: '對方的狀態' },
-      { key: 'connection', name: '連結', description: '當前的關係品質' },
-      { key: 'challenge', name: '挑戰', description: '需要面對的問題' },
-      { key: 'guidance', name: '指引', description: '建議的方向' },
+      { key: 'other', name: '對方', description: '對方的狀態' },
+      { key: 'relation', name: '連結', description: '當前的關係品質' },
+      { key: 'obstacle', name: '挑戰', description: '需要面對的問題' },
+      { key: 'advice', name: '指引', description: '建議的方向' },
     ]
   },
   LOVE_REUNION: {
