@@ -1235,7 +1235,7 @@ ${cleanedInterpretation}
             <div className="flex gap-3">
               <button
                 onClick={handleStartShuffle}
-                disabled={!question.trim() || !selectedSpreadId}
+                disabled={(!question.trim() && !Object.values(SPREADS).find(s => s.id === selectedSpreadId)?.defaultScenario) || !selectedSpreadId}
                 className="flex-[2] py-3 md:py-5 rounded-full gold-button text-base md:text-xl font-black tracking-[0.2em] md:tracking-[0.5em] disabled:opacity-20 disabled:grayscale transition-all shadow-[0_10px_30px_rgba(0,0,0,0.5)]"
               >
                 領受天啟
