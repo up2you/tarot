@@ -915,6 +915,8 @@ const App: React.FC = () => {
       '潛意識': 'subconscious',
       // Love Spread Mappings
       '你的心': 'self', '對方的心': 'other', '連結': 'relation', '挑戰': 'obstacle', '指引': 'advice',
+      // Self Spread Mappings
+      '課題': 'present', '阻礙': 'obstacle', '力量': 'self', '成長': 'future',
       // Yearly Positions
       '一月': 'jan', '二月': 'feb', '三月': 'mar', '四月': 'apr',
       '五月': 'may', '六月': 'jun', '七月': 'jul', '八月': 'aug',

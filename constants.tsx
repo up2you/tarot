@@ -143,10 +143,10 @@ export const SPREADS: Record<string, SpreadDefinition> = {
     description: '現階段的人生課題',
     isVip: false,
     positions: [
-      { key: 'lesson', name: '課題', description: '你正在學習的功課' },
-      { key: 'block', name: '阻礙', description: '阻止你前進的因素' },
-      { key: 'strength', name: '力量', description: '你擁有的內在資源' },
-      { key: 'growth', name: '成長', description: '可能的突破方向' },
+      { key: 'present', name: '課題', description: '你正在學習的功課' },
+      { key: 'obstacle', name: '阻礙', description: '阻止你前進的因素' },
+      { key: 'self', name: '力量', description: '你擁有的內在資源' },
+      { key: 'future', name: '成長', description: '可能的突破方向' },
     ]
   },
 
