@@ -160,8 +160,8 @@ export const SPREADS: Record<string, SpreadDefinition> = {
     isVip: false,
     positions: [
       { key: 'self', name: '自己', description: '你在家庭中的角色' },
-      { key: 'family', name: '家人', description: '家人的狀態' },
-      { key: 'dynamic', name: '互動', description: '彼此的關係動態' },
+      { key: 'other', name: '家人', description: '家人的狀態' },
+      { key: 'relation', name: '互動', description: '彼此的關係動態' },
       { key: 'advice', name: '建議', description: '改善關係的方向' },
     ]
   },
@@ -175,7 +175,7 @@ export const SPREADS: Record<string, SpreadDefinition> = {
     positions: [
       { key: 'self', name: '自己', description: '你的狀態' },
       { key: 'other', name: '對方', description: '對方的狀態' },
-      { key: 'connection', name: '連結', description: '關係的本質' },
+      { key: 'relation', name: '連結', description: '關係的本質' },
     ]
   },
 
