@@ -13,6 +13,7 @@
         "dev": "tsx src/index.ts",
         "gen": "tsx src/index.ts",
         "oracle": "tsx src/oracleGenerator.ts",
+        "relation": "tsx src/relationGenerator.ts",
         "qa": "tsx src/oracleQA.ts",
         "qa:local": "tsx src/testFixes.ts"
     },
