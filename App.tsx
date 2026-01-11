@@ -571,9 +571,18 @@ const App: React.FC = () => {
     }
 
     // ==================== 💍 婚姻相關（優先判斷）====================
-    if (lower.includes('結婚') || lower.includes('婚姻') || lower.includes('求婚') ||
-      lower.includes('訂婚') || lower.includes('婚約') || lower.includes('婚配') ||
-      (lower.includes('婆媳') && !lower.includes('家'))) {
+    // 未來婚姻可能性：包含時間限制、能否、何時等預測性問題 → love_single
+    if ((lower.includes('結婚') || lower.includes('求婚') || lower.includes('訂婚')) &&
+      (lower.includes('歲') || lower.includes('年內') || lower.includes('何時') ||
+        lower.includes('能不能') || lower.includes('會不會') || lower.includes('可以') ||
+        lower.includes('能在') || lower.includes('會在') || lower.includes('幾歲') ||
+        lower.includes('多久') || lower.includes('什麼時候') || lower.includes('時候'))) {
+      return 'love_single';
+    }
+    // 現有婚姻關係：婆媳、婚姻問題、夫妻相處等 → love_marriage
+    if (lower.includes('婚姻') || lower.includes('婆媳') ||
+      lower.includes('夫妻') || lower.includes('配偶') ||
+      (lower.includes('結婚') && (lower.includes('後') || lower.includes('生活') || lower.includes('相處')))) {
       return 'love_marriage';
     }
 
@@ -667,7 +676,10 @@ const App: React.FC = () => {
 
     // ==================== 👥 家庭關係（移到房產前）====================
     if (lower.includes('家人') || lower.includes('父母') || lower.includes('兄弟') ||
-      lower.includes('姊妹') || lower.includes('親戚') || lower.includes('婆媳') ||
+      lower.includes('姊妹') || lower.includes('姐妹') ||
+      lower.includes('弟弟') || lower.includes('哥哥') || lower.includes('姊姊') ||
+      lower.includes('姐姐') || lower.includes('妹妹') ||
+      lower.includes('親戚') || lower.includes('婆媳') ||
       lower.includes('家庭') || lower.includes('親情') || lower.includes('搬出去住')) {
       return 'relation_family';
     }
