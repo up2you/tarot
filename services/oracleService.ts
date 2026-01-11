@@ -409,6 +409,54 @@ export const generateFreeReading = async (
                 narrative += `\n\n這段關係的走向，關鍵在於誠實面對彼此的內心，愛會在真實中綻放。`;
 
                 result.summary = `# 艾瑟瑞爾的愛之神諭\n\n${narrative}`;
+            } else if (scenarioKey.startsWith('relation_')) {
+                // relation scenarios 專用邏輯（FAMILY_HARMONY等牌陣）
+                const selfCard = cards.find(c => c.positionKey === 'self');
+                const relationCard = cards.find(c => c.positionKey === 'relation');
+                const adviceCard = cards.find(c => c.positionKey === 'advice');
+
+                // 提取每張牌的第一段核心訊息
+                const getCoreMeaning = (pos: string) => {
+                    const interpret = result.interpretations.find(i => i.position === (getPositionByKey(pos)?.nameZh || pos));
+                    if (!interpret?.text) return '';
+                    const firstParagraph = interpret.text.split('\n\n')[0];
+                    const sentences = firstParagraph.split('。');
+                    return (sentences[1] || sentences[0] || '').substring(0, 120);
+                };
+
+                let relationshipTitle = '關係';
+                if (scenarioKey === 'relation_family') relationshipTitle = '家庭';
+                else if (scenarioKey === 'relation_friend') relationshipTitle = '友誼';
+                else if (scenarioKey === 'relation_colleague') relationshipTitle = '職場人際';
+                else if (scenarioKey === 'relation_client') relationshipTitle = '客戶關係';
+                else if (scenarioKey === 'relation_neighbor') relationshipTitle = '鄰里';
+                else if (scenarioKey === 'relation_elder') relationshipTitle = '長輩相處';
+                else if (scenarioKey === 'relation_rival') relationshipTitle = '競爭關係';
+
+                let summary = `# 艾瑟瑞爾的${relationshipTitle}神諭\n\n`;
+
+                if (selfCard && relationCard && adviceCard) {
+                    const selfMsg = getCoreMeaning('self');
+                    const relationMsg = getCoreMeaning('relation');
+                    const adviceMsg = getCoreMeaning('advice');
+
+                    summary += `在這段關係中，**${selfCard.cardName}**顯示${selfMsg}\n\n`;
+                    summary += `連結的核心（**${relationCard.cardName}**）告訴我們${relationMsg}\n\n`;
+                    summary += `艾瑟瑞爾建議（**${adviceCard.cardName}**）${adviceMsg}\n\n`;
+                    summary += `請記得，所有關係都需要雙方的理解與努力。帶著開放的心與勇氣去溝通，和諧將在真誠中萌芽。`;
+                } else {
+                    // Fallback: 使用主牌
+                    const mainCard = selfCard || relationCard || adviceCard || cards[0];
+                    if (mainCard) {
+                        const mainMsg = getCoreMeaning(mainCard.positionKey);
+                        summary += `**${mainCard.cardName}**揭示${mainMsg}\n\n`;
+                        summary += `牌面傳遞了重要的關係訊息，請細心感受，答案就在彼此的理解之中。`;
+                    } else {
+                        summary += `牌面揭示了重要的關係訊息，請細心感受每張牌傳遞的智慧，答案就在彼此的理解之中。`;
+                    }
+                }
+
+                result.summary = summary;
             } else {
                 // 缺少關鍵牌位時的備案
                 const mainCard = result.interpretations.find(i => i.position === '未來' || i.position === '結果' || i.position === '單張');
