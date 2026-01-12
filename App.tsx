@@ -657,6 +657,19 @@ const App: React.FC = () => {
       }
     }
 
+    // ==================== 💕 愛情關係修復/和好 ====================
+    // 處理沒有明確愛情關鍵字但明顯涉及愛情的關係問題
+    if ((lower.includes('關係') || lower.includes('我們') || lower.includes('我和他') || lower.includes('我和她')) &&
+      (lower.includes('和好') || lower.includes('改善') || lower.includes('修復') || lower.includes('變好') ||
+        lower.includes('挽救') || lower.includes('維持') || lower.includes('繼續') || lower.includes('順利')) &&
+      !lower.includes('家人') && !lower.includes('父母') && !lower.includes('同事') &&
+      !lower.includes('朋友') && !lower.includes('鄰居')) {
+      // 如果明確提到"他"或"她"，很可能是愛情關係
+      if (lower.includes('他') || lower.includes('她') || lower.includes('對方')) {
+        return 'love_conflict';
+      }
+    }
+
     // ==================== 💕 一般愛情相關 ====================
     if (lower.includes('愛') || lower.includes('戀') || lower.includes('感情') ||
       lower.includes('對象') || lower.includes('喜歡') || lower.includes('男友') ||
