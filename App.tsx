@@ -592,6 +592,72 @@ const App: React.FC = () => {
       return 'study_abroad';
     }
 
+    // ==================== 💰 財運相關（優先判斷具體情境）====================
+    // 投資相關
+    if (lower.includes('投資') || lower.includes('股票') || lower.includes('基金') ||
+      lower.includes('定存') || lower.includes('債券') || lower.includes('理財產品') ||
+      (lower.includes('買') && (lower.includes('股') || lower.includes('基金')))) {
+      return 'money_invest';
+    }
+
+    // 借貸相關
+    if ((lower.includes('借') && (lower.includes('錢') || lower.includes('款'))) ||
+      lower.includes('貸款') || lower.includes('融資') || lower.includes('車貸') ||
+      lower.includes('房貸') || lower.includes('學貸') || lower.includes('信貸')) {
+      return 'money_loan';
+    }
+
+    // 債務相關
+    if (lower.includes('欠債') || lower.includes('討債') || lower.includes('還債') ||
+      lower.includes('債務') || (lower.includes('債') && lower.includes('還'))) {
+      return 'money_debt';
+    }
+
+    // 買房置產
+    if ((lower.includes('買房') || lower.includes('購屋') || lower.includes('置產')) &&
+      !lower.includes('租')) {
+      return 'money_property';
+    }
+
+    // 破財/損失
+    if (lower.includes('破財') || lower.includes('財務損失') || lower.includes('賠錢') ||
+      (lower.includes('損失') && lower.includes('錢'))) {
+      return 'money_loss';
+    }
+
+    // 偏財/橫財（僅限明確提到的）
+    if (lower.includes('橫財') || lower.includes('中獎') || lower.includes('刮刮樂') ||
+      lower.includes('彩券') || lower.includes('樂透') || lower.includes('大樂透') ||
+      lower.includes('威力彩') || lower.includes('中彩') ||
+      lower.includes('繼承') || lower.includes('遺產') ||
+      lower.includes('意外之財') || lower.includes('偏財') ||
+      (lower.includes('賭') && lower.includes('贏'))) {
+      return 'money_windfall';
+    }
+
+    // 生意/經商收入
+    if (lower.includes('生意') || lower.includes('營收') || lower.includes('業績') ||
+      lower.includes('客源') || lower.includes('訂單') ||
+      (lower.includes('經商') || lower.includes('做生意'))) {
+      return 'money_business';
+    }
+
+    // 薪資/正財（優先於一般財運）
+    if (lower.includes('薪水') || lower.includes('薪資') || lower.includes('加薪') ||
+      lower.includes('正財') || lower.includes('收入') ||
+      (lower.includes('工作') && lower.includes('賺'))) {
+      return 'money_salary';
+    }
+
+    // 一般財運/理財規劃（最後的 fallback）
+    if (lower.includes('財運') || lower.includes('財富') || lower.includes('金錢運') ||
+      lower.includes('財') || lower.includes('錢運') ||
+      lower.includes('理財') || lower.includes('財務規劃') ||
+      (lower.includes('運勢') && lower.includes('錢')) ||
+      (lower.includes('今年') && lower.includes('財'))) {
+      return 'money_plan';  // 使用理財規劃作為一般財運的 scenario
+    }
+
     // ==================== 🌹 愛情單身/桃花（優先判斷）====================
     if (lower.includes('桃花') || lower.includes('戀愛運') || lower.includes('姻緣') ||
       lower.includes('感情運') || lower.includes('愛情運') || lower.includes('脫單') ||
