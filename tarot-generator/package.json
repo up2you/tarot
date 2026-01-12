@@ -14,6 +14,7 @@
         "gen": "tsx src/index.ts",
         "oracle": "tsx src/oracleGenerator.ts",
         "relation": "tsx src/relationGenerator.ts",
+        "love": "tsx src/loveGenerator.ts",
         "qa": "tsx src/oracleQA.ts",
         "qa:local": "tsx src/testFixes.ts"
     },
