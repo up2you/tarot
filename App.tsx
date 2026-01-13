@@ -649,13 +649,20 @@ const App: React.FC = () => {
       return 'money_salary';
     }
 
-    // 一般財運/理財規劃（最後的 fallback）
+    // 理財規劃（需要明確提到規劃性關鍵字）
+    if (lower.includes('理財') || lower.includes('財務規劃') || lower.includes('財務管理') ||
+      lower.includes('預算') || lower.includes('如何規劃') || lower.includes('理財計劃') ||
+      (lower.includes('儲蓄') && (lower.includes('規劃') || lower.includes('計劃')))) {
+      return 'money_plan';
+    }
+
+    // 一般財富運勢（最後的 fallback，涵蓋所有財運問題）
     if (lower.includes('財運') || lower.includes('財富') || lower.includes('金錢運') ||
       lower.includes('財') || lower.includes('錢運') ||
-      lower.includes('理財') || lower.includes('財務規劃') ||
       (lower.includes('運勢') && lower.includes('錢')) ||
-      (lower.includes('今年') && lower.includes('財'))) {
-      return 'money_plan';  // 使用理財規劃作為一般財運的 scenario
+      (lower.includes('今年') && lower.includes('財')) ||
+      (lower.includes('財富') && lower.includes('如何'))) {
+      return 'money_fortune';  // 使用財富運勢 scenario
     }
 
     // ==================== 🌹 愛情單身/桃花（優先判斷）====================
