@@ -380,9 +380,15 @@ export const generateFreeReading = async (
                     const interpret = result.interpretations.find(i => i.position === (getPositionByKey(pos)?.nameZh || pos));
                     if (!interpret?.text) return '';
                     // 取第一段，並移除常見開頭以利句子銜接
-                    return interpret.text.split('\n\n')[0]
-                        .replace(/^(在你們的關係中，|在感情上，|關於這段關係，|親愛的，|這張牌|當|從)/, '')
-                        .substring(0, 150); // 避免過長
+                    let text = interpret.text.split('\n\n')[0]
+                        .replace(/^(在你們的關係中，|在感情上，|關於這段關係，|親愛的，|這張牌|當|從)/, '');
+                    // 智能截斷：如果超過200字，在最後一個句號處截斷
+                    if (text.length > 200) {
+                        const sentences = text.substring(0, 200).split('。');
+                        sentences.pop(); // 移除最後一個不完整的句子
+                        text = sentences.join('。') + (sentences.length > 0 ? '。' : '');
+                    }
+                    return text;
                 };
 
                 const selfMsg = getMsg('self');
@@ -401,9 +407,15 @@ export const generateFreeReading = async (
                     const interpret = result.interpretations.find(i => i.position === (getPositionByKey(pos)?.nameZh || pos));
                     if (!interpret?.text) return '';
                     // 取第一段，並移除常見開頭以利句子銜接
-                    return interpret.text.split('\n')[0]
-                        .replace(/^(在你們的關係中，|在感情上，|關於這段關係，)/, '')
-                        .substring(0, 150); // 避免過長
+                    let text = interpret.text.split('\n')[0]
+                        .replace(/^(在你們的關係中，|在感情上，|關於這段關係，)/, '');
+                    // 智能截斷：如果超過200字，在最後一個句號處截斷
+                    if (text.length > 200) {
+                        const sentences = text.substring(0, 200).split('。');
+                        sentences.pop(); // 移除最後一個不完整的句子
+                        text = sentences.join('。') + (sentences.length > 0 ? '。' : '');
+                    }
+                    return text;
                 };
 
                 const presentMsg = getMsg(presentCard.positionKey);
@@ -453,7 +465,14 @@ export const generateFreeReading = async (
                     if (!interpret?.text) return '';
                     const firstParagraph = interpret.text.split('\n\n')[0];
                     const sentences = firstParagraph.split('。');
-                    return (sentences[1] || sentences[0] || '').substring(0, 120);
+                    let text = sentences[1] || sentences[0] || '';
+                    // 智能截斷：如果超過150字，取前面完整的句子
+                    if (text.length > 150) {
+                        const subSentences = text.substring(0, 150).split('。');
+                        subSentences.pop(); // 移除最後一個不完整的句子
+                        text = subSentences.join('。') + (subSentences.length > 0 ? '。' : '');
+                    }
+                    return text;
                 };
 
                 let relationshipTitle = '關係';
