@@ -371,8 +371,32 @@ export const generateFreeReading = async (
             const presentCard = cards.find(c => c.positionKey === 'present');
             const futureCard = cards.find(c => c.positionKey === 'future' || c.positionKey === 'outcome');
             const otherCard = cards.find(c => c.positionKey === 'other'); // 對方
+            const selfCard = cards.find(c => c.positionKey === 'self'); // 自己
+            const relationCard = cards.find(c => c.positionKey === 'relation'); // 連結
 
-            if (presentCard && futureCard) {
+            // 針對「提問魂印」等只有 self/other/relation 的牌陣
+            if (selfCard && otherCard && relationCard && !presentCard && !futureCard) {
+                const getMsg = (pos: string) => {
+                    const interpret = result.interpretations.find(i => i.position === (getPositionByKey(pos)?.nameZh || pos));
+                    if (!interpret?.text) return '';
+                    // 取第一段，並移除常見開頭以利句子銜接
+                    return interpret.text.split('\n\n')[0]
+                        .replace(/^(在你們的關係中，|在感情上，|關於這段關係，|親愛的，|這張牌|當|從)/, '')
+                        .substring(0, 150); // 避免過長
+                };
+
+                const selfMsg = getMsg('self');
+                const otherMsg = getMsg('other');
+                const relationMsg = getMsg('relation');
+
+                let narrative = '';
+                narrative += `在這段關係中，你（**${selfCard.cardName}**）${selfMsg}\n\n`;
+                narrative += `對方（**${otherCard.cardName}**）${otherMsg}\n\n`;
+                narrative += `而你們的連結（**${relationCard.cardName}**）${relationMsg}\n\n`;
+                narrative += `請相信直覺，答案已在心中。`;
+
+                result.summary = `# 艾瑟瑞爾的愛之神諭\n\n${narrative}`;
+            } else if (presentCard && futureCard) {
                 const getMsg = (pos: string) => {
                     const interpret = result.interpretations.find(i => i.position === (getPositionByKey(pos)?.nameZh || pos));
                     if (!interpret?.text) return '';
@@ -409,6 +433,14 @@ export const generateFreeReading = async (
                 narrative += `\n\n這段關係的走向，關鍵在於誠實面對彼此的內心，愛會在真實中綻放。`;
 
                 result.summary = `# 艾瑟瑞爾的愛之神諭\n\n${narrative}`;
+            } else if (scenarioKey.startsWith('love_')) {
+                // 愛情場景但沒有標準位置的fallback
+                const mainCard = selfCard || otherCard || relationCard || cards[0];
+                if (mainCard) {
+                    result.summary = `# 艾瑟瑞爾的愛之神諭\n\n在這段關係中，**${mainCard.cardName}**為你帶來重要的訊息。請細心感受牌面的指引，愛的答案就在你心中。`;
+                } else {
+                    result.summary = `# 艾瑟瑞爾的愛之神諭\n\n請相信直覺，答案已在心中。`;
+                }
             } else if (scenarioKey.startsWith('relation_')) {
                 // relation scenarios 專用邏輯（FAMILY_HARMONY等牌陣）
                 const selfCard = cards.find(c => c.positionKey === 'self');
