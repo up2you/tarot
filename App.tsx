@@ -828,6 +828,22 @@ const App: React.FC = () => {
     }
 
     // ==================== 👥 其他人際關係 ====================
+    // 優先檢測：一般關係品質問題（可能是友誼或其他非愛情關係）
+    // 「XX和我的關係還好嗎?」「我跟XX的關係一樣好嗎?」→ relation_friend
+    // 排除明確的愛情關鍵字，避免誤判
+    if ((lower.includes('關係') && (lower.includes('好') || lower.includes('還') || lower.includes('一樣'))) ||
+      (lower.includes('我們') && lower.includes('關係') && lower.includes('好')) ||
+      (lower.includes('我和') && lower.includes('關係'))) {
+      // 排除明確的愛情、家人、職場關係
+      if (!lower.includes('愛') && !lower.includes('戀') && !lower.includes('感情') &&
+        !lower.includes('男友') && !lower.includes('女友') && !lower.includes('老公') && !lower.includes('老婆') &&
+        !lower.includes('另一半') && !lower.includes('對象') &&
+        !lower.includes('家人') && !lower.includes('父母') && !lower.includes('兄弟') && !lower.includes('姊妹') &&
+        !lower.includes('同事') && !lower.includes('老闆') && !lower.includes('主管')) {
+        return 'relation_friend';
+      }
+    }
+
     // 朋友還錢優先歸類為債務，失聯找朋友優先歸類為尋人
     if ((lower.includes('朋友') || lower.includes('友誼') || lower.includes('友情')) &&
       !lower.includes('還') && !lower.includes('錢') && !lower.includes('欠') && !lower.includes('借') &&
