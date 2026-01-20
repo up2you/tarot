@@ -355,11 +355,11 @@ const CardsPage: React.FC = () => {
                     className="bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white min-w-64"
                     disabled={isLoading}
                 >
-                    {CARD_STYLES.map((style) => {
-                        const stats = styleStats.get(style.id);
+                    {styles.map((style) => {
+                        const stats = styleStats.get(style.style_key);
                         return (
-                            <option key={style.id} value={style.id}>
-                                {style.nameZh} {stats ? `(${stats.uploaded}/${stats.total})` : ''}
+                            <option key={style.style_key} value={style.style_key}>
+                                {style.name_zh} {stats ? `(${stats.uploaded}/${stats.total})` : ''}
                             </option>
                         );
                     })}
@@ -544,30 +544,30 @@ const CardsPage: React.FC = () => {
 
             {/* 所有風格快覽 */}
             <div className="bg-gray-800 rounded-xl p-6 border border-gray-700">
-                <h3 className="text-lg font-bold text-white mb-4">📋 所有風格 ({CARD_STYLES.length} 種)</h3>
+                <h3 className="text-lg font-bold text-white mb-4">📋 所有風格 ({styles.length} 種)</h3>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {CARD_STYLES.map((style) => {
-                        const stats = styleStats.get(style.id);
+                    {styles.map((style) => {
+                        const stats = styleStats.get(style.style_key);
                         const isComplete = stats?.uploaded === stats?.total;
 
                         return (
                             <div
-                                key={style.id}
-                                className={`p-4 rounded-lg border cursor-pointer transition-all ${selectedStyle === style.id
+                                key={style.style_key}
+                                className={`p-4 rounded-lg border cursor-pointer transition-all ${selectedStyle === style.style_key
                                     ? 'border-amber-500 bg-amber-500/10'
                                     : 'border-gray-700 hover:border-gray-600'
                                     }`}
-                                onClick={() => setSelectedStyle(style.id)}
+                                onClick={() => setSelectedStyle(style.style_key)}
                             >
                                 <div className="flex items-center gap-3">
                                     <div
                                         className="w-8 h-8 rounded-full flex items-center justify-center text-xs text-white"
-                                        style={{ backgroundColor: style.primaryColor }}
+                                        style={{ backgroundColor: style.primary_color || '#d4af37' }}
                                     >
                                         {isComplete ? '✓' : stats?.uploaded || 0}
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <p className="text-white text-sm font-medium truncate">{style.nameZh}</p>
+                                        <p className="text-white text-sm font-medium truncate">{style.name_zh}</p>
                                         <p className="text-gray-500 text-xs truncate">{style.name}</p>
                                     </div>
                                     {isComplete ? (

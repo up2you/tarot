@@ -5,11 +5,12 @@
 import React, { useState, useEffect } from 'react';
 import { MobileCardDisplayMode } from '../../types';
 import { getSettings, updateSettings } from '../../services/settingsService';
-import { CARD_STYLES } from '../../constants/cardStyles';
+import { getAllStylesForAdmin, CardStyle } from '../../services/cardStyleService';
 
 
 
 const SettingsPage: React.FC = () => {
+    const [styles, setStyles] = useState<CardStyle[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [saveMessage, setSaveMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -182,9 +183,9 @@ const SettingsPage: React.FC = () => {
                         }}
                         className="w-full bg-gray-900 border border-gray-600 rounded-lg px-4 py-3 text-white"
                     >
-                        {CARD_STYLES.map((style) => (
-                            <option key={style.id} value={style.id}>
-                                {style.nameZh} ({style.name}){style.id === 'classic' ? ' - 內建' : ''}
+                        {styles.map((style) => (
+                            <option key={style.style_key} value={style.style_key}>
+                                {style.name_zh} ({style.name_en}){style.style_key === 'classic' ? ' - 內建' : ''}
                             </option>
                         ))}
                     </select>
