@@ -1,30 +1,19 @@
 /**
  * 設定選單（漢堡選單）
- * 左上角三槓圖示，整合音樂和主題設定
+ * 左上角三槓圖示，主題設定和功能選單
  */
 
-import React, { useState, useRef, useEffect } from 'react';
-import { useTheme, ThemeId } from '../hooks/useTheme';
+import React, { useState, useEffect } from 'react';
+import { useTheme } from '../hooks/useTheme';
 import { supabase } from '../services/supabaseClient';
 import { supabaseSignOut } from '../services/supabaseAuthService';
-
-// 音樂配置（與 BackgroundMusic 相同）
-const THEME_MUSIC: Record<ThemeId, { path: string; name: string }> = {
-    baroque: { path: '', name: '古典神殿' },
-    cyberpunk: { path: '', name: '霓虹迷城' },
-    celestial: { path: '', name: '星辰低語' }
-};
 
 const SettingsMenu: React.FC = () => {
     const { currentTheme, setTheme, themes } = useTheme();
     const [isOpen, setIsOpen] = useState(false);
-    const [isPlaying, setIsPlaying] = useState(false);
-    const [volume, setVolume] = useState(0.3);
-    const [hasAudio, setHasAudio] = useState<boolean | null>(null);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [userEmail, setUserEmail] = useState<string | null>(null);
     const [isAdmin, setIsAdmin] = useState(false);
-    const audioRef = useRef<HTMLAudioElement | null>(null);
 
     // 🔒 管理員郵箱列表（只有這些郵箱才能看到後台管理）
     const ADMIN_EMAILS = [
@@ -33,24 +22,7 @@ const SettingsMenu: React.FC = () => {
         // 在這裡添加更多管理員郵箱
     ];
 
-    const musicInfo = THEME_MUSIC[currentTheme];
 
-    // 檢查音樂檔案是否存在
-    useEffect(() => {
-        const checkAudio = async () => {
-            if (!musicInfo.path) {
-                setHasAudio(false);
-                return;
-            }
-            try {
-                const response = await fetch(musicInfo.path, { method: 'HEAD' });
-                setHasAudio(response.ok);
-            } catch {
-                setHasAudio(false);
-            }
-        };
-        checkAudio();
-    }, [musicInfo.path]);
 
     // 檢查登入狀態
     useEffect(() => {
@@ -90,59 +62,7 @@ const SettingsMenu: React.FC = () => {
         window.location.reload();
     };
 
-    // 當主題變化時切換音樂
-    useEffect(() => {
-        if (audioRef.current && isPlaying && hasAudio) {
-            audioRef.current.pause();
-            audioRef.current.src = musicInfo.path;
-            audioRef.current.load();
-            audioRef.current.play().catch(() => { });
-        }
-    }, [currentTheme, musicInfo.path, hasAudio, isPlaying]);
 
-    // 清理
-    useEffect(() => {
-        return () => {
-            if (audioRef.current) {
-                audioRef.current.pause();
-                audioRef.current = null;
-            }
-        };
-    }, []);
-
-    const toggleMusic = async () => {
-        if (!hasAudio) {
-            alert(`請將音樂檔案添加到專案：\n\n${Object.values(THEME_MUSIC).map(m => `📁 public${m.path}`).join('\n')}`);
-            return;
-        }
-
-        if (!audioRef.current) {
-            audioRef.current = new Audio(musicInfo.path);
-            audioRef.current.loop = true;
-            audioRef.current.volume = volume;
-        }
-
-        if (isPlaying) {
-            audioRef.current.pause();
-            setIsPlaying(false);
-        } else {
-            try {
-                audioRef.current.src = musicInfo.path;
-                await audioRef.current.play();
-                setIsPlaying(true);
-            } catch (e) {
-                console.log('Music play failed:', e);
-            }
-        }
-    };
-
-    const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const newVolume = parseFloat(e.target.value);
-        setVolume(newVolume);
-        if (audioRef.current) {
-            audioRef.current.volume = newVolume;
-        }
-    };
 
     return (
         <div className="fixed top-6 left-6 z-[100]">
@@ -175,41 +95,6 @@ const SettingsMenu: React.FC = () => {
                             boxShadow: '0 10px 40px rgba(0,0,0,0.8)'
                         }}
                     >
-                        {/* 音樂設定區塊 */}
-                        <div className="p-4 border-b border-[#d4af37]/20">
-                            <p className="text-xs font-cinzel tracking-widest text-[#d4af37]/60 uppercase mb-3">
-                                🎵 背景音樂
-                            </p>
-                            <div className="flex items-center gap-3">
-                                <button
-                                    onClick={toggleMusic}
-                                    className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all ${isPlaying
-                                        ? 'bg-[#d4af37] border-[#d4af37] text-black'
-                                        : 'border-[#d4af37]/50 text-[#d4af37]'
-                                        }`}
-                                >
-                                    {hasAudio === false ? '🔇' : isPlaying ? '⏸' : '▶'}
-                                </button>
-                                <div className="flex-1">
-                                    <p className="text-sm text-[#d4af37] font-cinzel">
-                                        {hasAudio ? musicInfo.name : '未添加音樂'}
-                                    </p>
-                                    {isPlaying && (
-                                        <input
-                                            type="range"
-                                            min="0"
-                                            max="1"
-                                            step="0.1"
-                                            value={volume}
-                                            onChange={handleVolumeChange}
-                                            className="w-full h-1 mt-2 appearance-none bg-white/20 rounded-full cursor-pointer"
-                                            style={{ accentColor: '#d4af37' }}
-                                        />
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-
                         {/* 主題設定區塊 */}
                         <div className="p-4 border-b border-[#d4af37]/20">
                             <p className="text-xs font-cinzel tracking-widest text-[#d4af37]/60 uppercase mb-3">

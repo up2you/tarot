@@ -1,10 +1,9 @@
 /**
  * 牌面管理頁面 - 完整功能實作
- * 支援批量上傳、單張上傳、刪除、預覽
+ * 支援批量上傳、單張上傳、刪除、預覽、動態新增風格
  */
 
 import React, { useState, useEffect, useRef } from 'react';
-import { CARD_STYLES } from '../../constants/cardStyles';
 import { MAJOR_ARCANA, CARD_BACK_IMAGE } from '../../constants';
 import {
     uploadCardImage,
@@ -13,20 +12,38 @@ import {
     checkStyleCompletion,
     deleteCardImage
 } from '../../services/cardStorageService';
+import {
+    getAllStylesForAdmin,
+    createCardStyle,
+    CardStyle
+} from '../../services/cardStyleService';
+import { STYLE_CATEGORIES } from '../../services/cardStyleService';
 
 const CardsPage: React.FC = () => {
+    const [styles, setStyles] = useState<CardStyle[]>([]);
     const [selectedStyle, setSelectedStyle] = useState('classic');
     const [uploadedImages, setUploadedImages] = useState<Map<number, string>>(new Map());
     const [isLoading, setIsLoading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState<{ current: number; total: number } | null>(null);
     const [styleStats, setStyleStats] = useState<Map<string, { uploaded: number; total: number }>>(new Map());
     const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+    const [showNewStyleModal, setShowNewStyleModal] = useState(false);
+    const [newStyleForm, setNewStyleForm] = useState({
+        style_key: '',
+        name_zh: '',
+        name_en: '',
+        description_zh: '',
+        primary_color: '#d4af37',
+        category: 'modern',
+        price: 99,
+        is_free: false
+    });
 
     const fileInputRef = useRef<HTMLInputElement>(null);
     const batchInputRef = useRef<HTMLInputElement>(null);
     const [pendingCardIndex, setPendingCardIndex] = useState<number | null>(null);
 
-    const currentStyle = CARD_STYLES.find(s => s.id === selectedStyle);
+    const currentStyle = styles.find(s => s.style_key === selectedStyle);
     const isClassic = selectedStyle === 'classic';
 
     // 載入風格的圖片
@@ -53,6 +70,19 @@ const CardsPage: React.FC = () => {
         }
     };
 
+    // 載入所有風格
+    const loadStyles = async () => {
+        try {
+            const allStyles = await getAllStylesForAdmin();
+            setStyles(allStyles);
+            if (allStyles.length > 0 && !selectedStyle) {
+                setSelectedStyle(allStyles[0].style_key);
+            }
+        } catch (err) {
+            console.error('Failed to load styles:', err);
+        }
+    };
+
     // 載入所有風格的統計
     const loadAllStyleStats = async () => {
         const stats = new Map<string, { uploaded: number; total: number }>();
@@ -60,27 +90,34 @@ const CardsPage: React.FC = () => {
         // 經典風格已完成
         stats.set('classic', { uploaded: 23, total: 23 });
 
-        for (const style of CARD_STYLES) {
-            if (style.id === 'classic') continue;
+        for (const style of styles) {
+            if (style.style_key === 'classic') continue;
 
             try {
-                const completion = await checkStyleCompletion(style.id);
-                stats.set(style.id, { uploaded: completion.uploaded, total: completion.total });
+                const completion = await checkStyleCompletion(style.style_key);
+                stats.set(style.style_key, { uploaded: completion.uploaded, total: completion.total });
             } catch {
-                stats.set(style.id, { uploaded: 0, total: 23 });
+                stats.set(style.style_key, { uploaded: 0, total: 23 });
             }
         }
 
         setStyleStats(stats);
     };
 
+    // 初始載入
+    useEffect(() => {
+        loadStyles();
+    }, []);
+
     useEffect(() => {
         loadStyleImages(selectedStyle);
     }, [selectedStyle]);
 
     useEffect(() => {
-        loadAllStyleStats();
-    }, []);
+        if (styles.length > 0) {
+            loadAllStyleStats();
+        }
+    }, [styles]);
 
     // 單張上傳處理
     const handleSingleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -206,6 +243,53 @@ const CardsPage: React.FC = () => {
         if (isClassic) return; // 經典風格不可編輯
         setPendingCardIndex(cardIndex);
         fileInputRef.current?.click();
+    };
+
+    // 處理新增風格
+    const handleCreateStyle = async () => {
+        // 驗證
+        if (!newStyleForm.style_key || !newStyleForm.name_zh || !newStyleForm.name_en) {
+            setMessage({ type: 'error', text: '請填寫所有必填欄位' });
+            return;
+        }
+
+        // 驗證 style_key 格式（只能英文、數字、底線）
+        if (!/^[a-z0-9_]+$/.test(newStyleForm.style_key)) {
+            setMessage({ type: 'error', text: '風格 ID 只能包含小寫英文、數字和底線' });
+            return;
+        }
+
+        setIsLoading(true);
+        setMessage(null);
+
+        try {
+            const result = await createCardStyle(newStyleForm);
+
+            if (result.success) {
+                setMessage({ type: 'success', text: result.message });
+                setShowNewStyleModal(false);
+                setNewStyleForm({
+                    style_key: '',
+                    name_zh: '',
+                    name_en: '',
+                    description_zh: '',
+                    primary_color: '#d4af37',
+                    category: 'modern',
+                    price: 99,
+                    is_free: false
+                });
+                await loadStyles();
+                if (result.style) {
+                    setSelectedStyle(result.style.style_key);
+                }
+            } else {
+                setMessage({ type: 'error', text: result.message });
+            }
+        } catch (err) {
+            setMessage({ type: 'error', text: '新增失敗，請重試' });
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     // 清除訊息
@@ -359,8 +443,8 @@ const CardsPage: React.FC = () => {
                             <div
                                 key={idx}
                                 className={`aspect-[2/3] bg-gray-900 rounded-lg border-2 flex items-center justify-center overflow-hidden relative group transition-all ${hasImage
-                                        ? 'border-green-500/30 hover:border-green-500'
-                                        : 'border-gray-700 hover:border-amber-500 cursor-pointer'
+                                    ? 'border-green-500/30 hover:border-green-500'
+                                    : 'border-gray-700 hover:border-amber-500 cursor-pointer'
                                     }`}
                                 onClick={() => !hasImage && handleCardClick(idx)}
                             >
@@ -415,8 +499,8 @@ const CardsPage: React.FC = () => {
                 <div className="flex gap-4 items-start">
                     <div
                         className={`w-32 aspect-[2/3] bg-gray-900 rounded-lg border-2 overflow-hidden relative group transition-all ${uploadedImages.has(-1)
-                                ? 'border-green-500/30 hover:border-green-500'
-                                : 'border-gray-700 hover:border-amber-500 cursor-pointer'
+                            ? 'border-green-500/30 hover:border-green-500'
+                            : 'border-gray-700 hover:border-amber-500 cursor-pointer'
                             }`}
                         onClick={() => !uploadedImages.has(-1) && handleCardClick(-1)}
                     >
@@ -505,6 +589,184 @@ const CardsPage: React.FC = () => {
                     })}
                 </div>
             </div>
+
+            {/* 新增風格 Modal */}
+            {showNewStyleModal && (
+                <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+                    <div className="bg-gray-800 rounded-2xl border border-gray-700 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+                        {/* Header */}
+                        <div className="p-6 border-b border-gray-700 flex items-center justify-between sticky top-0 bg-gray-800">
+                            <h3 className="text-xl font-bold text-white">➕ 新增牌面風格</h3>
+                            <button
+                                onClick={() => setShowNewStyleModal(false)}
+                                className="text-gray-400 hover:text-white text-2xl"
+                            >
+                                ×
+                            </button>
+                        </div>
+
+                        {/* Content */}
+                        <div className="p-6 space-y-6">
+                            {/* 風格 ID */}
+                            <div>
+                                <label className="block text-sm font-medium text-white mb-2">
+                                    風格 ID (英文) <span className="text-red-400">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    value={newStyleForm.style_key}
+                                    onChange={(e) => setNewStyleForm({ ...newStyleForm, style_key: e.target.value })}
+                                    placeholder="steampunk_gold"
+                                    className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-amber-500"
+                                />
+                                <p className="text-xs text-gray-400 mt-1">⚠️ 僅限小寫英文、數字、底線</p>
+                            </div>
+
+                            {/* 中文名稱 */}
+                            <div>
+                                <label className="block text-sm font-medium text-white mb-2">
+                                    中文名稱 <span className="text-red-400">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    value={newStyleForm.name_zh}
+                                    onChange={(e) => setNewStyleForm({ ...newStyleForm, name_zh: e.target.value })}
+                                    placeholder="蒸汽黃金"
+                                    className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-amber-500"
+                                />
+                            </div>
+
+                            {/* 英文名稱 */}
+                            <div>
+                                <label className="block text-sm font-medium text-white mb-2">
+                                    英文名稱 <span className="text-red-400">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    value={newStyleForm.name_en}
+                                    onChange={(e) => setNewStyleForm({ ...newStyleForm, name_en: e.target.value })}
+                                    placeholder="Steampunk Gold"
+                                    className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-amber-500"
+                                />
+                            </div>
+
+                            {/* 簡介描述 */}
+                            <div>
+                                <label className="block text-sm font-medium text-white mb-2">
+                                    簡介描述
+                                </label>
+                                <textarea
+                                    value={newStyleForm.description_zh}
+                                    onChange={(e) => setNewStyleForm({ ...newStyleForm, description_zh: e.target.value })}
+                                    placeholder="復古工業風與黃金質感的融合..."
+                                    rows={3}
+                                    className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-amber-500 resize-none"
+                                />
+                            </div>
+
+                            {/* 主題色 + 分類 */}
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-white mb-2">
+                                        主題色 <span className="text-red-400">*</span>
+                                    </label>
+                                    <div className="flex gap-2">
+                                        <input
+                                            type="color"
+                                            value={newStyleForm.primary_color}
+                                            onChange={(e) => setNewStyleForm({ ...newStyleForm, primary_color: e.target.value })}
+                                            className="w-16 h-12 rounded cursor-pointer"
+                                        />
+                                        <input
+                                            type="text"
+                                            value={newStyleForm.primary_color}
+                                            onChange={(e) => setNewStyleForm({ ...newStyleForm, primary_color: e.target.value })}
+                                            className="flex-1 px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-amber-500"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-white mb-2">
+                                        分類
+                                    </label>
+                                    <select
+                                        value={newStyleForm.category}
+                                        onChange={(e) => setNewStyleForm({ ...newStyleForm, category: e.target.value })}
+                                        className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-amber-500"
+                                    >
+                                        {Object.entries(STYLE_CATEGORIES).map(([key, { name_zh }]) => (
+                                            <option key={key} value={key}>{name_zh}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
+
+                            {/* 價格設定 */}
+                            <div>
+                                <label className="block text-sm font-medium text-white mb-3">
+                                    價格設定
+                                </label>
+                                <div className="flex items-center gap-6">
+                                    <label className="flex items-center gap-2 cursor-pointer">
+                                        <input
+                                            type="radio"
+                                            checked={newStyleForm.is_free}
+                                            onChange={() => setNewStyleForm({ ...newStyleForm, is_free: true, price: 0 })}
+                                            className="w-4 h-4"
+                                        />
+                                        <span className="text-white">免費</span>
+                                    </label>
+                                    <label className="flex items-center gap-2 cursor-pointer">
+                                        <input
+                                            type="radio"
+                                            checked={!newStyleForm.is_free}
+                                            onChange={() => setNewStyleForm({ ...newStyleForm, is_free: false })}
+                                            className="w-4 h-4"
+                                        />
+                                        <span className="text-white">付費</span>
+                                    </label>
+                                    {!newStyleForm.is_free && (
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-gray-400">NT$</span>
+                                            <input
+                                                type="number"
+                                                value={newStyleForm.price}
+                                                onChange={(e) => setNewStyleForm({ ...newStyleForm, price: parseInt(e.target.value) || 0 })}
+                                                className="w-32 px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-amber-500"
+                                            />
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* 錯誤訊息 */}
+                            {message && message.type === 'error' && (
+                                <div className="bg-red-500/20 border border-red-500/50 p-3 rounded-lg text-red-400 text-sm">
+                                    {message.text}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Footer */}
+                        <div className="p-6 border-t border-gray-700 flex justify-end gap-4">
+                            <button
+                                onClick={() => setShowNewStyleModal(false)}
+                                className="px-6 py-3 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-all"
+                            >
+                                取消
+                            </button>
+                            <button
+                                onClick={handleCreateStyle}
+                                disabled={isLoading}
+                                className="px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all disabled:opacity-50"
+                            >
+                                {isLoading ? '建立中...' : '建立風格'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

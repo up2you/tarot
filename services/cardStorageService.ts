@@ -4,6 +4,7 @@
  */
 
 import { supabase } from './supabaseClient';
+import { updateStyleProgress } from './cardStyleService';
 
 const BUCKET_NAME = 'card-images';
 
@@ -86,6 +87,10 @@ export const uploadCardImage = async (
             .getPublicUrl(fileName);
 
         console.log('[CardStorage] Uploaded:', fileName);
+
+        // 更新風格上傳進度
+        await updateProgress(styleId);
+
         return publicUrl;
     } catch (err) {
         console.error('[CardStorage] uploadCardImage error:', err);
@@ -206,6 +211,10 @@ export const deleteCardImage = async (
         }
 
         console.log('[CardStorage] Deleted:', fileName);
+
+        // 更新風格上傳進度
+        await updateProgress(styleId);
+
         return true;
     } catch (err) {
         console.error('[CardStorage] deleteCardImage error:', err);
@@ -235,9 +244,32 @@ export const deleteStyleImages = async (styleId: string): Promise<boolean> => {
         }
 
         console.log('[CardStorage] Deleted style:', styleId);
+
+        // 更新風格上傳進度（應該變成 0）
+        await updateProgress(styleId);
+
         return true;
     } catch (err) {
         console.error('[CardStorage] deleteStyleImages error:', err);
         return false;
+    }
+};
+
+/**
+ * 更新風格上傳進度（內部函數）
+ * 上傳或刪除圖片後自動呼叫
+ */
+const updateProgress = async (styleKey: string): Promise<void> => {
+    try {
+        // 取得當前已上傳的圖片數量
+        const images = await getStyleCardImages(styleKey);
+        const uploadedCount = images.size;
+
+        // 更新資料庫
+        await updateStyleProgress(styleKey, uploadedCount);
+
+        console.log(`[CardStorage] Updated progress for ${styleKey}: ${uploadedCount}/23`);
+    } catch (err) {
+        console.error('[CardStorage] updateProgress error:', err);
     }
 };

@@ -31,8 +31,6 @@ export const useThemedSounds = (theme: ThemeId = 'baroque') => {
   }, []);
 
   const playSound = useCallback((type: SoundType) => {
-    if (type === 'ambient') return; // 背景音樂由 BackgroundMusic 處理
-
     const audio = audioRefs.current[type];
     if (audio) {
       // 重置播放位置以支援快速連續播放

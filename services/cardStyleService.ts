@@ -57,6 +57,7 @@ export const STYLE_CATEGORIES = {
 
 /**
  * 取得所有可用風格
+ * 只返回已完成上傳（23張圖）的風格
  */
 export const getAllStyles = async (): Promise<CardStyle[]> => {
     try {
@@ -64,6 +65,7 @@ export const getAllStyles = async (): Promise<CardStyle[]> => {
             .from('card_styles')
             .select('*')
             .eq('is_active', true)
+            .eq('is_complete', true)  // 只顯示已完成的風格
             .order('sort_order', { ascending: true });
 
         if (error) {
@@ -438,4 +440,116 @@ export const formatStylePrice = (style: CardStyle): string => {
  */
 export const getCardImagePath = (styleKey: string, cardId: number): string => {
     return `/assets/cards/${styleKey}/${cardId}.webp`;
+};
+
+// ============================================
+// 管理員功能
+// ============================================
+
+/**
+ * 取得所有風格（包含未完成的）- 僅供後台使用
+ */
+export const getAllStylesForAdmin = async (): Promise<CardStyle[]> => {
+    try {
+        const { data, error } = await supabase
+            .from('card_styles')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            console.error('[CardStyleService] getAllStylesForAdmin failed:', error);
+            return [];
+        }
+
+        return data as CardStyle[];
+    } catch (err) {
+        console.error('[CardStyleService] getAllStylesForAdmin error:', err);
+        return [];
+    }
+};
+
+/**
+ * 新增牌面風格
+ */
+export const createCardStyle = async (styleData: {
+    style_key: string;
+    name_zh: string;
+    name_en: string;
+    description_zh?: string;
+    description_en?: string;
+    primary_color?: string;
+    category?: string;
+    price?: number;
+    is_free?: boolean;
+}): Promise<{ success: boolean; message: string; style?: CardStyle }> => {
+    try {
+        // 檢查 style_key 是否已存在
+        const { data: existing } = await supabase
+            .from('card_styles')
+            .select('id')
+            .eq('style_key', styleData.style_key)
+            .single();
+
+        if (existing) {
+            return { success: false, message: '此風格 ID 已存在' };
+        }
+
+        // 插入新風格
+        const { data, error } = await supabase
+            .from('card_styles')
+            .insert({
+                ...styleData,
+                primary_color: styleData.primary_color || '#d4af37',
+                price: styleData.price || 99,
+                is_free: styleData.is_free || false,
+                cards_uploaded: 0,
+                is_complete: false,
+                is_active: true,
+            })
+            .select()
+            .single();
+
+        if (error) {
+            console.error('[CardStyleService] createCardStyle failed:', error);
+            return { success: false, message: '新增風格失敗' };
+        }
+
+        return {
+            success: true,
+            message: '風格新增成功！',
+            style: data as CardStyle
+        };
+    } catch (err) {
+        console.error('[CardStyleService] createCardStyle error:', err);
+        return { success: false, message: '系統錯誤' };
+    }
+};
+
+/**
+ * 更新風格上傳進度
+ */
+export const updateStyleProgress = async (
+    styleKey: string,
+    uploadedCount: number
+): Promise<boolean> => {
+    try {
+        const { error } = await supabase
+            .from('card_styles')
+            .update({
+                cards_uploaded: uploadedCount,
+                is_complete: uploadedCount >= 23,
+                updated_at: new Date().toISOString()
+            })
+            .eq('style_key', styleKey);
+
+        if (error) {
+            console.error('[CardStyleService] updateStyleProgress failed:', error);
+            return false;
+        }
+
+        return true;
+    } catch (err) {
+        console.error('[CardStyleService] updateStyleProgress error:', err);
+        return false;
+    }
 };

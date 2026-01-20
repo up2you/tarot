@@ -92,21 +92,6 @@ const UserProfilePage: React.FC<UserProfilePageProps> = ({ onClose, onNavigate }
         window.location.reload();
     };
 
-    const getSubscriptionBadge = () => {
-        if (!profile) return null;
-
-        const badges: Record<string, { color: string; icon: string; text: string }> = {
-            'lifetime': { color: 'from-amber-500 to-yellow-400', icon: '👑', text: '終身 VIP' },
-            'yearly': { color: 'from-purple-500 to-pink-500', icon: '🌟', text: '年費 VIP' },
-            'monthly': { color: 'from-blue-500 to-cyan-400', icon: '📅', text: '月費 VIP' },
-            'credits': { color: 'from-green-500 to-emerald-400', icon: '🎯', text: '點數用戶' },
-            'free': { color: 'from-gray-500 to-gray-400', icon: '🆓', text: '免費用戶' },
-        };
-
-        const badge = badges[displayProfile.subscription_type] || badges['free'];
-        return badge;
-    };
-
     if (!isLoading && !profile) {
         return (
             <div className="min-h-screen bg-gray-900 flex items-center justify-center">
@@ -133,10 +118,25 @@ const UserProfilePage: React.FC<UserProfilePageProps> = ({ onClose, onNavigate }
         subscription_expires_at: null,
         credits_balance: 0,
         active_card_style: 'classic',
+        total_readings_count: 0,
         created_at: new Date().toISOString(),
     };
 
-    const badge = getSubscriptionBadge();
+    // Helper function to get subscription badge
+    const getSubscriptionBadge = (userProfile: typeof displayProfile) => {
+        const badges: Record<string, { color: string; icon: string; text: string }> = {
+            'lifetime': { color: 'from-amber-500 to-yellow-400', icon: '👑', text: '終身 VIP' },
+            'yearly': { color: 'from-purple-500 to-pink-500', icon: '🌟', text: '年費 VIP' },
+            'monthly': { color: 'from-blue-500 to-cyan-400', icon: '📅', text: '月費 VIP' },
+            'credits': { color: 'from-green-500 to-emerald-400', icon: '🎯', text: '點數用戶' },
+            'free': { color: 'from-gray-500 to-gray-400', icon: '🆓', text: '免費用戶' },
+        };
+
+        const badge = badges[userProfile.subscription_type] || badges['free'];
+        return badge;
+    };
+
+    const badge = getSubscriptionBadge(displayProfile);
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-gray-900 via-purple-900/20 to-gray-900 py-8 px-4">
@@ -214,7 +214,7 @@ const UserProfilePage: React.FC<UserProfilePageProps> = ({ onClose, onNavigate }
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                             <div className="bg-gray-800 rounded-xl p-4 border border-gray-700">
                                 <p className="text-gray-400 text-sm">累計占卜</p>
-                                <p className="text-2xl font-bold text-white mt-1">{recentReadings.length || 0} 次</p>
+                                <p className="text-2xl font-bold text-white mt-1">{displayProfile.total_readings_count || 0} 次</p>
                             </div>
                             <div className="bg-gray-800 rounded-xl p-4 border border-gray-700">
                                 <p className="text-gray-400 text-sm">點數餘額</p>
@@ -294,7 +294,7 @@ const UserProfilePage: React.FC<UserProfilePageProps> = ({ onClose, onNavigate }
                                 {ownedStyles.map((style) => (
                                     <div
                                         key={style.id}
-                                        className={`bg-gray-800 rounded-xl overflow-hidden border-2 ${profile.active_card_style === style.style_key
+                                        className={`bg-gray-800 rounded-xl overflow-hidden border-2 ${profile?.active_card_style === style.style_key
                                             ? 'border-amber-500'
                                             : 'border-gray-700'
                                             }`}
@@ -304,7 +304,7 @@ const UserProfilePage: React.FC<UserProfilePageProps> = ({ onClose, onNavigate }
                                         </div>
                                         <div className="p-3">
                                             <p className="text-white font-bold text-sm truncate">{style.name_zh}</p>
-                                            {profile.active_card_style === style.style_key && (
+                                            {profile?.active_card_style === style.style_key && (
                                                 <p className="text-amber-400 text-xs">使用中</p>
                                             )}
                                         </div>

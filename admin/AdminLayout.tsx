@@ -1,15 +1,11 @@
 /**
  * 管理員後台佈局
+ * 包含管理員權限驗證
  */
 
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../services/supabaseClient';
-
-interface AdminLayoutProps {
-    children: React.ReactNode;
-}
-
-const ADMIN_EMAILS = ['admin@example.com']; // 管理員 Email 白名單
+import { isAdminEmail } from '../services/settingsService';
 
 // 側邊欄選項
 const MENU_ITEMS = [
@@ -32,6 +28,69 @@ interface AdminLayoutProps {
 
 const AdminLayout: React.FC<AdminLayoutProps> = ({ children, currentPage, onNavigate }) => {
     const [isCollapsed, setIsCollapsed] = useState(false);
+    const [isVerifying, setIsVerifying] = useState(true);
+    const [adminEmail, setAdminEmail] = useState<string>('');
+
+    // 驗證管理員權限
+    useEffect(() => {
+        const verifyAdmin = async () => {
+            try {
+                // 檢查登入狀態
+                const { data: { user } } = await supabase.auth.getUser();
+
+                if (!user) {
+                    console.warn('[AdminLayout] 未登入，重導向至首頁');
+                    window.location.href = '/';
+                    return;
+                }
+
+                // 檢查是否為管理員
+                const isAdmin = await isAdminEmail(user.email || '');
+
+                if (!isAdmin) {
+                    console.warn('[AdminLayout] 非管理員帳號，重導向至首頁');
+                    alert('您沒有管理員權限');
+                    window.location.href = '/';
+                    return;
+                }
+
+                // 驗證通過
+                setAdminEmail(user.email || '');
+                setIsVerifying(false);
+                console.log('[AdminLayout] 管理員驗證通過:', user.email);
+            } catch (error) {
+                console.error('[AdminLayout] 驗證失敗:', error);
+                window.location.href = '/';
+            }
+        };
+
+        verifyAdmin();
+    }, []);
+
+    // 登出功能
+    const handleLogout = async () => {
+        if (!confirm('確定要登出嗎？')) return;
+
+        try {
+            await supabase.auth.signOut();
+            window.location.href = '/';
+        } catch (error) {
+            console.error('[AdminLayout] 登出失敗:', error);
+            alert('登出失敗，請重試');
+        }
+    };
+
+    // 驗證中顯示載入畫面
+    if (isVerifying) {
+        return (
+            <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+                <div className="text-center">
+                    <div className="w-16 h-16 border-4 border-amber-500/20 border-t-amber-500 rounded-full animate-spin mx-auto mb-4"></div>
+                    <p className="text-gray-400">正在驗證管理員權限...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-gray-900 flex">
@@ -61,8 +120,8 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, currentPage, onNavi
                             key={item.id}
                             onClick={() => onNavigate(item.id)}
                             className={`w-full flex items-center gap-3 px-4 py-3 transition-all ${currentPage === item.id
-                                    ? 'bg-amber-500/20 text-amber-400 border-r-2 border-amber-400'
-                                    : 'text-gray-400 hover:bg-gray-700 hover:text-white'
+                                ? 'bg-amber-500/20 text-amber-400 border-r-2 border-amber-400'
+                                : 'text-gray-400 hover:bg-gray-700 hover:text-white'
                                 }`}
                         >
                             <span className="text-xl">{item.icon}</span>
@@ -89,8 +148,14 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, currentPage, onNavi
                         {MENU_ITEMS.find(m => m.id === currentPage)?.label || '後台管理'}
                     </h2>
                     <div className="flex items-center gap-4">
-                        <span className="text-gray-400 text-sm">管理員</span>
-                        <button className="px-4 py-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-all text-sm">
+                        <div className="text-right">
+                            <p className="text-gray-500 text-xs">管理員</p>
+                            <p className="text-gray-300 text-sm">{adminEmail}</p>
+                        </div>
+                        <button
+                            onClick={handleLogout}
+                            className="px-4 py-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-all text-sm"
+                        >
                             登出
                         </button>
                     </div>

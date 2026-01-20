@@ -24,6 +24,7 @@ export interface SupabaseUserProfile {
     subscription_expires_at: string | null;
     credits_balance: number;
     active_card_style: string;
+    total_readings_count?: number; // 累計占卜總次數
     created_at: string;
 }
 
@@ -163,6 +164,7 @@ async function createSupabaseUserProfile(userId: string, email: string, displayN
             credits_balance: 0,
             free_readings_used: 0,
             total_readings: 0,
+            total_readings_count: 0, // 初始化累計占卜次數
             active_card_style: 'classic',
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
