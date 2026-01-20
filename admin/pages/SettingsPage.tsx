@@ -39,7 +39,11 @@ const SettingsPage: React.FC = () => {
 
                 setMobileDisplayMode(settings.mobile_display_mode || 'grid');
                 setShowCardNameLabel(settings.show_card_name_label ?? true);
-                setActiveCardStyle(settings.active_card_style || 'classic');  // 新增
+                setActiveCardStyle(settings.active_card_style || 'classic');
+
+                // 載入風格列表
+                const allStyles = await getAllStylesForAdmin();
+                setStyles(allStyles);
             } catch (error) {
                 console.error('Failed to load settings:', error);
             } finally {
