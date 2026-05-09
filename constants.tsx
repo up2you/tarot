@@ -4,32 +4,33 @@ import { TarotCardData, SpreadDefinition, SpreadCategory } from './types';
 const CARD_DECK_PATH = '/card01';
 
 export const MAJOR_ARCANA: TarotCardData[] = [
-  { id: 0, name: "The Fool", nameZh: "愚者", arcana: "Major", image: `${CARD_DECK_PATH}/0.png`, meaning: "Beginning, spontaneity, faith.", reversedMeaning: "Naivety, recklessness, risk-taking." },
-  { id: 1, name: "The Magician", nameZh: "魔術師", arcana: "Major", image: `${CARD_DECK_PATH}/1.png`, meaning: "Manifestation, resourcefulness, power.", reversedMeaning: "Manipulation, poor planning, untapped talent." },
-  { id: 2, name: "The High Priestess", nameZh: "女教皇", arcana: "Major", image: `${CARD_DECK_PATH}/2.png`, meaning: "Intuition, sacred knowledge, subconscious.", reversedMeaning: "Secrets, disconnected from intuition, withdrawal." },
-  { id: 3, name: "The Empress", nameZh: "皇后", arcana: "Major", image: `${CARD_DECK_PATH}/3.png`, meaning: "Femininity, beauty, nature, abundance.", reversedMeaning: "Creative block, dependence on others." },
-  { id: 4, name: "The Emperor", nameZh: "皇帝", arcana: "Major", image: `${CARD_DECK_PATH}/4.png`, meaning: "Authority, structure, control, fatherhood.", reversedMeaning: "Tyranny, rigidity, lack of discipline." },
-  { id: 5, name: "The Hierophant", nameZh: "教皇", arcana: "Major", image: `${CARD_DECK_PATH}/5.png`, meaning: "Spiritual wisdom, tradition, conformity.", reversedMeaning: "Rebellion, subversion of new rules." },
-  { id: 6, name: "The Lovers", nameZh: "戀人", arcana: "Major", image: `${CARD_DECK_PATH}/6.png`, meaning: "Love, harmony, relationships, values.", reversedMeaning: "Self-love, disharmony, imbalance." },
-  { id: 7, name: "The Chariot", nameZh: "戰車", arcana: "Major", image: `${CARD_DECK_PATH}/7.png`, meaning: "Control, willpower, success, action.", reversedMeaning: "Self-discipline, opposition, lack of direction." },
-  { id: 8, name: "Strength", nameZh: "力量", arcana: "Major", image: `${CARD_DECK_PATH}/8.png`, meaning: "Strength, courage, persuasion, influence.", reversedMeaning: "Inner strength, self-doubt, raw emotion." },
-  { id: 9, name: "The Hermit", nameZh: "隱士", arcana: "Major", image: `${CARD_DECK_PATH}/9.png`, meaning: "Soul-searching, introspection, being alone.", reversedMeaning: "Isolation, loneliness, withdrawal." },
-  { id: 10, name: "Wheel of Fortune", nameZh: "命運之輪", arcana: "Major", image: `${CARD_DECK_PATH}/10.png`, meaning: "Good luck, karma, life cycles, destiny.", reversedMeaning: "Bad luck, resistance to change." },
-  { id: 11, name: "Justice", nameZh: "正義", arcana: "Major", image: `${CARD_DECK_PATH}/11.png`, meaning: "Justice, fairness, truth, cause and effect.", reversedMeaning: "Unfairness, lack of accountability, dishonesty." },
-  { id: 12, name: "The Hanged Man", nameZh: "倒吊人", arcana: "Major", image: `${CARD_DECK_PATH}/12.png`, meaning: "Pause, surrender, letting go, new perspective.", reversedMeaning: "Delays, resistance, stalling, indecision." },
-  { id: 13, name: "Death", nameZh: "死亡", arcana: "Major", image: `${CARD_DECK_PATH}/13.png`, meaning: "Endings, change, transformation, transition.", reversedMeaning: "Resistance to change, personal transformation." },
-  { id: 14, name: "Temperance", nameZh: "節制", arcana: "Major", image: `${CARD_DECK_PATH}/14.png`, meaning: "Balance, moderation, patience, purpose.", reversedMeaning: "Imbalance, excess, self-healing, re-alignment." },
-  { id: 15, name: "The Devil", nameZh: "惡魔", arcana: "Major", image: `${CARD_DECK_PATH}/15.png`, meaning: "Shadow self, attachment, addiction, restriction.", reversedMeaning: "Detaching, breaking free, reclaiming control." },
-  { id: 16, name: "The Tower", nameZh: "高塔", arcana: "Major", image: `${CARD_DECK_PATH}/16.png`, meaning: "Sudden change, upheaval, chaos, awakening.", reversedMeaning: "Personal transformation, fear of change, averting disaster." },
-  { id: 17, name: "The Star", nameZh: "星星", arcana: "Major", image: `${CARD_DECK_PATH}/17.png`, meaning: "Hope, faith, purpose, renewal, spirituality.", reversedMeaning: "Lack of faith, despair, self-trust, disconnection." },
-  { id: 18, name: "The Moon", nameZh: "月亮", arcana: "Major", image: `${CARD_DECK_PATH}/18.png`, meaning: "Illusion, fear, anxiety, subconscious, intuition.", reversedMeaning: "Release of fear, repressed emotion, confusion." },
-  { id: 19, name: "The Sun", nameZh: "太陽", arcana: "Major", image: `${CARD_DECK_PATH}/19.png`, meaning: "Positivity, fun, warmth, success, vitality.", reversedMeaning: "Inner child, feeling down, overly optimistic." },
-  { id: 20, name: "Judgement", nameZh: "審判", arcana: "Major", image: `${CARD_DECK_PATH}/20.png`, meaning: "Judgement, rebirth, inner calling, absolution.", reversedMeaning: "Self-doubt, inner-critic, ignoring the call." },
-  { id: 21, name: "The World", nameZh: "世界", arcana: "Major", image: `${CARD_DECK_PATH}/21.png`, meaning: "Completion, integration, accomplishment, travel.", reversedMeaning: "Seeking closure, shortcuts, delays." },
+  { id: 0, name: "The Fool", nameZh: "愚者", arcana: "Major", image: `${CARD_DECK_PATH}/0.webp`, meaning: "Beginning, spontaneity, faith.", reversedMeaning: "Naivety, recklessness, risk-taking." },
+  { id: 1, name: "The Magician", nameZh: "魔術師", arcana: "Major", image: `${CARD_DECK_PATH}/1.webp`, meaning: "Manifestation, resourcefulness, power.", reversedMeaning: "Manipulation, poor planning, untapped talent." },
+  { id: 2, name: "The High Priestess", nameZh: "女教皇", arcana: "Major", image: `${CARD_DECK_PATH}/2.webp`, meaning: "Intuition, sacred knowledge, subconscious.", reversedMeaning: "Secrets, disconnected from intuition, withdrawal." },
+  { id: 3, name: "The Empress", nameZh: "皇后", arcana: "Major", image: `${CARD_DECK_PATH}/3.webp`, meaning: "Femininity, beauty, nature, abundance.", reversedMeaning: "Creative block, dependence on others." },
+  { id: 4, name: "The Emperor", nameZh: "皇帝", arcana: "Major", image: `${CARD_DECK_PATH}/4.webp`, meaning: "Authority, structure, control, fatherhood.", reversedMeaning: "Tyranny, rigidity, lack of discipline." },
+  { id: 5, name: "The Hierophant", nameZh: "教皇", arcana: "Major", image: `${CARD_DECK_PATH}/5.webp`, meaning: "Spiritual wisdom, tradition, conformity.", reversedMeaning: "Rebellion, subversion of new rules." },
+  { id: 6, name: "The Lovers", nameZh: "戀人", arcana: "Major", image: `${CARD_DECK_PATH}/6.webp`, meaning: "Love, harmony, relationships, values.", reversedMeaning: "Self-love, disharmony, imbalance." },
+  { id: 7, name: "The Chariot", nameZh: "戰車", arcana: "Major", image: `${CARD_DECK_PATH}/7.webp`, meaning: "Control, willpower, success, action.", reversedMeaning: "Self-discipline, opposition, lack of direction." },
+  { id: 8, name: "Strength", nameZh: "力量", arcana: "Major", image: `${CARD_DECK_PATH}/8.webp`, meaning: "Strength, courage, persuasion, influence.", reversedMeaning: "Inner strength, self-doubt, raw emotion." },
+  { id: 9, name: "The Hermit", nameZh: "隱士", arcana: "Major", image: `${CARD_DECK_PATH}/9.webp`, meaning: "Soul-searching, introspection, being alone.", reversedMeaning: "Isolation, loneliness, withdrawal." },
+  { id: 10, name: "Wheel of Fortune", nameZh: "命運之輪", arcana: "Major", image: `${CARD_DECK_PATH}/10.webp`, meaning: "Good luck, karma, life cycles, destiny.", reversedMeaning: "Bad luck, resistance to change." },
+  { id: 11, name: "Justice", nameZh: "正義", arcana: "Major", image: `${CARD_DECK_PATH}/11.webp`, meaning: "Justice, fairness, truth, cause and effect.", reversedMeaning: "Unfairness, lack of accountability, dishonesty." },
+  { id: 12, name: "The Hanged Man", nameZh: "倒吊人", arcana: "Major", image: `${CARD_DECK_PATH}/12.webp`, meaning: "Pause, surrender, letting go, new perspective.", reversedMeaning: "Delays, resistance, stalling, indecision." },
+  { id: 13, name: "Death", nameZh: "死亡", arcana: "Major", image: `${CARD_DECK_PATH}/13.webp`, meaning: "Endings, change, transformation, transition.", reversedMeaning: "Resistance to change, personal transformation." },
+  { id: 14, name: "Temperance", nameZh: "節制", arcana: "Major", image: `${CARD_DECK_PATH}/14.webp`, meaning: "Balance, moderation, patience, purpose.", reversedMeaning: "Imbalance, excess, self-healing, re-alignment." },
+  { id: 15, name: "The Devil", nameZh: "惡魔", arcana: "Major", image: `${CARD_DECK_PATH}/15.webp`, meaning: "Shadow self, attachment, addiction, restriction.", reversedMeaning: "Detaching, breaking free, reclaiming control." },
+  { id: 16, name: "The Tower", nameZh: "高塔", arcana: "Major", image: `${CARD_DECK_PATH}/16.webp`, meaning: "Sudden change, upheaval, chaos, awakening.", reversedMeaning: "Personal transformation, fear of change, averting disaster." },
+  { id: 17, name: "The Star", nameZh: "星星", arcana: "Major", image: `${CARD_DECK_PATH}/17.webp`, meaning: "Hope, faith, purpose, renewal, spirituality.", reversedMeaning: "Lack of faith, despair, self-trust, disconnection." },
+  { id: 18, name: "The Moon", nameZh: "月亮", arcana: "Major", image: `${CARD_DECK_PATH}/18.webp`, meaning: "Illusion, fear, anxiety, subconscious, intuition.", reversedMeaning: "Release of fear, repressed emotion, confusion." },
+  { id: 19, name: "The Sun", nameZh: "太陽", arcana: "Major", image: `${CARD_DECK_PATH}/19.webp`, meaning: "Positivity, fun, warmth, success, vitality.", reversedMeaning: "Inner child, feeling down, overly optimistic." },
+  { id: 20, name: "Judgement", nameZh: "審判", arcana: "Major", image: `${CARD_DECK_PATH}/20.webp`, meaning: "Judgement, rebirth, inner calling, absolution.", reversedMeaning: "Self-doubt, inner-critic, ignoring the call." },
+  { id: 21, name: "The World", nameZh: "世界", arcana: "Major", image: `${CARD_DECK_PATH}/21.webp`, meaning: "Completion, integration, accomplishment, travel.", reversedMeaning: "Seeking closure, shortcuts, delays." },
 ];
 
 // 牌背圖片路徑
-export const CARD_BACK_IMAGE = `${CARD_DECK_PATH}/back02.png`;
+export const CARD_BACK_IMAGE = `${CARD_DECK_PATH}/back02.webp`;
+
 
 
 

@@ -6,7 +6,9 @@
 import { GoogleGenAI } from '@google/genai';
 import * as fs from 'fs';
 import * as path from 'path';
+import sharp from 'sharp';
 import { StyleTemplate, getStyleById } from './styles.js';
+
 import { MajorArcanaCard, getMajorArcanaById, getAllMajorArcana } from './majorArcana.js';
 import { MinorArcanaCard, getMinorArcanaById, getAllMinorArcana } from './minorArcana.js';
 
@@ -98,9 +100,10 @@ REQUIREMENTS:
         outputDir: string
     ): Promise<GenerationResult> {
         const prompt = this.buildPrompt(style, card);
-        const fileName = `${card.id.toString().padStart(2, '0')}_${card.name.replace(/\s+/g, '_').toLowerCase()}.png`;
+        const fileName = `${card.id.toString().padStart(2, '0')}_${card.name.replace(/\s+/g, '_').toLowerCase()}.webp`;
         const styleDir = path.join(outputDir, style.id);
         const outputPath = path.join(styleDir, fileName);
+
 
         // 確保目錄存在
         if (!fs.existsSync(styleDir)) {
@@ -124,9 +127,15 @@ REQUIREMENTS:
 
             if (imagePart?.inlineData?.data) {
                 const imageBuffer = Buffer.from(imagePart.inlineData.data, 'base64');
-                fs.writeFileSync(outputPath, imageBuffer);
+                
+                // 使用 sharp 進行壓縮並保存為 WebP
+                await sharp(imageBuffer)
+                    .resize({ width: 1024, withoutEnlargement: true }) // 確保最大寬度 1024px
+                    .webp({ quality: 80 })
+                    .toFile(outputPath);
 
                 return {
+
                     success: true,
                     cardId: card.id,
                     cardName: card.name,
@@ -152,9 +161,10 @@ REQUIREMENTS:
      */
     async generateBack(style: StyleTemplate, outputDir: string): Promise<GenerationResult> {
         const prompt = this.buildBackPrompt(style);
-        const fileName = 'back.png';
+        const fileName = 'back.webp';
         const styleDir = path.join(outputDir, style.id);
         const outputPath = path.join(styleDir, fileName);
+
 
         if (!fs.existsSync(styleDir)) {
             fs.mkdirSync(styleDir, { recursive: true });
@@ -175,9 +185,15 @@ REQUIREMENTS:
 
             if (imagePart?.inlineData?.data) {
                 const imageBuffer = Buffer.from(imagePart.inlineData.data, 'base64');
-                fs.writeFileSync(outputPath, imageBuffer);
+                
+                // 使用 sharp 進行壓縮並保存為 WebP
+                await sharp(imageBuffer)
+                    .resize({ width: 1024, withoutEnlargement: true })
+                    .webp({ quality: 80 })
+                    .toFile(outputPath);
 
                 return {
+
                     success: true,
                     cardId: -1,
                     cardName: 'Card Back',
