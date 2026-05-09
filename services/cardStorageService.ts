@@ -54,6 +54,40 @@ const ensureBucket = async (): Promise<boolean> => {
 };
 
 /**
+ * 將圖片檔案轉換為 WebP 格式（在瀏覽器端執行）
+ */
+const convertToWebP = async (file: File): Promise<Blob> => {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = img.width;
+                canvas.height = img.height;
+                const ctx = canvas.getContext('2d');
+                if (!ctx) {
+                    reject(new Error('Canvas context not available'));
+                    return;
+                }
+                ctx.drawImage(img, 0, 0);
+                canvas.toBlob((blob) => {
+                    if (blob) {
+                        resolve(blob);
+                    } else {
+                        reject(new Error('Canvas toBlob failed'));
+                    }
+                }, 'image/webp', 0.8); // 品質設為 0.8
+            };
+            img.onerror = () => reject(new Error('Image load failed'));
+            img.src = e.target?.result as string;
+        };
+        reader.onerror = () => reject(new Error('File read failed'));
+        reader.readAsDataURL(file);
+    });
+};
+
+/**
  * 上傳單張牌面圖片
  */
 export const uploadCardImage = async (
@@ -64,17 +98,29 @@ export const uploadCardImage = async (
     try {
         await ensureBucket();
 
+        // 自動將非 WebP 格式轉換為 WebP
+        let uploadBlob: Blob | File = file;
+        if (file.type !== 'image/webp') {
+            try {
+                uploadBlob = await convertToWebP(file);
+            } catch (err) {
+                console.warn('[CardStorage] WebP conversion failed, falling back to original file', err);
+            }
+        }
+
         const fileName = cardIndex === -1
-            ? `${styleId}/back.png`
-            : `${styleId}/${cardIndex}.png`;
+            ? `${styleId}/back.webp`
+            : `${styleId}/${cardIndex}.webp`;
 
         // 上傳檔案
         const { error: uploadError } = await supabase.storage
             .from(BUCKET_NAME)
-            .upload(fileName, file, {
+            .upload(fileName, uploadBlob, {
                 cacheControl: '31536000',
                 upsert: true, // 覆蓋已存在的檔案
+                contentType: 'image/webp'
             });
+
 
         if (uploadError) {
             console.error('[CardStorage] Upload failed:', uploadError);
@@ -145,15 +191,16 @@ export const getStyleCardImages = async (
                 .getPublicUrl(`${styleId}/${file.name}`);
 
             // 解析 cardIndex
-            if (file.name === 'back.png') {
+            if (file.name === 'back.webp' || file.name === 'back.png') {
                 urls.set(-1, publicUrl);
             } else {
-                const match = file.name.match(/^(\d+)\.png$/);
+                const match = file.name.match(/^(\d+)\.(webp|png)$/);
                 if (match) {
                     urls.set(parseInt(match[1]), publicUrl);
                 }
             }
         }
+
     } catch (err) {
         console.error('[CardStorage] getStyleCardImages error:', err);
     }
@@ -198,12 +245,13 @@ export const deleteCardImage = async (
 ): Promise<boolean> => {
     try {
         const fileName = cardIndex === -1
-            ? `${styleId}/back.png`
-            : `${styleId}/${cardIndex}.png`;
+            ? `${styleId}/back.webp`
+            : `${styleId}/${cardIndex}.webp`;
 
         const { error } = await supabase.storage
             .from(BUCKET_NAME)
             .remove([fileName]);
+
 
         if (error) {
             console.error('[CardStorage] Delete failed:', error);

@@ -165,9 +165,10 @@ const CardsPage: React.FC = () => {
             const file = files[i];
             const name = file.name.toLowerCase();
 
-            if (name.includes('back') || name === 'back.png' || name === 'back.jpg') {
+            if (name.includes('back')) {
                 uploadList.push({ cardIndex: -1, file });
             } else {
+
                 // 嘗試從檔名解析數字
                 const match = name.match(/(\d+)/);
                 if (match) {
@@ -180,11 +181,12 @@ const CardsPage: React.FC = () => {
         }
 
         if (uploadList.length === 0) {
-            setMessage({ type: 'error', text: '無法識別檔案名稱。請使用 0.png ~ 21.png 和 back.png' });
+            setMessage({ type: 'error', text: '無法識別檔案名稱。請使用 0 ~ 21 的數字命名的圖片（如 0.png）和 back.png' });
             setIsLoading(false);
             setUploadProgress(null);
             return;
         }
+
 
         // 逐個上傳並更新進度
         let successCount = 0;
@@ -419,10 +421,12 @@ const CardsPage: React.FC = () => {
             {!isClassic && (
                 <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-4">
                     <p className="text-gray-400 text-sm">
-                        💡 <strong className="text-white">上傳方式：</strong>
+                        💡 <strong className="text-white">上傳說明：</strong>
                         點擊空白牌卡上傳單張，或使用「批量上傳」一次上傳多張。
-                        批量上傳時，請將檔案命名為 <code className="bg-gray-900 px-1 rounded">0.png</code> ~ <code className="bg-gray-900 px-1 rounded">21.png</code>（牌面）和 <code className="bg-gray-900 px-1 rounded">back.png</code>（牌背）。
+                        檔案命名建議為 <code className="bg-gray-900 px-1 rounded">0.png</code> ~ <code className="bg-gray-900 px-1 rounded">21.png</code> 與 <code className="bg-gray-900 px-1 rounded">back.png</code>。
+                        <span className="text-amber-400 font-bold ml-1">※ 系統會自動將圖片轉換為輕量 WebP 格式以節省空間。</span>
                     </p>
+
                 </div>
             )}
 
