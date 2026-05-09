@@ -54,7 +54,8 @@ const ensureBucket = async (): Promise<boolean> => {
 };
 
 /**
- * 將圖片檔案轉換為 WebP 格式（在瀏覽器端執行）
+ * 將圖片檔案轉換為 WebP 格式並縮放（在瀏覽器端執行）
+ * 目標寬度為 768px (原圖 1536x2752 的 50%)
  */
 const convertToWebP = async (file: File): Promise<Blob> => {
     return new Promise((resolve, reject) => {
@@ -63,21 +64,40 @@ const convertToWebP = async (file: File): Promise<Blob> => {
             const img = new Image();
             img.onload = () => {
                 const canvas = document.createElement('canvas');
-                canvas.width = img.width;
-                canvas.height = img.height;
+                
+                // 設定縮放比例
+                const MAX_WIDTH = 768;
+                let targetWidth = img.width;
+                let targetHeight = img.height;
+
+                if (img.width > MAX_WIDTH) {
+                    const scaleFactor = MAX_WIDTH / img.width;
+                    targetWidth = MAX_WIDTH;
+                    targetHeight = img.height * scaleFactor;
+                }
+
+                canvas.width = targetWidth;
+                canvas.height = targetHeight;
+                
                 const ctx = canvas.getContext('2d');
                 if (!ctx) {
                     reject(new Error('Canvas context not available'));
                     return;
                 }
-                ctx.drawImage(img, 0, 0);
+
+                // 使用高品質的縮放處理
+                ctx.imageSmoothingEnabled = true;
+                ctx.imageSmoothingQuality = 'high';
+                
+                ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
+                
                 canvas.toBlob((blob) => {
                     if (blob) {
                         resolve(blob);
                     } else {
                         reject(new Error('Canvas toBlob failed'));
                     }
-                }, 'image/webp', 0.8); // 品質設為 0.8
+                }, 'image/webp', 0.85); // 品質設為 0.85 以保留更多細節
             };
             img.onerror = () => reject(new Error('Image load failed'));
             img.src = e.target?.result as string;
@@ -86,6 +106,7 @@ const convertToWebP = async (file: File): Promise<Blob> => {
         reader.readAsDataURL(file);
     });
 };
+
 
 /**
  * 上傳單張牌面圖片
