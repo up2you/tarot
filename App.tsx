@@ -17,7 +17,7 @@ import { useTheme } from './hooks/useTheme';
 import { useDisplaySettings } from './hooks/useDisplaySettings';
 import { useCardStyle } from './hooks/useCardStyle';
 import { useThemedSounds } from './components/SoundManager';
-import { createTarotSession, DeepSeekChat } from './services/geminiService';
+import { createTarotSession, DeepSeekChat, generateAISummary } from './services/geminiService';
 import { generateThemedCardArt, isThemeComplete, getCachedArt } from './services/imageService';
 import { initMobileApp, hapticFeedback, hapticNotification } from './services/mobileService';
 import { saveReading } from './services/historyService';
@@ -399,8 +399,28 @@ const App: React.FC = () => {
 
         const oracleResult = await generateFreeReading(cards, scenarioKey);
 
+        // 🆕 混合模式優化：如果免費用戶有輸入特定問題，則調用 AI 生成針對性的總結
+        // 排除預設問題 (如 "年度運勢" 等)
+        const isGenericQuestion = question === spreadDef?.nameZh;
+        if (question.trim() && !isGenericQuestion) {
+          const aiSummary = await generateAISummary(
+            question,
+            oracleResult.interpretations.map((interp, idx) => ({
+              cardName: spread[idx].card.nameZh,
+              isReversed: spread[idx].isReversed,
+              position: interp.position,
+              interpretation: interp.text
+            }))
+          );
+
+          if (aiSummary) {
+            oracleResult.summary = aiSummary;
+          }
+        }
+
         // 組合成完整解讀文字
         fullText = formatOracleReading(spread, oracleResult);
+
 
         // 🆕 模擬打字機效果（調整為較慢速度，接近 AI 串流）
         const typewriterEffect = async (text: string) => {

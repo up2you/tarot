@@ -192,3 +192,60 @@ export async function startTarotSession(
 
   return { chat, initialInterpretation: response.text };
 }
+
+/**
+ * 混合模式專用：為免費用戶生成 AI 總結
+ * 根據用戶的具體問題與模板解釋，生成一段針對性的最終神諭
+ */
+export async function generateAISummary(
+  userQuestion: string,
+  spread: { cardName: string; isReversed: boolean; position: string; interpretation: string }[]
+): Promise<string> {
+  const apiKey = getApiKey();
+  if (!apiKey) return '';
+
+  const cardDetails = spread.map(s => 
+    `位置：${s.position}\n牌名：${s.cardName} (${s.isReversed ? '逆位' : '正位'})\n內涵：${s.interpretation}`
+  ).join('\n\n');
+
+  const prompt = `你是一位隱居於巴洛克聖殿中的占卜宗師「艾瑟瑞爾」。
+現在有一位尋求者提出了問題：「${userQuestion}」
+
+以下是這次占卜抽出的牌面及其基本含義：
+${cardDetails}
+
+請根據以上訊息，為尋求者寫一段「最終神諭總結」。
+要求：
+1. 語氣必須具備 17 世紀宮廷神祕學家的傲慢與智慧，帶著磁性且深邃的敘事感。
+2. **必須正面回答尋求者的問題**，絕對不能答非所問。請將牌面能量轉化為對問題的直接啟示。
+3. 使用 Markdown 格式。
+4. 結構：先寫 1-2 段深度分析，最後以「# 艾瑟瑞爾的最終神諭：[主題名稱]」作為標題結尾。
+5. 總長度約 200 字左右。`;
+
+  try {
+    const response = await fetch(DEEPSEEK_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: 'deepseek-chat',
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.7,
+        max_tokens: 1024
+      })
+    });
+
+    if (!response.ok) {
+      console.error('AI Summary Error:', response.status);
+      return '';
+    }
+
+    const data = await response.json();
+    return data.choices[0]?.message?.content || '';
+  } catch (err) {
+    console.error('AI Summary Fetch Error:', err);
+    return '';
+  }
+}
