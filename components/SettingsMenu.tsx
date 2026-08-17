@@ -4,11 +4,14 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../hooks/useTheme';
 import { supabase } from '../services/supabaseClient';
 import { supabaseSignOut } from '../services/supabaseAuthService';
+import { SUPPORTED_LANGUAGES } from '../hooks/i18n';
 
 const SettingsMenu: React.FC = () => {
+  const { t, i18n } = useTranslation();
     const { currentTheme, setTheme, themes } = useTheme();
     const [isOpen, setIsOpen] = useState(false);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -98,7 +101,7 @@ const SettingsMenu: React.FC = () => {
                         {/* 主題設定區塊 */}
                         <div className="p-4 border-b border-[#d4af37]/20">
                             <p className="text-xs font-cinzel tracking-widest text-[#d4af37]/60 uppercase mb-3">
-                                🎨 主題風格
+                                {t('settings.theme')}
                             </p>
                             <div className="space-y-2">
                                 {themes.map((theme) => (
@@ -122,7 +125,7 @@ const SettingsMenu: React.FC = () => {
                                         </div>
                                         <div className="flex-1">
                                             <p className="font-cinzel font-bold text-sm" style={{ color: theme.primaryColor }}>
-                                                {theme.nameZh}
+                                                {(i18n.language === 'zh-TW' || i18n.language === 'zh-CN') ? theme.nameZh : theme.name}
                                             </p>
                                         </div>
                                         {currentTheme === theme.id && (
@@ -133,10 +136,35 @@ const SettingsMenu: React.FC = () => {
                             </div>
                         </div>
 
+                        {/* 語言切換區塊 */}
+                        <div className="p-4 border-b border-[#d4af37]/20">
+                            <p className="text-xs font-cinzel tracking-widest text-[#d4af37]/60 uppercase mb-3">
+                                {t('settings.language')}
+                            </p>
+                            <div className="space-y-1">
+                                {SUPPORTED_LANGUAGES.map(opt => (
+                                    <button
+                                        key={opt.code}
+                                        onClick={() => i18n.changeLanguage(opt.code)}
+                                        className={`w-full px-3 py-2 rounded-xl text-left transition-all flex items-center gap-3 ${i18n.language === opt.code ? 'bg-amber-500/10 border border-amber-500/30' : 'hover:bg-white/5'
+                                            }`}
+                                    >
+                                        <span className="text-lg">{opt.flag}</span>
+                                        <span className={`text-sm ${i18n.language === opt.code ? 'text-amber-400' : 'text-[#d4af37]'}`}>
+                                            {opt.label}
+                                        </span>
+                                        {i18n.language === opt.code && (
+                                            <span className="ml-auto text-amber-400 text-xs">✓</span>
+                                        )}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
                         {/* 功能導航區塊 */}
                         <div className="p-4">
                             <p className="text-xs font-cinzel tracking-widest text-[#d4af37]/60 uppercase mb-3">
-                                📍 功能選單
+                                {t('settings.menu')}
                             </p>
                             <div className="space-y-2">
                                 <a
@@ -149,7 +177,7 @@ const SettingsMenu: React.FC = () => {
                                     className="w-full p-3 rounded-xl text-left transition-all flex items-center gap-3 hover:bg-white/5"
                                 >
                                     <span className="text-xl">👤</span>
-                                    <span className="text-sm text-[#d4af37]">個人中心</span>
+                                    <span className="text-sm text-[#d4af37]">{t('settings.profile')}</span>
                                 </a>
                                 <a
                                     href="/card-styles"
@@ -161,7 +189,7 @@ const SettingsMenu: React.FC = () => {
                                     className="w-full p-3 rounded-xl text-left transition-all flex items-center gap-3 hover:bg-white/5"
                                 >
                                     <span className="text-xl">🎴</span>
-                                    <span className="text-sm text-[#d4af37]">牌面風格商店</span>
+                                    <span className="text-sm text-[#d4af37]">{t('settings.card_styles')}</span>
                                 </a>
                                 <a
                                     href="/pricing"
@@ -173,7 +201,7 @@ const SettingsMenu: React.FC = () => {
                                     className="w-full p-3 rounded-xl text-left transition-all flex items-center gap-3 hover:bg-white/5"
                                 >
                                     <span className="text-xl">💎</span>
-                                    <span className="text-sm text-[#d4af37]">升級 VIP / 購買點數</span>
+                                    <span className="text-sm text-[#d4af37]">{t('settings.upgrade_vip')}</span>
                                 </a>
 
                                 {/* 🔒 後台管理 - 只有管理員可見 */}
@@ -188,7 +216,7 @@ const SettingsMenu: React.FC = () => {
                                         className="w-full p-3 rounded-xl text-left transition-all flex items-center gap-3 hover:bg-white/5 opacity-60"
                                     >
                                         <span className="text-xl">⚙️</span>
-                                        <span className="text-sm text-[#d4af37]">後台管理</span>
+                                        <span className="text-sm text-[#d4af37]">{t('settings.admin')}</span>
                                     </a>
                                 )}
 
@@ -204,7 +232,7 @@ const SettingsMenu: React.FC = () => {
                                                 className="w-full p-3 rounded-xl text-left transition-all flex items-center gap-3 hover:bg-red-500/10"
                                             >
                                                 <span className="text-xl">🚪</span>
-                                                <span className="text-sm text-red-400">登出</span>
+                                                <span className="text-sm text-red-400">{t('settings.logout')}</span>
                                             </button>
                                         </>
                                     ) : (
@@ -216,7 +244,7 @@ const SettingsMenu: React.FC = () => {
                                             className="w-full p-3 rounded-xl text-left transition-all flex items-center gap-3 hover:bg-white/5"
                                         >
                                             <span className="text-xl">🔑</span>
-                                            <span className="text-sm text-green-400">登入 / 註冊</span>
+                                            <span className="text-sm text-green-400">{t('settings.login_register')}</span>
                                         </button>
                                     )}
                                 </div>

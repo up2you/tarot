@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '../services/supabaseClient';
 import {
     getSupabaseUser,
@@ -24,6 +25,7 @@ interface UserProfilePageProps {
 }
 
 const UserProfilePage: React.FC<UserProfilePageProps> = ({ onClose, onNavigate }) => {
+    const { t, i18n } = useTranslation();
     const [profile, setProfile] = useState<SupabaseUserProfile | null>(null);
     const [ownedStyles, setOwnedStyles] = useState<StyleWithOwnership[]>([]);
     const [recentReadings, setRecentReadings] = useState<Reading[]>([]);
@@ -96,12 +98,12 @@ const UserProfilePage: React.FC<UserProfilePageProps> = ({ onClose, onNavigate }
         return (
             <div className="min-h-screen bg-gray-900 flex items-center justify-center">
                 <div className="text-center">
-                    <p className="text-gray-400 mb-4">請先登入</p>
+                    <p className="text-gray-400 mb-4">{t('profile_page.please_login')}</p>
                     <button
                         onClick={() => onNavigate?.('auth')}
                         className="px-6 py-2 bg-amber-500 text-black rounded-lg"
                     >
-                        前往登入
+                        {t('profile_page.go_to_login')}
                     </button>
                 </div>
             </div>
@@ -111,8 +113,8 @@ const UserProfilePage: React.FC<UserProfilePageProps> = ({ onClose, onNavigate }
     // 使用預設值避免 profile 為 null 時的錯誤
     const displayProfile = profile || {
         user_id: '',
-        email: '載入中...',
-        display_name: '載入中...',
+        email: '...',
+        display_name: '...',
         avatar_url: null,
         subscription_type: 'free',
         subscription_expires_at: null,
@@ -125,11 +127,11 @@ const UserProfilePage: React.FC<UserProfilePageProps> = ({ onClose, onNavigate }
     // Helper function to get subscription badge
     const getSubscriptionBadge = (userProfile: typeof displayProfile) => {
         const badges: Record<string, { color: string; icon: string; text: string }> = {
-            'lifetime': { color: 'from-amber-500 to-yellow-400', icon: '👑', text: '終身 VIP' },
-            'yearly': { color: 'from-purple-500 to-pink-500', icon: '🌟', text: '年費 VIP' },
-            'monthly': { color: 'from-blue-500 to-cyan-400', icon: '📅', text: '月費 VIP' },
-            'credits': { color: 'from-green-500 to-emerald-400', icon: '🎯', text: '點數用戶' },
-            'free': { color: 'from-gray-500 to-gray-400', icon: '🆓', text: '免費用戶' },
+            'lifetime': { color: 'from-amber-500 to-yellow-400', icon: '👑', text: t('profile_page.badge_lifetime') },
+            'yearly': { color: 'from-purple-500 to-pink-500', icon: '🌟', text: t('profile_page.badge_yearly') },
+            'monthly': { color: 'from-blue-500 to-cyan-400', icon: '📅', text: t('profile_page.badge_monthly') },
+            'credits': { color: 'from-green-500 to-emerald-400', icon: '🎯', text: t('profile_page.badge_credits') },
+            'free': { color: 'from-gray-500 to-gray-400', icon: '🆓', text: t('profile_page.badge_free') },
         };
 
         const badge = badges[userProfile.subscription_type] || badges['free'];
@@ -147,7 +149,7 @@ const UserProfilePage: React.FC<UserProfilePageProps> = ({ onClose, onNavigate }
                         onClick={onClose}
                         className="mb-6 flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
                     >
-                        <span>←</span> 返回
+                        <span>{t('profile_page.back')}</span>
                     </button>
                 )}
 
@@ -166,7 +168,7 @@ const UserProfilePage: React.FC<UserProfilePageProps> = ({ onClose, onNavigate }
                         {/* 資訊 */}
                         <div className="flex-1">
                             <h1 className="text-2xl font-bold text-white mb-1">
-                                {displayProfile.display_name || '神秘旅人'}
+                                {displayProfile.display_name || t('profile_page.default_name')}
                             </h1>
                             <p className="text-gray-400 text-sm mb-2">{displayProfile.email}</p>
 
@@ -184,7 +186,7 @@ const UserProfilePage: React.FC<UserProfilePageProps> = ({ onClose, onNavigate }
                             onClick={handleLogout}
                             className="px-4 py-2 text-gray-400 hover:text-red-400 text-sm transition-colors"
                         >
-                            登出
+                            {t('profile_page.logout')}
                         </button>
                     </div>
                 </div>
@@ -200,9 +202,9 @@ const UserProfilePage: React.FC<UserProfilePageProps> = ({ onClose, onNavigate }
                                 : 'bg-gray-800 text-gray-400 hover:text-white'
                                 }`}
                         >
-                            {tab === 'overview' && '📊 總覽'}
-                            {tab === 'styles' && '🎴 牌面風格'}
-                            {tab === 'history' && '📜 占卜記錄'}
+                            {tab === 'overview' && t('profile_page.tab_overview')}
+                            {tab === 'styles' && t('profile_page.tab_styles')}
+                            {tab === 'history' && t('profile_page.tab_history')}
                         </button>
                     ))}
                 </div>
@@ -213,19 +215,19 @@ const UserProfilePage: React.FC<UserProfilePageProps> = ({ onClose, onNavigate }
                         {/* 統計卡片 */}
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                             <div className="bg-gray-800 rounded-xl p-4 border border-gray-700">
-                                <p className="text-gray-400 text-sm">累計占卜</p>
-                                <p className="text-2xl font-bold text-white mt-1">{displayProfile.total_readings_count || 0} 次</p>
+                                <p className="text-gray-400 text-sm">{t('profile_page.total_readings')}</p>
+                                <p className="text-2xl font-bold text-white mt-1">{displayProfile.total_readings_count || 0} {t('profile_page.readings_unit')}</p>
                             </div>
                             <div className="bg-gray-800 rounded-xl p-4 border border-gray-700">
-                                <p className="text-gray-400 text-sm">點數餘額</p>
-                                <p className="text-2xl font-bold text-amber-400 mt-1">{displayProfile.credits_balance}</p>
+                                <p className="text-gray-400 text-sm">{t('profile_page.credits_balance')}</p>
+                                <p className="text-2xl font-bold text-amber-400 mt-1">{displayProfile.credits_balance} {t('profile_page.credits_unit')}</p>
                             </div>
                             <div className="bg-gray-800 rounded-xl p-4 border border-gray-700">
-                                <p className="text-gray-400 text-sm">擁有風格</p>
-                                <p className="text-2xl font-bold text-purple-400 mt-1">{ownedStyles.length} 種</p>
+                                <p className="text-gray-400 text-sm">{t('profile_page.owned_styles')}</p>
+                                <p className="text-2xl font-bold text-purple-400 mt-1">{ownedStyles.length} {t('profile_page.styles_unit')}</p>
                             </div>
                             <div className="bg-gray-800 rounded-xl p-4 border border-gray-700">
-                                <p className="text-gray-400 text-sm">當前風格</p>
+                                <p className="text-gray-400 text-sm">{t('profile_page.active_style')}</p>
                                 <p className="text-lg font-bold text-white mt-1">{displayProfile.active_card_style || 'classic'}</p>
                             </div>
                         </div>
@@ -237,8 +239,8 @@ const UserProfilePage: React.FC<UserProfilePageProps> = ({ onClose, onNavigate }
                                 className="bg-gradient-to-r from-amber-500 to-yellow-400 text-black rounded-xl p-6 text-left hover:brightness-110 transition-all"
                             >
                                 <div className="text-2xl mb-2">💎</div>
-                                <h3 className="font-bold text-lg">升級會員</h3>
-                                <p className="text-black/60 text-sm">解鎖更多功能和無限占卜</p>
+                                <h3 className="font-bold text-lg">{t('profile_page.upgrade_membership')}</h3>
+                                <p className="text-black/60 text-sm">{t('profile_page.upgrade_desc')}</p>
                             </button>
 
                             <button
@@ -246,30 +248,30 @@ const UserProfilePage: React.FC<UserProfilePageProps> = ({ onClose, onNavigate }
                                 className="bg-gray-800 border border-gray-700 rounded-xl p-6 text-left hover:border-amber-500/50 transition-all"
                             >
                                 <div className="text-2xl mb-2">🎴</div>
-                                <h3 className="font-bold text-lg text-white">牌面風格商店</h3>
-                                <p className="text-gray-400 text-sm">探索 32 種精美牌面</p>
+                                <h3 className="font-bold text-lg text-white">{t('profile_page.card_style_shop')}</h3>
+                                <p className="text-gray-400 text-sm">{t('profile_page.shop_desc', { count: 32 })}</p>
                             </button>
                         </div>
 
                         {/* 訂閱狀態詳情 */}
                         <div className="bg-gray-800 rounded-xl p-6 border border-gray-700">
-                            <h3 className="text-lg font-bold text-white mb-4">📋 訂閱詳情</h3>
+                            <h3 className="text-lg font-bold text-white mb-4">{t('profile_page.subscription_details')}</h3>
                             <div className="space-y-3">
                                 <div className="flex justify-between">
-                                    <span className="text-gray-400">會員類型</span>
+                                    <span className="text-gray-400">{t('profile_page.membership_type')}</span>
                                     <span className="text-white">{badge?.text}</span>
                                 </div>
                                 {displayProfile.subscription_expires_at && (
                                     <div className="flex justify-between">
-                                        <span className="text-gray-400">到期時間</span>
+                                        <span className="text-gray-400">{t('profile_page.expires_at')}</span>
                                         <span className="text-white">
-                                            {new Date(displayProfile.subscription_expires_at).toLocaleDateString('zh-TW')}
+                                            {new Date(displayProfile.subscription_expires_at).toLocaleDateString(i18n.language)}
                                         </span>
                                     </div>
                                 )}
                                 <div className="flex justify-between">
-                                    <span className="text-gray-400">點數餘額</span>
-                                    <span className="text-amber-400">{displayProfile.credits_balance} 點</span>
+                                    <span className="text-gray-400">{t('profile_page.credits_balance')}</span>
+                                    <span className="text-amber-400">{displayProfile.credits_balance} {t('profile_page.credits_unit')}</span>
                                 </div>
                             </div>
                         </div>
@@ -280,12 +282,12 @@ const UserProfilePage: React.FC<UserProfilePageProps> = ({ onClose, onNavigate }
                 {activeTab === 'styles' && (
                     <div className="space-y-6">
                         <div className="flex items-center justify-between">
-                            <h3 className="text-lg font-bold text-white">已擁有的牌面風格</h3>
+                            <h3 className="text-lg font-bold text-white">{t('profile_page.owned_card_styles')}</h3>
                             <button
                                 onClick={() => onNavigate?.('cardStyles')}
                                 className="text-amber-400 text-sm hover:underline"
                             >
-                                探索更多 →
+                                {t('profile_page.explore_more')}
                             </button>
                         </div>
 
@@ -303,9 +305,11 @@ const UserProfilePage: React.FC<UserProfilePageProps> = ({ onClose, onNavigate }
                                             🎴
                                         </div>
                                         <div className="p-3">
-                                            <p className="text-white font-bold text-sm truncate">{style.name_zh}</p>
+                                            <p className="text-white font-bold text-sm truncate">
+                                                {(i18n.language === 'zh-TW' || i18n.language === 'zh-CN') ? style.name_zh : (style.name_en || style.name_zh)}
+                                            </p>
                                             {profile?.active_card_style === style.style_key && (
-                                                <p className="text-amber-400 text-xs">使用中</p>
+                                                <p className="text-amber-400 text-xs">{t('profile_page.in_use')}</p>
                                             )}
                                         </div>
                                     </div>
@@ -313,12 +317,12 @@ const UserProfilePage: React.FC<UserProfilePageProps> = ({ onClose, onNavigate }
                             </div>
                         ) : (
                             <div className="text-center py-12 text-gray-500">
-                                <p className="mb-4">尚未購買任何牌面風格</p>
+                                <p className="mb-4">{t('profile_page.no_owned_styles')}</p>
                                 <button
                                     onClick={() => onNavigate?.('cardStyles')}
                                     className="px-6 py-2 bg-amber-500 text-black rounded-lg"
                                 >
-                                    前往商店
+                                    {t('profile_page.go_to_shop')}
                                 </button>
                             </div>
                         )}
@@ -328,7 +332,7 @@ const UserProfilePage: React.FC<UserProfilePageProps> = ({ onClose, onNavigate }
                 {/* 占卜記錄標籤頁 */}
                 {activeTab === 'history' && (
                     <div className="space-y-4">
-                        <h3 className="text-lg font-bold text-white">最近占卜記錄</h3>
+                        <h3 className="text-lg font-bold text-white">{t('profile_page.recent_readings')}</h3>
 
                         {recentReadings.length > 0 ? (
                             <div className="space-y-3">
@@ -339,9 +343,9 @@ const UserProfilePage: React.FC<UserProfilePageProps> = ({ onClose, onNavigate }
                                     >
                                         <div className="flex items-start justify-between">
                                             <div>
-                                                <p className="text-white font-bold">{reading.question || '無記錄問題'}</p>
+                                                <p className="text-white font-bold">{reading.question || t('profile_page.no_question')}</p>
                                                 <p className="text-gray-400 text-sm mt-1">
-                                                    {reading.spread_type} · {new Date(reading.created_at).toLocaleDateString('zh-TW')}
+                                                    {reading.spread_type} · {new Date(reading.created_at).toLocaleDateString(i18n.language)}
                                                 </p>
                                             </div>
                                             <div className="text-right">
@@ -349,11 +353,11 @@ const UserProfilePage: React.FC<UserProfilePageProps> = ({ onClose, onNavigate }
                                                     ? 'bg-purple-500/20 text-purple-400'
                                                     : 'bg-gray-600/20 text-gray-400'
                                                     }`}>
-                                                    {reading.interpretation_type === 'ai' ? 'AI 解讀' : '神諭解讀'}
+                                                    {reading.interpretation_type === 'ai' ? t('profile_page.ai_reading') : t('profile_page.oracle_reading')}
                                                 </span>
                                                 {reading.followup_count > 0 && (
                                                     <p className="text-amber-400 text-xs mt-1">
-                                                        追問 {reading.followup_count}/2
+                                                        {t('profile_page.followup_count', { count: reading.followup_count })}
                                                     </p>
                                                 )}
                                             </div>
@@ -363,7 +367,7 @@ const UserProfilePage: React.FC<UserProfilePageProps> = ({ onClose, onNavigate }
                             </div>
                         ) : (
                             <div className="text-center py-12 text-gray-500">
-                                <p>尚無占卜記錄</p>
+                                <p>{t('profile_page.no_history')}</p>
                             </div>
                         )}
                     </div>
