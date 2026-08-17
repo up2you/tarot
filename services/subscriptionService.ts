@@ -93,7 +93,7 @@ export const getUserSubscription = async (userId: string): Promise<UserSubscript
             .from('user_profiles')
             .select('subscription_type, subscription_expires_at, credits_balance, total_readings, free_readings_used')
             .eq('user_id', userId)
-            .single();
+            .maybeSingle();
 
         if (error) {
             console.error('[SubscriptionService] getUserSubscription failed:', error);

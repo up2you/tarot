@@ -409,7 +409,7 @@ export const getActiveStyle = async (userId: string): Promise<string> => {
             .from('user_profiles')
             .select('active_card_style')
             .eq('user_id', userId)
-            .single();
+            .maybeSingle();
 
         if (error || !data?.active_card_style) {
             return 'classic';  // 預設風格
