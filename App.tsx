@@ -38,6 +38,7 @@ import { getGuestRemaining, consumeGuestQuota, GUEST_DAILY_QUOTA_LIMIT } from '.
 import { useAnimationSettings } from './hooks/useAnimationSettings';
 import RitualShuffle from './components/RitualShuffle';
 import DailyCard from './components/DailyCard';
+import StructuredReading from './components/StructuredReading';
 
 const App: React.FC = () => {
   const { t, i18n } = useTranslation();
@@ -298,6 +299,16 @@ const App: React.FC = () => {
     hasConsumedQuotaRef.current = false; // 重置額度扣除標記
     playSound('shuffle');
     setAppState(AppState.SHUFFLING);
+
+    // 🆕 AI 回述確認（設計藍圖：讓使用者感覺被傾聽）
+    if (question.trim() && !spreadDef.defaultScenario) {
+      const spreadName = t(`spreads:spreads.${spreadDef.id}.name`, spreadDef.nameZh);
+      toast.info(t('main.intent_acknowledge', {
+        topic: question.trim().length > 24 ? question.trim().substring(0, 24) + '…' : question.trim(),
+        spread: spreadName,
+        count: spreadDef.positions.length,
+      }), 4000);
+    }
 
     const cardCount = spreadDef.positions.length;
     const shuffled = [...MAJOR_ARCANA].sort(() => Math.random() - 0.5);
@@ -675,6 +686,32 @@ const App: React.FC = () => {
     } else {
       await navigator.clipboard.writeText(fullShareText);
       toast.success(t('main.copied_to_clipboard'));
+    }
+  };
+
+  // 🆕 複製金句（設計藍圖：解讀金句卡自動生成概念的精簡版）
+  const handleShareQuote = async () => {
+    const fullInterpretation = messages.find(m => m.role === 'model')?.text || '';
+    // 提取第一張牌的標題作為金句來源
+    const firstCardLine = fullInterpretation.split('\n').find(l => l.startsWith('###')) || '';
+    const cleanedLine = firstCardLine
+      .replace(/^###\s*【(.+?)】(.+?)(?:\s*\(([^)]*)\))?\s*$/, '【$1】$2')
+      .replace(/\*\*/g, '')
+      .trim();
+    // 提取解讀第一段非空文字作為金句內容
+    const firstBody = fullInterpretation
+      .split('\n')
+      .filter(l => l.trim() && !l.startsWith('#') && l.trim() !== '---')
+      .find(l => l.length > 8) || '';
+
+    const quoteText = `${cleanedLine || t('share.template_header')}\n「${firstBody.slice(0, 80)}${firstBody.length > 80 ? '…' : ''}」\n\n— ${t('share.template_footer').split('\n')[0]}`;
+
+    try {
+      await navigator.clipboard.writeText(quoteText);
+      toast.success(t('main.copied_to_clipboard'));
+    } catch (err) {
+      console.warn('Quote copy failed:', err);
+      toast.error(t('main.copy_failed'));
     }
   };
 
@@ -1272,15 +1309,22 @@ const App: React.FC = () => {
                 {/* 解讀區：自然流動（移除內嵌滾動，改由頁面滾動承接，閱讀更流暢） */}
                 <div className="px-1 md:px-2">
                   <div className="space-y-16">
-                    {messages.map((msg, idx) => (
-                      <div key={idx} className="animate-fade-up">
-                        {msg.role === 'user' ? (
-                          <div className="user-query-box">「 {msg.text} 」</div>
-                        ) : (
-                          <div className="prose-mystic min-h-[200px]" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(marked.parse(msg.text) as string) }} />
-                        )}
-                      </div>
-                    ))}
+                    {messages.map((msg, idx) => {
+                      // 第一個 model 訊息（主要解讀）在打字機完成後用結構化呈現
+                      const isFirstModel = msg.role === 'model' && messages.filter(m => m.role === 'model').indexOf(msg) === 0;
+                      const useStructured = isFirstModel && !isTypewriter && spread.length > 0 && msg.text.includes('###');
+                      return (
+                        <div key={idx} className="animate-fade-up">
+                          {msg.role === 'user' ? (
+                            <div className="user-query-box">「 {msg.text} 」</div>
+                          ) : useStructured ? (
+                            <StructuredReading spread={spread} text={msg.text} />
+                          ) : (
+                            <div className="prose-mystic min-h-[200px]" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(marked.parse(msg.text) as string) }} />
+                          )}
+                        </div>
+                      );
+                    })}
                     {isTyping && (
                       <div className="flex items-center justify-center gap-4 text-[#d4af37]/50 font-cinzel italic text-xl animate-pulse">
                         <div className="w-2 h-2 bg-[#d4af37] rounded-full animate-bounce"></div>
@@ -1325,6 +1369,17 @@ const App: React.FC = () => {
                       </svg>
                       <span className="text-[#d4af37] font-cinzel text-sm">
                         {t('main.share_text')}
+                      </span>
+                    </button>
+                    <button
+                      onClick={handleShareQuote}
+                      className="flex items-center gap-2 px-6 py-3 rounded-full border border-[#d4af37]/30 hover:bg-[#d4af37]/10 transition-all active:scale-95 group"
+                    >
+                      <svg className="w-5 h-5 text-[#d4af37]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M7.5 8.25h9m-9 3.75H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.076-4.076a1.526 1.526 0 011.037-.443 48.282 48.282 0 005.68-.494c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
+                      </svg>
+                      <span className="text-[#d4af37] font-cinzel text-sm">
+                        {t('main.share_quote')}
                       </span>
                     </button>
                   </div>

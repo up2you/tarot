@@ -28,22 +28,58 @@ const DailyCard: React.FC<DailyCardProps> = ({
   const { playSound } = useThemedSounds();
 
   // 每日卡：以日期為種子選一張（每天固定，午夜更新）
+  const todayKey = (() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+  })();
+
   const [revealedCard] = useState(() => {
-    const today = new Date();
-    const seed = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
+    const seed = new Date().getFullYear() * 10000 + (new Date().getMonth() + 1) * 100 + new Date().getDate();
     return MAJOR_ARCANA[seed % MAJOR_ARCANA.length];
   });
-  const [isFlipped, setIsFlipped] = useState(false);
-  const [showGlow, setShowGlow] = useState(false);
+
+  // 持久化：記錄今天的卡是否已翻開（localStorage，重新整理保持狀態）
+  const DAILY_STATE_KEY = 'aetheris_daily_card';
+  const [isFlipped, setIsFlipped] = useState(() => {
+    try {
+      const raw = localStorage.getItem(DAILY_STATE_KEY);
+      if (raw) {
+        const state = JSON.parse(raw);
+        // 只有今天的記錄才恢復翻開狀態（跨天自動重置）
+        if (state.date === todayKey && state.cardId === revealedCard.id) {
+          return state.flipped === true;
+        }
+      }
+    } catch { /* 忽略 */ }
+    return false;
+  });
+  const [showGlow, setShowGlow] = useState(() => {
+    try {
+      const raw = localStorage.getItem(DAILY_STATE_KEY);
+      if (raw) {
+        const state = JSON.parse(raw);
+        return state.date === todayKey && state.cardId === revealedCard.id && state.flipped === true;
+      }
+    } catch { /* 忽略 */ }
+    return false;
+  });
 
   const handleFlip = useCallback(() => {
     if (isFlipped) return;
     playSound('flip');
     hapticFeedback('light');
     setIsFlipped(true);
+    // 持久化翻開狀態
+    try {
+      localStorage.setItem(DAILY_STATE_KEY, JSON.stringify({
+        date: todayKey,
+        cardId: revealedCard.id,
+        flipped: true,
+      }));
+    } catch { /* 忽略儲存失敗 */ }
     // 翻牌完成後觸發光暈與金句
     setTimeout(() => setShowGlow(true), 700);
-  }, [isFlipped, playSound]);
+  }, [isFlipped, playSound, revealedCard.id, todayKey]);
 
   // 每日一句（從意義中提取，實際可用 AI 生成）
   const dailyQuote = revealedCard.meaning.split('.')[0] + '.';
