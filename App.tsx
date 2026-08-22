@@ -1313,12 +1313,31 @@ const App: React.FC = () => {
                       // 第一個 model 訊息（主要解讀）在打字機完成後用結構化呈現
                       const isFirstModel = msg.role === 'model' && messages.filter(m => m.role === 'model').indexOf(msg) === 0;
                       const useStructured = isFirstModel && !isTypewriter && spread.length > 0 && msg.text.includes('###');
+                      // 追問對話：第一個 model 之後的 user/model 訊息用對話氣泡
+                      const isFollowUp = !isFirstModel && msg.role === 'model';
+                      const isFollowUpQuestion = msg.role === 'user' && messages.filter(m => m.role === 'user').indexOf(msg) > 0;
                       return (
                         <div key={idx} className="animate-fade-up">
                           {msg.role === 'user' ? (
-                            <div className="user-query-box">「 {msg.text} 」</div>
+                            isFollowUpQuestion ? (
+                              /* 追問問題：對話氣泡（靠右） */
+                              <div className="flex justify-end">
+                                <div className="max-w-[85%] md:max-w-[70%] px-5 py-3.5 rounded-2xl rounded-br-md bg-[#d4af37]/15 border border-[#d4af37]/30 text-[#f3e5ab] font-lora italic leading-relaxed">
+                                  {msg.text}
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="user-query-box">「 {msg.text} 」</div>
+                            )
                           ) : useStructured ? (
                             <StructuredReading spread={spread} text={msg.text} />
+                          ) : isFollowUp ? (
+                            /* 追問回應：對話氣泡（靠左） */
+                            <div className="flex justify-start">
+                              <div className="max-w-[92%] md:max-w-[75%] px-5 py-4 rounded-2xl rounded-bl-md bg-[#0a0505]/90 border border-[#d4af37]/20">
+                                <div className="prose-mystic text-sm md:text-base" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(marked.parse(msg.text) as string) }} />
+                              </div>
+                            </div>
                           ) : (
                             <div className="prose-mystic min-h-[200px]" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(marked.parse(msg.text) as string) }} />
                           )}

@@ -194,6 +194,18 @@ const SettingsMenu: React.FC = () => {
                                     <span className="text-sm text-[#d4af37]">{t('settings.card_styles')}</span>
                                 </a>
                                 <a
+                                    href="/cards"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        window.location.href = '/cards';
+                                        setIsOpen(false);
+                                    }}
+                                    className="w-full p-3 rounded-xl text-left transition-all flex items-center gap-3 hover:bg-white/5"
+                                >
+                                    <span className="text-xl">📖</span>
+                                    <span className="text-sm text-[#d4af37]">{t('settings.card_library')}</span>
+                                </a>
+                                <a
                                     href="/pricing"
                                     onClick={(e) => {
                                         e.preventDefault();
