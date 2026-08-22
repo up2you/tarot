@@ -519,7 +519,7 @@ const App: React.FC = () => {
     }
   };
 
-  // 🎭 雙透鏡解讀：切換西方原型 / 東方智慧視角
+  // 🎭 雙透鏡解讀：切換西方原型 / 東方智慧 / 對照模式
   const handleSwitchLens = async (lens: ReadingLens) => {
     // 切回西方：直接切換顯示（西方解讀已在 messages 中）
     if (lens === 'western') {
@@ -527,37 +527,38 @@ const App: React.FC = () => {
       return;
     }
 
-    // 切到東方：若已生成過則直接顯示，否則即時生成
-    setActiveLens('eastern');
-    if (easternReading) return; // 已快取
+    // 東方 / 對照模式：若東方解讀尚未生成，先即時生成
+    if (!easternReading) {
+      if (!currentUser?.isVip) {
+        toast.info(t('main.lens_vip_only'));
+        setShowUpgradeModal(true);
+        return;
+      }
 
-    if (!currentUser?.isVip) {
-      toast.info(t('main.lens_vip_only'));
-      setShowUpgradeModal(true);
-      setActiveLens('western');
-      return;
+      try {
+        setIsTyping(true);
+        const chat = createEasternTarotSession(question, spread, i18n.language);
+        let fullText = '';
+        await chat.sendMessageStream(
+          { message: t('main.seeking_eastern') },
+          (chunk, accumulated) => {
+            fullText = accumulated;
+            setEasternReading(accumulated);
+            setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }), 50);
+          }
+        );
+        setEasternReading(fullText);
+      } catch (error) {
+        console.error('Eastern lens error:', error);
+        toast.error(t('main.error_message'));
+        return;
+      } finally {
+        setIsTyping(false);
+      }
     }
 
-    try {
-      setIsTyping(true);
-      const chat = createEasternTarotSession(question, spread, i18n.language);
-      let fullText = '';
-      await chat.sendMessageStream(
-        { message: t('main.seeking_eastern') },
-        (chunk, accumulated) => {
-          fullText = accumulated;
-          setEasternReading(accumulated);
-          setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }), 50);
-        }
-      );
-      setEasternReading(fullText);
-    } catch (error) {
-      console.error('Eastern lens error:', error);
-      toast.error(t('main.error_message'));
-      setActiveLens('western');
-    } finally {
-      setIsTyping(false);
-    }
+    // 生成完成後切換到目標模式
+    setActiveLens(lens);
   };
 
 
@@ -1326,7 +1327,7 @@ const App: React.FC = () => {
                     <div className="inline-flex p-1.5 rounded-full bg-[#0a0505]/80 border border-[#d4af37]/30 backdrop-blur-sm">
                       <button
                         onClick={() => handleSwitchLens('western')}
-                        className={`px-5 md:px-7 py-2.5 rounded-full font-cinzel text-xs md:text-sm tracking-widest transition-all ${
+                        className={`px-4 md:px-6 py-2.5 rounded-full font-cinzel text-xs md:text-sm tracking-widest transition-all ${
                           activeLens === 'western'
                             ? 'bg-[#d4af37] text-black font-bold shadow-[0_0_20px_rgba(212,175,55,0.4)]'
                             : 'text-[#d4af37]/60 hover:text-[#d4af37]'
@@ -1336,13 +1337,23 @@ const App: React.FC = () => {
                       </button>
                       <button
                         onClick={() => handleSwitchLens('eastern')}
-                        className={`px-5 md:px-7 py-2.5 rounded-full font-cinzel text-xs md:text-sm tracking-widest transition-all ${
+                        className={`px-4 md:px-6 py-2.5 rounded-full font-cinzel text-xs md:text-sm tracking-widest transition-all ${
                           activeLens === 'eastern'
                             ? 'bg-[#d4af37] text-black font-bold shadow-[0_0_20px_rgba(212,175,55,0.4)]'
                             : 'text-[#d4af37]/60 hover:text-[#d4af37]'
                         }`}
                       >
                         ☯️ {t('main.lens_eastern')}
+                      </button>
+                      <button
+                        onClick={() => handleSwitchLens('compare')}
+                        className={`px-4 md:px-6 py-2.5 rounded-full font-cinzel text-xs md:text-sm tracking-widest transition-all ${
+                          activeLens === 'compare'
+                            ? 'bg-[#d4af37] text-black font-bold shadow-[0_0_20px_rgba(212,175,55,0.4)]'
+                            : 'text-[#d4af37]/60 hover:text-[#d4af37]'
+                        }`}
+                      >
+                        ⚖️ {t('main.lens_compare')}
                       </button>
                     </div>
                   </div>
@@ -1376,11 +1387,18 @@ const App: React.FC = () => {
                   </div>
                 )}
 
+                {/* 🎭 雙透鏡內容區（compare 模式並排兩欄） */}
+                <div className={activeLens === 'compare' ? 'md:grid md:grid-cols-2 md:gap-8' : ''}>
                 {/* 🎭 東方智慧視角解讀（雙透鏡） */}
-                {activeLens === 'eastern' && (
+                {(activeLens === 'eastern' || activeLens === 'compare') && (
                   <div className="mb-12 animate-fade-up">
                     {easternReading ? (
                       <div className="px-1 md:px-2">
+                        {activeLens === 'compare' && (
+                          <p className="mb-4 text-[10px] font-cinzel tracking-[0.4em] text-[#d4af37]/40 uppercase">
+                            ☯️ {t('main.lens_eastern')}
+                          </p>
+                        )}
                         <div className="prose-mystic min-h-[200px]" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(marked.parse(easternReading) as string) }} />
                       </div>
                     ) : (
@@ -1393,8 +1411,13 @@ const App: React.FC = () => {
                 )}
 
                 {/* 解讀區：自然流動（移除內嵌滾動，改由頁面滾動承接，閱讀更流暢） */}
-                {activeLens !== 'eastern' && (
+                {(activeLens === 'western' || activeLens === 'compare') && (
                 <div className="px-1 md:px-2">
+                  {activeLens === 'compare' && (
+                    <p className="mb-4 text-[10px] font-cinzel tracking-[0.4em] text-[#d4af37]/40 uppercase">
+                      🔮 {t('main.lens_western')}
+                    </p>
+                  )}
                   <div className="space-y-16">
                     {messages.map((msg, idx) => {
                       // 主要解讀（第一個 model）與打字機階段一致，一律用 markdown 渲染
@@ -1447,6 +1470,7 @@ const App: React.FC = () => {
                   </div>
                 </div>
                 )}
+                </div>{/* 雙透鏡內容區結束 */}
 
                 {/* 分享按鈕區域 */}
                 <div className="mt-8 pt-8 border-t border-[#d4af37]/20 text-center">

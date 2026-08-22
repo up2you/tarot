@@ -131,6 +131,7 @@
     "guest_quota_exhausted": "今日の無料占い回数を使い切りました。明日リセットされます。VIPにアップグレードすると無制限！",
     "lens_western": "西洋原型",
     "lens_eastern": "東洋の知恵",
+    "lens_compare": "対照",
     "seeking_eastern": "☯️ 東洋の知恵で見つめ直しています...",
     "lens_vip_only": "二つの視点での解読はVIP限定機能です。アップグレードして解除しましょう",
     "reading_count_out_of": "{{count}} / {{total}}",

@@ -202,7 +202,7 @@ export function createTarotSession(userQuestion: string, spread: CardReading[], 
 // 與西方塔羅原型形成對照，提供更全面的啟示
 // ============================================================
 
-export type ReadingLens = 'western' | 'eastern';
+export type ReadingLens = 'western' | 'eastern' | 'compare';
 
 // 東方視角的語言標籤
 const EASTERN_LABELS: Record<string, { lens: string; essence: string; guidance: string; closing: string; opening: string }> = {

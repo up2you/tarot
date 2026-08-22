@@ -131,6 +131,7 @@
     "guest_quota_exhausted": "오늘의 무료 점 횟수를 모두 사용했습니다. 내일 초기화됩니다. VIP로 업그레이드하면 무제한!",
     "lens_western": "서양 원형",
     "lens_eastern": "동양의 지혜",
+    "lens_compare": "비교",
     "seeking_eastern": "☯️ 동양의 지혜로 다시 바라보는 중...",
     "lens_vip_only": "이중 렌즈 해석은 VIP 전용 기능입니다. 업그레이드하여 잠금 해제하세요",
     "reading_count_out_of": "{{count}} / {{total}}",

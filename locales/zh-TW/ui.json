@@ -131,6 +131,7 @@
     "guest_quota_exhausted": "今日免費占卜次數已用完，明日重置。升級 VIP 可無限占卜！",
     "lens_western": "西方原型",
     "lens_eastern": "東方智慧",
+    "lens_compare": "對照",
     "seeking_eastern": "☯️ 正在以東方智慧重新觀照...",
     "lens_vip_only": "雙透鏡解讀為 VIP 專屬功能，升級即可解鎖",
     "reading_count_out_of": "{{count}} / {{total}}",

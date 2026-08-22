@@ -131,6 +131,7 @@
     "guest_quota_exhausted": "Today's free readings are used up. Resets tomorrow. Upgrade to VIP for unlimited readings!",
     "lens_western": "Western Archetype",
     "lens_eastern": "Eastern Wisdom",
+    "lens_compare": "Compare",
     "seeking_eastern": "☯️ Reframing through Eastern wisdom...",
     "lens_vip_only": "Dual-lens reading is a VIP feature. Upgrade to unlock it.",
     "reading_count_out_of": "{{count}} / {{total}}",
