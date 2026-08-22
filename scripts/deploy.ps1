@@ -56,7 +56,9 @@ if (-not $NoCommit) {
 
 # 3. Push（觸發 Vercel 自動部署）
 Write-Host "`n[3/3] Push 到 GitHub（將自動觸發 Vercel 部署）..." -ForegroundColor Yellow
-& $GIT -C $REPO push origin main 2>&1 | ForEach-Object { Write-Host "  $_" }
+# -c credential.helper= ：繞過 credential helper（PortableGit 在無互動環境會卡在 helper 等待）
+# remote URL 已內嵌認證 token（存在 .git/config，不會上傳 GitHub）
+& $GIT -C $REPO -c credential.helper= push origin main 2>&1 | ForEach-Object { Write-Host "  $_" }
 if ($LASTEXITCODE -ne 0) {
     Write-Host "`n❌ Push 失敗！請確認 GitHub 認證。" -ForegroundColor Red
     exit 1
@@ -72,3 +74,4 @@ Write-Host "========================================" -ForegroundColor Green
 $latest = & $GIT -C $REPO log --oneline -1 2>$null
 Write-Host "`n最新 commit: $latest"
 # deploy script v1.0
+# Permanent deploy token configured
