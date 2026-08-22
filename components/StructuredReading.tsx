@@ -8,6 +8,8 @@
 
 import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { marked } from 'marked';
+import DOMPurify from 'dompurify';
 import { CardReading } from '../types';
 
 interface StructuredReadingProps {
@@ -121,7 +123,7 @@ const StructuredReading: React.FC<StructuredReadingProps> = ({ spread, text }) =
               </div>
               <div
                 className="prose-mystic text-sm md:text-base"
-                dangerouslySetInnerHTML={{ __html: section.body }}
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(marked.parse(section.body) as string) }}
               />
             </div>
           </div>
@@ -136,7 +138,7 @@ const StructuredReading: React.FC<StructuredReadingProps> = ({ spread, text }) =
           </p>
           <div
             className="prose-mystic text-base md:text-lg"
-            dangerouslySetInnerHTML={{ __html: parsed.summary }}
+            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(marked.parse(parsed.summary) as string) }}
           />
         </div>
       )}
