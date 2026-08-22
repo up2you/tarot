@@ -170,7 +170,12 @@
     "spread": "展開",
     "interpretation": "解読サマリー",
     "reversed": "逆位置",
-    "upright": "正位置"
+    "upright": "正位置",
+    "group_today": "今日",
+    "group_yesterday": "昨日",
+    "group_this_week": "今週",
+    "group_earlier": "以前",
+    "journey_hint": "あなたの占いの旅"
   },
   "upgrade": {
     "title": "神託回数が尽きました",

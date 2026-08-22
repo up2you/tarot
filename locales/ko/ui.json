@@ -170,7 +170,12 @@
     "spread": "스프레드",
     "interpretation": "해석 요약",
     "reversed": "역방향",
-    "upright": "정방향"
+    "upright": "정방향",
+    "group_today": "오늘",
+    "group_yesterday": "어제",
+    "group_this_week": "이번 주",
+    "group_earlier": "이전",
+    "journey_hint": "당신의 점술 여정"
   },
   "upgrade": {
     "title": "신탁 횟수가 소진되었습니다",

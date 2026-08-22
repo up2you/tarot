@@ -9,7 +9,15 @@
             "destination": "/admin.html"
         },
         {
-            "source": "/((?!admin|assets|card01|audio|.*\\..*).*)",
+            "source": "/cards",
+            "destination": "/cards.html"
+        },
+        {
+            "source": "/cards/(.*)",
+            "destination": "/cards.html"
+        },
+        {
+            "source": "/((?!admin|cards|assets|card01|audio|.*\\..*).*)",
             "destination": "/index.html"
         }
     ]

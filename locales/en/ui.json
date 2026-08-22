@@ -170,7 +170,12 @@
     "spread": "Spread",
     "interpretation": "Reading Summary",
     "reversed": "Reversed",
-    "upright": "Upright"
+    "upright": "Upright",
+    "group_today": "Today",
+    "group_yesterday": "Yesterday",
+    "group_this_week": "This Week",
+    "group_earlier": "Earlier",
+    "journey_hint": "Your Divination Journey"
   },
   "upgrade": {
     "title": "Oracle Uses Exhausted",

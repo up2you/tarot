@@ -170,7 +170,12 @@
     "spread": "牌阵",
     "interpretation": "解读摘要",
     "reversed": "逆位",
-    "upright": "正位"
+    "upright": "正位",
+    "group_today": "今天",
+    "group_yesterday": "昨天",
+    "group_this_week": "本周",
+    "group_earlier": "更早",
+    "journey_hint": "你的占卜之旅"
   },
   "upgrade": {
     "title": "神谕次数已用尽",
