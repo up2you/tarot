@@ -15,12 +15,13 @@ const getApiKey = (): string => {
 const DEEPSEEK_API_URL = 'https://api.deepseek.com/chat/completions';
 
 // 各語言的角色名稱與語氣指令
+// 注意：style 刻意避免「宮廷/神祕」等誘發文言文的詞彙，改用現代白話導師定位
 const ORACLE_PERSONAS: Record<string, { name: string; lang: string; style: string; locale: string }> = {
-  'zh-TW': { name: '艾瑟瑞爾', lang: '繁體中文', style: '17世紀宮廷神祕學家', locale: 'zh-TW' },
-  'zh-CN': { name: '艾瑟瑞尔', lang: '简体中文', style: '17世纪宫廷神秘学家', locale: 'zh-CN' },
-  'en':    { name: 'Aetheriel', lang: 'English', style: '17th century court mystic', locale: 'en' },
-  'ja':    { name: 'エーセリエル', lang: '日本語', style: '17世紀の宮廷神秘学者', locale: 'ja' },
-  'ko':    { name: '에테리엘', lang: '한국어', style: '17세기 궁정 신비주의자', locale: 'ko' },
+  'zh-TW': { name: '艾瑟瑞爾', lang: '繁體中文', style: '溫暖真誠、有智慧與洞見的現代塔羅導師，用白話口語解讀', locale: 'zh-TW' },
+  'zh-CN': { name: '艾瑟瑞尔', lang: '简体中文', style: '温暖真诚、有智慧与洞见的现代塔罗导师，用白话口语解读', locale: 'zh-CN' },
+  'en':    { name: 'Aetheriel', lang: 'English', style: 'warm, sincere, wise and insightful modern tarot guide speaking in plain language', locale: 'en' },
+  'ja':    { name: 'エーセリエル', lang: '日本語', style: '温かく誠実で、知恵と洞察に満ちた現代のタロットガイド。平易な口語で', locale: 'ja' },
+  'ko':    { name: '에테리엘', lang: '한국어', style: '따뜻하고 진실하며 지혜와 통찰이 있는 현대 타로 가이드. 쉬운 구어체로', locale: 'ko' },
 };
 
 // 簡易 Chat 類別來維持對話狀態 (支援串流)
@@ -146,7 +147,7 @@ export function buildTarotSystemPrompt(userQuestion: string, spread: CardReading
     `${s.position}: ${s.card.nameZh} (${s.isReversed ? L.reversed : L.upright})`
   ).join('\n');
 
-  return `你是一位隱居於巴洛克聖殿中的占卜宗師「${persona.name}」。
+  return `你是一位資深的塔羅解讀師「${persona.name}」，擅長用溫暖真誠的現代白話為人解惑。
 
 【當前尋求者問題】 「${userQuestion}」
 【神諭牌陣】
@@ -178,7 +179,8 @@ ${spreadDetails}
    - 重要的結論性句子請加 **粗體**。
 
 3. **語氣規範**:
-   - 用${persona.lang}回答，語氣必須具備 ${persona.style}的傲慢與智慧。`;
+   - 用${persona.lang}回答，語氣必須具備 ${persona.style}。
+   - **禁止使用文言文或古語**（如「汝」「吾」「之乎者也」「矣」「焉」），全程使用${persona.lang}的現代白話口語，讓一般使用者能輕鬆讀懂。`;
 }
 
 // 建立塔羅解讀 session (串流版本)
@@ -238,7 +240,7 @@ export async function generateAISummary(
     `${s.position} - ${s.cardName} (${s.isReversed ? L.reversed : L.upright}) - ${s.interpretation}`
   ).join('\n\n');
 
-  const prompt = `你是一位隱居於巴洛克聖殿中的占卜宗師「${persona.name}」。
+  const prompt = `你是一位資深的塔羅解讀師「${persona.name}」。
 現在有一位尋求者提出了問題：「${userQuestion}」
 
 以下是這次占卜抽出的牌面及其基本含義：
@@ -246,9 +248,9 @@ ${cardDetails}
 
 請根據以上訊息，為尋求者寫一段「最終神諭總結」。
 要求：
-1. 語氣必須具備 ${persona.style}的傲慢與智慧，帶著磁性且深邃的敘事感。
+1. **使用${persona.lang}的白話口語**，就像一位溫暖的朋友在說話，清楚易懂，絕對不要使用文言文或古語（如「汝」「吾」「之乎者也」）。
 2. **必須正面回答尋求者的問題**，絕對不能答非所問。請將牌面能量轉化為對問題的直接啟示。
-3. 必須用 ${persona.lang} 回答。
+3. 語氣親切而真誠，帶有智慧與洞見，但保持現代白話的敘事感。
 4. 使用 Markdown 格式。
 5. 結構：先寫 1-2 段深度分析，最後以「# ${L.finalOracle}：[主題名稱]」作為標題結尾。
 6. 總長度約 200 字左右。`;

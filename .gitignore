@@ -58,8 +58,8 @@ translation_stdout.log
 translation_stderr.log
 
 # 損壞/誤建的檔案
-{console.error(e)
-{const
+[{]console.error(e)
+[{]const
 
 # 本機測試截圖與暫存
 login sample.png
