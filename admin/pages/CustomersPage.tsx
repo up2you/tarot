@@ -5,6 +5,7 @@
 import React, { useState, useEffect } from 'react';
 import { getUsers, getUserStats, updateUserVipStatus, updateUserFreeQuota, resetUserMonthlyQuota, toggleUserActive, GetUsersResult, UserStats } from '../../services/adminService';
 import { UserProfile } from '../../services/userService';
+import { useToast } from '../../components/Toast';
 
 // 用戶詳情彈窗
 const UserDetailModal: React.FC<{
@@ -14,6 +15,7 @@ const UserDetailModal: React.FC<{
 }> = ({ user, onClose, onUpdate }) => {
     const [isUpdating, setIsUpdating] = useState(false);
     const [quotaInput, setQuotaInput] = useState('');
+    const toast = useToast();
 
     if (!user) return null;
 
@@ -21,6 +23,7 @@ const UserDetailModal: React.FC<{
         setIsUpdating(true);
         const success = await updateUserVipStatus(user.id, !user.is_vip);
         if (success) {
+            toast.success(user.is_vip ? '已取消 VIP' : '已設定為 VIP');
             onUpdate();
         }
         setIsUpdating(false);
@@ -29,13 +32,14 @@ const UserDetailModal: React.FC<{
     const handleUpdateQuota = async () => {
         const newQuota = parseInt(quotaInput);
         if (isNaN(newQuota) || newQuota < 0) {
-            alert('請輸入有效的數字');
+            toast.error('請輸入有效的數字');
             return;
         }
         setIsUpdating(true);
         const success = await updateUserFreeQuota(user.id, newQuota);
         if (success) {
             setQuotaInput('');
+            toast.success('免費額度已更新');
             onUpdate();
         }
         setIsUpdating(false);

@@ -14,6 +14,15 @@ const getApiKey = (): string => {
 
 const DEEPSEEK_API_URL = 'https://api.deepseek.com/chat/completions';
 
+// 各語言的角色名稱與語氣指令
+const ORACLE_PERSONAS: Record<string, { name: string; lang: string; style: string; locale: string }> = {
+  'zh-TW': { name: '艾瑟瑞爾', lang: '繁體中文', style: '17世紀宮廷神祕學家', locale: 'zh-TW' },
+  'zh-CN': { name: '艾瑟瑞尔', lang: '简体中文', style: '17世纪宫廷神秘学家', locale: 'zh-CN' },
+  'en':    { name: 'Aetheriel', lang: 'English', style: '17th century court mystic', locale: 'en' },
+  'ja':    { name: 'エーセリエル', lang: '日本語', style: '17世紀の宮廷神秘学者', locale: 'ja' },
+  'ko':    { name: '에테리엘', lang: '한국어', style: '17세기 궁정 신비주의자', locale: 'ko' },
+};
+
 // 簡易 Chat 類別來維持對話狀態 (支援串流)
 export class DeepSeekChat {
   private messages: { role: string; content: string }[];
@@ -122,36 +131,46 @@ export class DeepSeekChat {
 }
 
 // 建立塔羅解讀的 System Prompt
-export function buildTarotSystemPrompt(userQuestion: string, spread: CardReading[]): string {
+export function buildTarotSystemPrompt(userQuestion: string, spread: CardReading[], language: string = 'zh-TW'): string {
+  const persona = ORACLE_PERSONAS[language] || ORACLE_PERSONAS['zh-TW'];
+  const labels: Record<string, { upright: string; reversed: string; essence: string; causality: string; finalOracle: string; opening: string }> = {
+    'zh-TW': { upright: '正位', reversed: '逆位', essence: '牌面本質', causality: '命運因果', finalOracle: '艾瑟瑞爾的最終神諭', opening: '在聖殿的穹頂之下...' },
+    'zh-CN': { upright: '正位', reversed: '逆位', essence: '牌面本质', causality: '命运因果', finalOracle: '艾瑟瑞尔的最终神谕', opening: '在圣殿的穹顶之下...' },
+    'en':    { upright: 'Upright', reversed: 'Reversed', essence: 'Card Essence', causality: 'Fate & Causality', finalOracle: "Aetheriel's Final Oracle", opening: 'Beneath the sacred dome...' },
+    'ja':    { upright: '正位置', reversed: '逆位置', essence: '札の本質', causality: '運命の因果', finalOracle: 'エーセリエルの最終神託', opening: '聖なるドームの下で...' },
+    'ko':    { upright: '정위치', reversed: '역위치', essence: '카드의 본질', causality: '운명의 인과', finalOracle: '에테리엘의 최종 신탁', opening: '성스러운 돔 아래에서...' },
+  };
+  const L = labels[persona.locale] || labels['zh-TW'];
+
   const spreadDetails = spread.map(s =>
-    `${s.position}: ${s.card.nameZh} (${s.isReversed ? '逆位' : '正位'})`
+    `${s.position}: ${s.card.nameZh} (${s.isReversed ? L.reversed : L.upright})`
   ).join('\n');
 
-  return `你是一位隱居於巴洛克聖殿中的占卜宗師「艾瑟瑞爾」。
+  return `你是一位隱居於巴洛克聖殿中的占卜宗師「${persona.name}」。
 
 【當前尋求者問題】 「${userQuestion}」
 【神諭牌陣】
 ${spreadDetails}
 
-【艾瑟瑞爾的解讀聖律 —— 請嚴格執行排版】
+【${persona.name}的解讀聖律 —— 請嚴格執行排版】
 
 1. **結構分明 (嚴格使用 Markdown)**:
-   - **第一段 (導讀)**: 必須以「在聖殿的穹頂之下...」這段優美的文字開頭。
+   - **第一段 (導讀)**: 必須以「${L.opening}」這段優美的文字開頭。
    - **單張解讀**: 請為每張牌建立極具儀式感的區塊。
      **核心要求：**
-     - **主標題 (h2)**：格式為「牌位：隱喻標題 —— 牌名 (正/逆位)」。**嚴禁出現【】或()括號包圍整個標題**。
-     - **副標題 (h3)**：僅限「牌面本質」與「命運因果」。**嚴禁使用左右橫杠（如 — 牌面本質 —）**。
-     
-     ## ${spread[0]?.position}：隱喻標題 —— ${spread[0]?.card.nameZh} (${spread[0]?.isReversed ? '逆位' : '正位'})
-     
-     ### 牌面本質
+     - **主標題 (h2)**：格式為「牌位：隱喻標題 —— 牌名 (${L.upright}/${L.reversed})」。**嚴禁出現【】或()括號包圍整個標題**。
+     - **副標題 (h3)**：僅限「${L.essence}」與「${L.causality}」。**嚴禁使用左右橫杠（如 — ${L.essence} —）**。
+
+     ## ${spread[0]?.position}：隱喻標題 —— ${spread[0]?.card.nameZh} (${spread[0]?.isReversed ? L.reversed : L.upright})
+
+     ### ${L.essence}
      描述該牌的視覺意象。
-     
-     ### 命運因果
+
+     ### ${L.causality}
      對問題「${userQuestion}」的深層剖析。
-     
+
    - 每張牌解讀之間使用 "---" 分隔。
-   - **最終神諭**: 使用 "# 艾瑟瑞爾的最終神諭：主題名稱"。
+   - **最終神諭**: 使用 "# ${L.finalOracle}：主題名稱"。
 
 2. **靈魂染色系統**:
    - 凡涉及「背叛、終結、深淵、恐懼、危險」等詞彙，使用 <span class="highlight-crimson">詞彙</span>。
@@ -159,17 +178,17 @@ ${spreadDetails}
    - 重要的結論性句子請加 **粗體**。
 
 3. **語氣規範**:
-   - 繁體中文回答，語氣必須具備 17 世紀宮廷神祕學家的傲慢與智慧。`;
+   - 用${persona.lang}回答，語氣必須具備 ${persona.style}的傲慢與智慧。`;
 }
 
 // 建立塔羅解讀 session (串流版本)
-export function createTarotSession(userQuestion: string, spread: CardReading[]) {
+export function createTarotSession(userQuestion: string, spread: CardReading[], language: string = 'zh-TW') {
   const apiKey = getApiKey();
   if (!apiKey) {
     throw new Error('DeepSeek API Key not configured');
   }
 
-  const systemPrompt = buildTarotSystemPrompt(userQuestion, spread);
+  const systemPrompt = buildTarotSystemPrompt(userQuestion, spread, language);
   const chat = new DeepSeekChat(systemPrompt, apiKey);
 
   return chat;
@@ -199,16 +218,27 @@ export async function startTarotSession(
  */
 export async function generateAISummary(
   userQuestion: string,
-  spread: { cardName: string; isReversed: boolean; position: string; interpretation: string }[]
+  spread: { cardName: string; isReversed: boolean; position: string; interpretation: string }[],
+  language: string = 'zh-TW'
 ): Promise<string> {
   const apiKey = getApiKey();
   if (!apiKey) return '';
 
-  const cardDetails = spread.map(s => 
-    `位置：${s.position}\n牌名：${s.cardName} (${s.isReversed ? '逆位' : '正位'})\n內涵：${s.interpretation}`
+  const persona = ORACLE_PERSONAS[language] || ORACLE_PERSONAS['zh-TW'];
+  const labels: Record<string, { upright: string; reversed: string; finalOracle: string }> = {
+    'zh-TW': { upright: '正位', reversed: '逆位', finalOracle: '艾瑟瑞爾的最終神諭' },
+    'zh-CN': { upright: '正位', reversed: '逆位', finalOracle: '艾瑟瑞尔的最终神谕' },
+    'en':    { upright: 'Upright', reversed: 'Reversed', finalOracle: "Aetheriel's Final Oracle" },
+    'ja':    { upright: '正位置', reversed: '逆位置', finalOracle: 'エーセリエルの最終神託' },
+    'ko':    { upright: '정위치', reversed: '역위치', finalOracle: '에테리엘의 최종 신탁' },
+  };
+  const L = labels[persona.locale] || labels['zh-TW'];
+
+  const cardDetails = spread.map(s =>
+    `${s.position} - ${s.cardName} (${s.isReversed ? L.reversed : L.upright}) - ${s.interpretation}`
   ).join('\n\n');
 
-  const prompt = `你是一位隱居於巴洛克聖殿中的占卜宗師「艾瑟瑞爾」。
+  const prompt = `你是一位隱居於巴洛克聖殿中的占卜宗師「${persona.name}」。
 現在有一位尋求者提出了問題：「${userQuestion}」
 
 以下是這次占卜抽出的牌面及其基本含義：
@@ -216,11 +246,12 @@ ${cardDetails}
 
 請根據以上訊息，為尋求者寫一段「最終神諭總結」。
 要求：
-1. 語氣必須具備 17 世紀宮廷神祕學家的傲慢與智慧，帶著磁性且深邃的敘事感。
+1. 語氣必須具備 ${persona.style}的傲慢與智慧，帶著磁性且深邃的敘事感。
 2. **必須正面回答尋求者的問題**，絕對不能答非所問。請將牌面能量轉化為對問題的直接啟示。
-3. 使用 Markdown 格式。
-4. 結構：先寫 1-2 段深度分析，最後以「# 艾瑟瑞爾的最終神諭：[主題名稱]」作為標題結尾。
-5. 總長度約 200 字左右。`;
+3. 必須用 ${persona.lang} 回答。
+4. 使用 Markdown 格式。
+5. 結構：先寫 1-2 段深度分析，最後以「# ${L.finalOracle}：[主題名稱]」作為標題結尾。
+6. 總長度約 200 字左右。`;
 
   try {
     const response = await fetch(DEEPSEEK_API_URL, {

@@ -73,7 +73,9 @@ const SettingsMenu: React.FC = () => {
             <button
                 onClick={() => setIsOpen(!isOpen)}
                 className="w-12 h-12 rounded-full flex flex-col items-center justify-center gap-1.5 transition-all hover:scale-110 active:scale-95 bg-black/60 border border-[#d4af37]/30 shadow-lg"
-                title="設定"
+                title={t('settings.menu')}
+                aria-label={t('settings.menu')}
+                aria-expanded={isOpen}
             >
                 <span className={`block w-5 h-0.5 bg-[#d4af37] transition-all ${isOpen ? 'rotate-45 translate-y-2' : ''}`}></span>
                 <span className={`block w-5 h-0.5 bg-[#d4af37] transition-all ${isOpen ? 'opacity-0' : ''}`}></span>

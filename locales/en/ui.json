@@ -80,6 +80,8 @@
     "inquiry_seal": "The Inquiry Seal",
     "oracle_title": "Aetheriel's Oracle",
     "streaming": "Parting the mists of the future...",
+    "skip_animation": "Skip Animation",
+    "skip_shuffle": "Skip Shuffling",
     "remaining": "Remaining",
     "times": "times",
     "back_to_basic_spread": "← Back to Basic Spread",
@@ -271,6 +273,21 @@
     "vip_required": "This spread is VIP exclusive. Please upgrade.",
     "card_count": "{{count}} Cards",
     "more": " more"
+  },
+  "mobile_viewer": {
+    "swipe_down_next": "↓ Swipe down for next card",
+    "switch_to_staff": "Switch to The Staff →",
+    "last_card": "Last card",
+    "swipe_hint": "← Swipe or click arrows →",
+    "celtic_group_cross": "The Cross",
+    "celtic_group_cross_desc": "Core question and influences",
+    "celtic_group_staff": "The Staff",
+    "celtic_group_staff_desc": "Deep analysis and outcome",
+    "cards_in_group": "({count} cards)",
+    "previous_card": "Previous card",
+    "next_card": "Next card",
+    "card_progress": "Card progress",
+    "card_progress_item": "Card {{index}} of {{total}}"
   },
   "share": {
     "template_header": "✦ Aetheriel's Tarot Oracle ✦",

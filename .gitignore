@@ -30,3 +30,41 @@ dist-ssr
 
 # Large data files (stored in Supabase)
 data/oracle/
+
+.vercel
+.env*
+
+# ===== 以下為 2026-08 新增，防止敏感/大型檔案上傳 GitHub =====
+
+# 舊版備份目錄（393MB，只留在本機）
+old/
+
+# AI 除錯回應與翻譯日誌（含 API 內容，不應上傳）
+debug_*_response.txt
+debug_*_err.txt
+translate_log_*.txt
+translate_log_*_err.txt
+translate_progress_*.json
+scripts/translate_log_*.txt
+scripts/translate_log_*_err.txt
+scripts/translate_progress*.json
+scripts/translate_lock_*.lock
+scripts/run_*.log
+scripts/*_err.txt
+scripts/*_stdout.log
+scripts/*_stderr.log
+translation_run.log
+translation_stdout.log
+translation_stderr.log
+
+# 損壞/誤建的檔案
+{console.error(e)
+{const
+
+# 本機測試截圖與暫存
+login sample.png
+*.bak
+*.old
+
+# 生成器輸出的 SQL 大檔（已匯入 Supabase，不需備份）
+tarot-generator/output/

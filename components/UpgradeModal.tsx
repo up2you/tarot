@@ -4,6 +4,7 @@
  */
 
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface UpgradeModalProps {
     onClose: () => void;
@@ -11,6 +12,8 @@ interface UpgradeModalProps {
 }
 
 const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose, remainingQuota = 0 }) => {
+    const { t } = useTranslation();
+
     const handleUpgrade = () => {
         // 導向付費頁面
         window.location.href = '/services';
@@ -31,6 +34,7 @@ const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose, remainingQuota = 0
                 {/* 關閉按鈕 */}
                 <button
                     onClick={onClose}
+                    aria-label="關閉"
                     className="absolute top-4 right-4 text-[#d4af37]/60 hover:text-[#d4af37] text-2xl transition-colors"
                 >
                     ✕
@@ -41,35 +45,34 @@ const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose, remainingQuota = 0
 
                 {/* 標題 */}
                 <h2 className="text-2xl font-cinzel font-black text-[#d4af37] tracking-widest mb-3">
-                    神諭次數已用盡
+                    {t('upgrade.title')}
                 </h2>
 
                 <p className="text-[#d4af37]/60 font-lora italic mb-8 leading-relaxed">
-                    您本月的免費占卜次數已用完<br />
-                    升級 VIP 即可獲得無限次占卜
+                    {t('upgrade.desc')}
                 </p>
 
                 {/* VIP 權益 */}
                 <div className="bg-black/40 rounded-2xl p-6 mb-8 border border-[#d4af37]/20">
                     <p className="text-[#d4af37]/80 font-cinzel text-sm tracking-widest uppercase mb-4">
-                        👑 VIP 專屬權益
+                        {t('upgrade.benefits_title')}
                     </p>
                     <ul className="text-left space-y-3 text-[#d4af37]/70">
                         <li className="flex items-center gap-3">
                             <span className="text-green-400">✓</span>
-                            <span>無限次占卜</span>
+                            <span>{t('upgrade.benefit_1')}</span>
                         </li>
                         <li className="flex items-center gap-3">
                             <span className="text-green-400">✓</span>
-                            <span>無限次追問解讀</span>
+                            <span>{t('upgrade.benefit_2')}</span>
                         </li>
                         <li className="flex items-center gap-3">
                             <span className="text-green-400">✓</span>
-                            <span>解鎖凱爾特十字等高級牌陣</span>
+                            <span>{t('upgrade.benefit_3')}</span>
                         </li>
                         <li className="flex items-center gap-3">
                             <span className="text-green-400">✓</span>
-                            <span>專屬主題與牌面風格</span>
+                            <span>{t('upgrade.benefit_4')}</span>
                         </li>
                     </ul>
                 </div>
@@ -80,19 +83,19 @@ const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose, remainingQuota = 0
                         onClick={handleUpgrade}
                         className="w-full py-4 rounded-full bg-gradient-to-r from-amber-500 to-yellow-500 text-black font-cinzel font-black tracking-widest hover:brightness-110 transition-all active:scale-95 shadow-lg shadow-amber-500/30"
                     >
-                        立即升級 VIP
+                        {t('upgrade.upgrade_now')}
                     </button>
                     <button
                         onClick={onClose}
                         className="w-full py-3 text-[#d4af37]/40 font-cinzel text-sm tracking-widest hover:text-[#d4af37]/70 transition-colors"
                     >
-                        下次再說
+                        {t('upgrade.later')}
                     </button>
                 </div>
 
                 {/* 額度提示 */}
                 <p className="mt-6 text-[#d4af37]/30 text-xs font-cinzel">
-                    免費額度每月重置 · 目前剩餘 {remainingQuota} 次
+                    {t('upgrade.monthly_reset', { count: remainingQuota })}
                 </p>
             </div>
         </div>

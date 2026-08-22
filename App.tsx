@@ -1,5 +1,5 @@
-
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { AppState, CardReading, ChatMessage, User, AppTheme } from './types';
 import { MAJOR_ARCANA, SPREADS, CARD_BACK_IMAGE } from './constants';
 import TarotCard from './components/TarotCard';
@@ -30,8 +30,15 @@ import UpgradeModal from './components/UpgradeModal';
 import UserProfilePage from './components/UserProfilePage';
 import CardStyleShop from './components/CardStyleShop';
 import PricingPage from './components/PricingPage';
+import { SUPPORTED_LANGUAGES } from './hooks/i18n';
+import { useToast } from './components/Toast';
+import { useAnimationSettings } from './hooks/useAnimationSettings';
+import RitualShuffle from './components/RitualShuffle';
 
 const App: React.FC = () => {
+  const { t, i18n } = useTranslation();
+  const toast = useToast();
+  const { settings: animSettings } = useAnimationSettings();
   const { currentTheme } = useTheme();
   const { settings: displaySettings } = useDisplaySettings();
   const { currentStyleId, getCardImageUrl, getBackImageUrl, styleImages, isLoading: isLoadingCardStyle } = useCardStyle();
@@ -57,9 +64,13 @@ const App: React.FC = () => {
   const [calibrationProgress, setCalibrationProgress] = useState(0);
   const [showManager, setShowManager] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+  const [showLanguageMenu, setShowLanguageMenu] = useState(false);
+  const [isTypewriter, setIsTypewriter] = useState(false); // 打字機效果播放中（供跳過按鈕使用）
   const isPerformingRef = useRef(false);
   const hasRecordedRef = useRef(false); // 防止重複記錄
   const hasConsumedQuotaRef = useRef(false); // 防止重複扣除額度
+  const skipTypewriterRef = useRef(false); // 使用者點擊「跳過」時中斷打字機效果
+  const shuffleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null); // 洗牌動畫計時器（供跳過使用）
 
   const { playSound } = useThemedSounds(currentTheme);
   const chatEndRef = useRef<HTMLDivElement>(null);
@@ -234,23 +245,6 @@ const App: React.FC = () => {
     isPerformingRef.current = false;
   };
 
-  /* 
-  // [DISABLED] 自動 AI 繪圖功能
-  // 原因：用戶表示所有牌面皆使用後台管理的靜態圖片 (10+種風格)，無需 Google AI 即時運算
-  // 這也徹底解決了需要 GEMINI_API_KEY 的問題
-  useEffect(() => {
-    // 只有在以下情況才執行自動補完儀式 (AI 繪圖)：
-    // 1. 已登入且有設定主題 (currentUser.theme)
-    // 2. 當前使用的是「經典風格」 (currentStyleId === 'classic')
-    // 如果用戶切換到了自定義牌面 (如 'baroque-custom' 等)，則跳過 AI 生成，避免覆蓋或報錯
-    if (currentUser?.theme && appState !== AppState.AUTH) {
-      if (currentStyleId === 'classic') {
-        performConsecration(currentUser.theme);
-      }
-    }
-  }, [currentUser?.theme, appState, currentStyleId]);
-  */
-
   const handleStartShuffle = async () => {
     // 獲取選擇的牌陣定義
     const spreadDef = Object.values(SPREADS).find(s => s.id === selectedSpreadId);
@@ -264,27 +258,6 @@ const App: React.FC = () => {
     if (!question.trim() && spreadDef.defaultScenario) {
       setQuestion(spreadDef.nameZh);
     }
-
-    // 🆕 神諭資料庫對所有人免費使用（額度限制已移除）
-    // VIP 用戶使用 AI 解讀，免費用戶使用神諭資料庫
-    // 如需恢復額度限制，取消下方註釋
-    /*
-    if (currentUser && !currentUser.isVip) {
-      const email = currentUser.email || currentUser.username;
-      const { canRead, remaining } = await checkFreeQuota(email);
-
-      if (!canRead) {
-        setShowUpgradeModal(true);
-        return;
-      }
-
-      setCurrentUser(prev => prev ? { ...prev, freeReadingsRemaining: remaining } : null);
-    }
-    */
-
-    // 獲取選擇的牌陣定義 (Duplicate removed)
-    // const spreadDef = Object.values(SPREADS).find(s => s.id === selectedSpreadId);
-    if (!spreadDef) return;
 
     hasConsumedQuotaRef.current = false; // 重置額度扣除標記
     playSound('shuffle');
@@ -318,9 +291,21 @@ const App: React.FC = () => {
     setSpread(updatedWithArt);
     setIsFlipped(new Array(cardCount).fill(false));
 
-    setTimeout(() => {
+    // 洗牌動畫：預設 3 秒，使用者可點擊「跳過」立即進入翻牌階段
+    if (shuffleTimerRef.current) clearTimeout(shuffleTimerRef.current);
+    shuffleTimerRef.current = setTimeout(() => {
       setAppState(AppState.SPREADING);
-    }, 4000); // 延長洗牌動畫時間
+      shuffleTimerRef.current = null;
+    }, 3000);
+  };
+
+  // 🆕 跳過洗牌動畫，直接進入翻牌階段
+  const handleSkipShuffle = () => {
+    if (shuffleTimerRef.current) {
+      clearTimeout(shuffleTimerRef.current);
+      shuffleTimerRef.current = null;
+    }
+    setAppState(AppState.SPREADING);
   };
 
   // 選擇牌陣
@@ -338,10 +323,15 @@ const App: React.FC = () => {
     setAppState(AppState.WELCOME);
   };
 
-
   const flipCard = (index: number) => {
     if (isFlipped[index]) return;
     playSound('flip');
+    // 原生平台：翻牌瞬間觸發觸覺回饋（web 自動 no-op）
+    if (animSettings.flipStyle === 'physical') {
+      hapticFeedback('medium');
+    } else {
+      hapticFeedback('light');
+    }
     const nextFlipped = [...isFlipped];
     nextFlipped[index] = true;
     setIsFlipped(nextFlipped);
@@ -371,11 +361,11 @@ const App: React.FC = () => {
       // 🆕 判斷使用神諭資料庫或 AI
       if (currentUser?.isVip) {
         // VIP 用戶：使用 AI 串流解讀
-        const chat = createTarotSession(question, spread);
+        const chat = createTarotSession(question, spread, i18n.language);
         setAiChat(chat);
 
         await chat.sendMessageStream(
-          { message: "神諭已降臨，請艾瑟瑞爾揭示真相。" },
+          { message: t('main.seeking_oracle') },
           (chunk, accumulated) => {
             fullText = accumulated;
             setMessages([{ role: 'model', text: accumulated }]);
@@ -395,9 +385,9 @@ const App: React.FC = () => {
           positionKey: s.positionId || mapPositionToKey(s.position, idx),
         }));
 
-        setMessages([{ role: 'model', text: '✨ 正在從神諭之書中尋找指引...' }]);
+        setMessages([{ role: 'model', text: t('main.seeking_oracle') }]);
 
-        const oracleResult = await generateFreeReading(cards, scenarioKey);
+        const oracleResult = await generateFreeReading(cards, scenarioKey, i18n.language);
 
         // 🆕 混合模式優化：如果免費用戶有輸入特定問題，則調用 AI 生成針對性的總結
         // 排除預設問題 (如 "年度運勢" 等)
@@ -410,7 +400,8 @@ const App: React.FC = () => {
               isReversed: spread[idx].isReversed,
               position: interp.position,
               interpretation: interp.text
-            }))
+            })),
+            i18n.language
           );
 
           if (aiSummary) {
@@ -421,22 +412,32 @@ const App: React.FC = () => {
         // 組合成完整解讀文字
         fullText = formatOracleReading(spread, oracleResult);
 
-
-        // 🆕 模擬打字機效果（調整為較慢速度，接近 AI 串流）
+        // 🆕 模擬打字機效果（動態加速：長文自動加快，總播放時間控制在 ~6 秒內；支援跳過）
         const typewriterEffect = async (text: string) => {
+          setIsTypewriter(true);
+          skipTypewriterRef.current = false;
+
+          const totalChars = text.length;
+          // 目標約 120 個 chunk：短文字維持 3 字元/次的神秘節奏，長文字自動加大 chunk
+          const chunkSize = Math.max(3, Math.ceil(totalChars / 120));
+          const chunkCount = Math.ceil(totalChars / chunkSize);
+          // 總播放時間約 6 秒，但單次間隔不低於 12ms
+          const delay = Math.max(12, Math.floor(6000 / chunkCount));
+
           const chunks: string[] = [];
-          const chunkSize = 3; // 每次顯示 3 個字（更慢）
-          for (let i = 0; i < text.length; i += chunkSize) {
+          for (let i = 0; i < totalChars; i += chunkSize) {
             chunks.push(text.substring(0, i + chunkSize));
           }
 
           for (const chunk of chunks) {
+            if (skipTypewriterRef.current) break;
             setMessages([{ role: 'model', text: chunk }]);
-            await new Promise(resolve => setTimeout(resolve, 50)); // 50ms 間隔（更慢）
+            await new Promise(resolve => setTimeout(resolve, delay));
             chatEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
           }
           // 確保最終顯示完整文字
           setMessages([{ role: 'model', text: text }]);
+          setIsTypewriter(false);
         };
 
         await typewriterEffect(fullText);
@@ -454,32 +455,27 @@ const App: React.FC = () => {
         }));
         const interpretationSummary = fullText.substring(0, 200);
         saveReading(question, cardsForRecord, currentUser?.theme || AppTheme.BAROQUE, interpretationSummary);
-
-        // 🆕 額度扣除已停用（神諭資料庫免費使用）
-        // 如需恢復額度扣除，取消下方註釋
-        /*
-        if (currentUser && !currentUser.isVip && !hasConsumedQuotaRef.current) {
-          hasConsumedQuotaRef.current = true;
-          const email = currentUser.email || currentUser.username;
-          await consumeFreeReading(email);
-          setCurrentUser(prev => prev ? {
-            ...prev,
-            freeReadingsRemaining: Math.max(0, (prev.freeReadingsRemaining || 0) - 1)
-          } : null);
-        }
-        */
       }
     } catch (error) {
       console.error('Interpretation error:', error);
-      setMessages([{ role: 'model', text: "命運之線纏繞過深，艾瑟瑞爾暫時無法窺視。請重啟儀式。" }]);
+      setMessages([{ role: 'model', text: t('main.error_message') }]);
     } finally {
       setIsTyping(false);
+      setIsTypewriter(false);
+      skipTypewriterRef.current = false;
     }
   };
 
-  // 🆕 根據問題推測場景（完整覆蓋 50+ scenario_key，已整合 QA 審核建議 v3 - 修復19個邊界案例與新增方位指引）
+  // 🆕 根據問題推測場景（完整覆蓋 50+ scenario_key，支援中英雙語關鍵字）
   const detectScenario = (q: string): string => {
     const lower = q.toLowerCase();
+
+    // 英文關鍵字偵測
+    if (lower.includes('love') || lower.includes('romance') || lower.includes('relationship') || lower.includes('marry') || lower.includes('marriage')) return 'love';
+    if (lower.includes('career') || lower.includes('work') || lower.includes('job') || lower.includes('boss') || lower.includes('interview')) return 'career';
+    if (lower.includes('money') || lower.includes('finance') || lower.includes('wealth') || lower.includes('invest') || lower.includes('loan')) return 'money';
+    if (lower.includes('family') || lower.includes('parent') || lower.includes('brother') || lower.includes('sister')) return 'family';
+    if (lower.includes('study') || lower.includes('exam') || lower.includes('learn') || lower.includes('school') || lower.includes('test')) return 'self';
 
     // ==================== 🌾 豐收/農業/漁牧相關（優先判斷）====================
     if (lower.includes('農') || lower.includes('種植') || lower.includes('收成') ||
@@ -591,7 +587,6 @@ const App: React.FC = () => {
     }
 
     // ==================== 💍 婚姻相關（優先判斷）====================
-    // 未來婚姻可能性：包含時間限制、能否、何時等預測性問題 → love_single
     if ((lower.includes('結婚') || lower.includes('求婚') || lower.includes('訂婚')) &&
       (lower.includes('歲') || lower.includes('年內') || lower.includes('何時') ||
         lower.includes('能不能') || lower.includes('會不會') || lower.includes('可以') ||
@@ -599,7 +594,7 @@ const App: React.FC = () => {
         lower.includes('多久') || lower.includes('什麼時候') || lower.includes('時候'))) {
       return 'love_single';
     }
-    // 現有婚姻關係：婆媳、婚姻問題、夫妻相處等 → love_marriage
+    // 現有婚姻關係
     if (lower.includes('婚姻') || lower.includes('婆媳') ||
       lower.includes('夫妻') || lower.includes('配偶') ||
       (lower.includes('結婚') && (lower.includes('後') || lower.includes('生活') || lower.includes('相處')))) {
@@ -613,39 +608,28 @@ const App: React.FC = () => {
     }
 
     // ==================== 💰 財運相關（優先判斷具體情境）====================
-    // 投資相關
     if (lower.includes('投資') || lower.includes('股票') || lower.includes('基金') ||
       lower.includes('定存') || lower.includes('債券') || lower.includes('理財產品') ||
       (lower.includes('買') && (lower.includes('股') || lower.includes('基金')))) {
       return 'money_invest';
     }
-
-    // 借貸相關
     if ((lower.includes('借') && (lower.includes('錢') || lower.includes('款'))) ||
       lower.includes('貸款') || lower.includes('融資') || lower.includes('車貸') ||
       lower.includes('房貸') || lower.includes('學貸') || lower.includes('信貸')) {
       return 'money_loan';
     }
-
-    // 債務相關
     if (lower.includes('欠債') || lower.includes('討債') || lower.includes('還債') ||
       lower.includes('債務') || (lower.includes('債') && lower.includes('還'))) {
       return 'money_debt';
     }
-
-    // 買房置產
     if ((lower.includes('買房') || lower.includes('購屋') || lower.includes('置產')) &&
       !lower.includes('租')) {
       return 'money_property';
     }
-
-    // 破財/損失
     if (lower.includes('破財') || lower.includes('財務損失') || lower.includes('賠錢') ||
       (lower.includes('損失') && lower.includes('錢'))) {
       return 'money_loss';
     }
-
-    // 偏財/橫財（僅限明確提到的）
     if (lower.includes('橫財') || lower.includes('中獎') || lower.includes('刮刮樂') ||
       lower.includes('彩券') || lower.includes('樂透') || lower.includes('大樂透') ||
       lower.includes('威力彩') || lower.includes('中彩') ||
@@ -654,35 +638,27 @@ const App: React.FC = () => {
       (lower.includes('賭') && lower.includes('贏'))) {
       return 'money_windfall';
     }
-
-    // 生意/經商收入
     if (lower.includes('生意') || lower.includes('營收') || lower.includes('業績') ||
       lower.includes('客源') || lower.includes('訂單') ||
       (lower.includes('經商') || lower.includes('做生意'))) {
       return 'money_business';
     }
-
-    // 薪資/正財（優先於一般財運）
     if (lower.includes('薪水') || lower.includes('薪資') || lower.includes('加薪') ||
       lower.includes('正財') || lower.includes('收入') ||
       (lower.includes('工作') && lower.includes('賺'))) {
       return 'money_salary';
     }
-
-    // 理財規劃（需要明確提到規劃性關鍵字）
     if (lower.includes('理財') || lower.includes('財務規劃') || lower.includes('財務管理') ||
       lower.includes('預算') || lower.includes('如何規劃') || lower.includes('理財計劃') ||
       (lower.includes('儲蓄') && (lower.includes('規劃') || lower.includes('計劃')))) {
       return 'money_plan';
     }
-
-    // 一般財富運勢（最後的 fallback，涵蓋所有財運問題）
     if (lower.includes('財運') || lower.includes('財富') || lower.includes('金錢運') ||
       lower.includes('財') || lower.includes('錢運') ||
       (lower.includes('運勢') && lower.includes('錢')) ||
       (lower.includes('今年') && lower.includes('財')) ||
       (lower.includes('財富') && lower.includes('如何'))) {
-      return 'money_fortune';  // 使用財富運勢 scenario
+      return 'money_fortune';
     }
 
     // ==================== 🌹 愛情單身/桃花（優先判斷）====================
@@ -711,18 +687,18 @@ const App: React.FC = () => {
       return 'love_reunion';
     }
 
-    // ==================== 🎁 禮物/驚喜相關（優先判斷，排除愛情告白場景）====================
+    // ==================== 🎁 禮物/驚喜相關 ====================
     if ((lower.includes('禮物') && (lower.includes('對方') || lower.includes('喜歡嗎'))) ||
       (lower.includes('送') && lower.includes('禮') && lower.includes('喜歡'))) {
       return 'general_gift';
     }
 
-    // ==================== 💼 面試相關（優先判斷，避免被愛情攔截）====================
+    // ==================== 💼 面試相關 ====================
     if (lower.includes('面試官') || (lower.includes('面試') && lower.includes('喜歡'))) {
       return 'career_interview';
     }
 
-    // ==================== 💕 愛情暗戀/追求（優先判斷，但排除面試場景）====================
+    // ==================== 💕 愛情暗戀/追求 ====================
     if ((lower.includes('暗戀') || lower.includes('喜歡的人') || lower.includes('他對我') ||
       lower.includes('她對我') || lower.includes('心裡有') || lower.includes('在乎') ||
       lower.includes('已讀不回') || lower.includes('曖昧') || lower.includes('喜歡我') ||
@@ -736,7 +712,7 @@ const App: React.FC = () => {
       return 'love_pursuit';
     }
 
-    // ==================== 💑 愛情交往（優先判斷，放寬條件）====================
+    // ==================== 💑 愛情交往 ====================
     if (lower.includes('交往') || lower.includes('繼續在一起') || lower.includes('我們之間') ||
       lower.includes('這段感情') || (lower.includes('長久') && !lower.includes('友')) ||
       (lower.includes('感情') && lower.includes('順利')) ||
@@ -751,14 +727,12 @@ const App: React.FC = () => {
     }
 
     // ==================== 💕 愛情關係修復/和好 ====================
-    // 處理沒有明確愛情關鍵字但明顯涉及愛情的關係問題
     if ((lower.includes('關係') || lower.includes('我們') || lower.includes('我和他') || lower.includes('我和她')) &&
       (lower.includes('和好') || lower.includes('改善') || lower.includes('修復') || lower.includes('變好') ||
         lower.includes('挽救') || lower.includes('維持') || lower.includes('繼續') || lower.includes('順利')) &&
       !lower.includes('家人') && !lower.includes('父母') && !lower.includes('同事') &&
       !lower.includes('朋友') && !lower.includes('鄰居')) {
-      // 如果明確提到"他"或"她"，很可能是愛情關係
-      if (lower.includes('他') || lower.includes('她') || lower.includes('對方')) {
+      if (lower.includes('เขา') || lower.includes('她') || lower.includes('對方')) {
         return 'love_conflict';
       }
     }
@@ -771,7 +745,7 @@ const App: React.FC = () => {
       return 'love_feelings';
     }
 
-    // ==================== 🚚 搬遷/移民相關（移到房產前，包含搬家時機）====================
+    // ==================== 🚚 搬遷/移民相關 ====================
     if (lower.includes('移民') || lower.includes('遷居') || lower.includes('移居') ||
       lower.includes('換城市') || lower.includes('定居') || lower.includes('搬到') ||
       lower.includes('綠卡') || (lower.includes('簽證') && lower.includes('移')) ||
@@ -780,7 +754,7 @@ const App: React.FC = () => {
       return 'general_move';
     }
 
-    // ==================== 👥 家庭關係（移到房產前）====================
+    // ==================== 👥 家庭關係 ====================
     if (lower.includes('家人') || lower.includes('父母') || lower.includes('兄弟') ||
       lower.includes('姊妹') || lower.includes('姐妹') ||
       lower.includes('弟弟') || lower.includes('哥哥') || lower.includes('姊姊') ||
@@ -791,12 +765,11 @@ const App: React.FC = () => {
     }
 
     // ==================== 🏠 房產相關 ====================
-    // 租屋指引 (優先於買房/一般房產)
     if (lower.includes('租') || lower.includes('租屋') || lower.includes('房東') || lower.includes('簽約')) {
       return 'house_rent';
     }
 
-    // ==================== 💼 競標/標案（優先判斷）====================
+    // ==================== 💼 競標/標案 ====================
     if (lower.includes('標案') || lower.includes('競標') || lower.includes('投標') ||
       lower.includes('得標') || lower.includes('招標') || lower.includes('開標')) {
       return 'career_bidding';
@@ -808,7 +781,7 @@ const App: React.FC = () => {
       return 'money_property';
     }
 
-    // ==================== 📝 合約/成交相關（優先判斷，賣車歸類為成交導向）====================
+    // ==================== 📝 合約/成交相關 ====================
     if (lower.includes('合約') || lower.includes('簽約') || lower.includes('契約') ||
       lower.includes('簽訂') || lower.includes('合同') || lower.includes('協議') ||
       lower.includes('合作案') || lower.includes('談成') ||
@@ -818,7 +791,7 @@ const App: React.FC = () => {
       return 'general_contract';
     }
 
-    // ==================== 🚗 車輛相關（不包含賣車，那是成交導向）====================
+    // ==================== 🚗 車輛相關 ====================
     if ((lower.includes('車') || lower.includes('汽車') || lower.includes('機車') ||
       lower.includes('買車') || lower.includes('購車') ||
       lower.includes('二手車') || lower.includes('修車') || lower.includes('車況')) &&
@@ -826,7 +799,7 @@ const App: React.FC = () => {
       return 'general_vehicle';
     }
 
-    // ==================== 🎓 學業相關（排除考績，考績是職場）====================
+    // ==================== 🎓 學業相關 ====================
     if ((lower.includes('考') || lower.includes('成績') || lower.includes('課業') ||
       lower.includes('學校') || lower.includes('畢業') || lower.includes('大學') ||
       lower.includes('高中') || lower.includes('研究所') || lower.includes('國考') ||
@@ -834,10 +807,8 @@ const App: React.FC = () => {
       lower.includes('雅思') || lower.includes('托福') || lower.includes('推甄') ||
       lower.includes('志願') || lower.includes('轉學考') || lower.includes('證照')) &&
       !lower.includes('考績')) {
-      // 先判斷證照（可能與職涯相關）
       if (lower.includes('證照') || lower.includes('認證') || lower.includes('執照') ||
         (lower.includes('職涯') && lower.includes('幫助'))) return 'study_cert';
-      // 錄取相關（排除國考+上榜的組合，那是考試）
       if (lower.includes('推甄') || lower.includes('甄試') || lower.includes('申請入學') ||
         lower.includes('志願') || lower.includes('轉學考')) return 'study_admission';
       if ((lower.includes('錄取') || lower.includes('升學')) && !lower.includes('國考')) return 'study_admission';
@@ -848,13 +819,9 @@ const App: React.FC = () => {
     }
 
     // ==================== 👥 其他人際關係 ====================
-    // 優先檢測：一般關係品質問題（可能是友誼或其他非愛情關係）
-    // 「XX和我的關係還好嗎?」「我跟XX的關係一樣好嗎?」→ relation_friend
-    // 排除明確的愛情關鍵字，避免誤判
     if ((lower.includes('關係') && (lower.includes('好') || lower.includes('還') || lower.includes('一樣'))) ||
       (lower.includes('我們') && lower.includes('關係') && lower.includes('好')) ||
       (lower.includes('我和') && lower.includes('關係'))) {
-      // 排除明確的愛情、家人、職場關係
       if (!lower.includes('愛') && !lower.includes('戀') && !lower.includes('感情') &&
         !lower.includes('男友') && !lower.includes('女友') && !lower.includes('老公') && !lower.includes('老婆') &&
         !lower.includes('另一半') && !lower.includes('對象') &&
@@ -864,7 +831,6 @@ const App: React.FC = () => {
       }
     }
 
-    // 朋友還錢優先歸類為債務，失聯找朋友優先歸類為尋人
     if ((lower.includes('朋友') || lower.includes('友誼') || lower.includes('友情')) &&
       !lower.includes('還') && !lower.includes('錢') && !lower.includes('欠') && !lower.includes('借') &&
       !lower.includes('失聯') && !lower.includes('找到') && !lower.includes('能找') && !lower.includes('找回')) {
@@ -883,18 +849,15 @@ const App: React.FC = () => {
       !lower.includes('提拔') && !lower.includes('升')) {
       return 'relation_elder';
     }
-    // 主管+欣賞/表現 歸類為 relation_elder
     if (lower.includes('主管') && (lower.includes('欣賞') || lower.includes('表現') || lower.includes('評價'))) {
       return 'relation_elder';
     }
-    // 主管優先看是否涉及升遷/提拔
     if (lower.includes('主管') && !lower.includes('提拔') && !lower.includes('升')) {
       return 'relation_elder';
     }
     if (lower.includes('鄰居') || lower.includes('隔壁')) {
       return 'relation_neighbor';
     }
-    // 競爭對手：如果是問贏/勝/優勢等，歸類為競爭而非關係
     if ((lower.includes('對手') || lower.includes('競爭') || lower.includes('敵人')) &&
       !lower.includes('贏') && !lower.includes('勝') && !lower.includes('優勢')) {
       return 'relation_rival';
@@ -913,18 +876,16 @@ const App: React.FC = () => {
       if (lower.includes('找工作') || lower.includes('求職') || lower.includes('應徵') ||
         lower.includes('錄取通知') || (lower.includes('適合我嗎') && lower.includes('工作')) ||
         lower.includes('理想的工作')) return 'career_seeking';
-      if (lower.includes('面試') || lower.includes('筆試') || lower.includes('面試官') ||
+      if (lower.includes('面試') || lower.includes('筆試') || lower.includes('面釋官') ||
         lower.includes('被錄取') || lower.includes('會錄取')) return 'career_interview';
       if (lower.includes('離職') || lower.includes('轉職') || lower.includes('換工作') ||
         lower.includes('跳槽') || lower.includes('轉換跑道')) return 'career_change';
-      // 升遷：包含主管提拔、考績升職
       if (lower.includes('升遷') || lower.includes('晉升') || lower.includes('升職') ||
         lower.includes('提拔') || lower.includes('努力被看見') || lower.includes('被認可') ||
         (lower.includes('主管') && (lower.includes('欣賞') || lower.includes('提拔'))) ||
         (lower.includes('努力') && lower.includes('看見')) ||
         (lower.includes('考績') && lower.includes('升'))) return 'career_promotion';
       if (lower.includes('加薪') || lower.includes('調薪')) return 'career_raise';
-      // 創業：包含開咖啡店等
       if (lower.includes('創業') || lower.includes('開店') || lower.includes('自己做') ||
         lower.includes('經營') || lower.includes('商業點子') || lower.includes('咖啡店') ||
         lower.includes('開咖啡') || lower.includes('店面') ||
@@ -932,7 +893,6 @@ const App: React.FC = () => {
       if (lower.includes('合夥') || lower.includes('夥伴') || lower.includes('合作')) return 'career_partner';
       if (lower.includes('衝突') || lower.includes('不合')) return 'career_conflict';
       if (lower.includes('退休') || lower.includes('養老')) return 'career_retire';
-      // 單純考績問題（不含升職）歸為 current
       return 'career_current';
     }
 
@@ -974,7 +934,6 @@ const App: React.FC = () => {
         lower.includes('偏財') || lower.includes('橫財') || lower.includes('財運') ||
         lower.includes('手氣')) return 'money_luck';
       if (lower.includes('意外') && lower.includes('收入')) return 'money_windfall';
-      // 生意相關：包含賣出商品、客戶簽單（但不包含賣車）
       if ((lower.includes('生意') || lower.includes('做生意') || lower.includes('買賣') ||
         lower.includes('簽單') || lower.includes('成交') || lower.includes('訂單') ||
         lower.includes('業績') || (lower.includes('項目') && lower.includes('賺')) ||
@@ -982,7 +941,6 @@ const App: React.FC = () => {
         !lower.includes('車')) return 'money_business';
       if (lower.includes('借') || lower.includes('貸款') || lower.includes('信貸') ||
         lower.includes('房貸') || lower.includes('車貸') || lower.includes('批准')) return 'money_loan';
-      // 還錢/債務（包含朋友還錢、還我錢的模式）
       if (lower.includes('債') || lower.includes('還錢') || lower.includes('欠') ||
         lower.includes('還清') || lower.includes('償還') ||
         (lower.includes('還') && lower.includes('錢'))) return 'money_debt';
@@ -1001,7 +959,7 @@ const App: React.FC = () => {
 
     // ==================== 🤔 決策相關 ====================
     if (lower.includes('該不該') || lower.includes('選擇') || lower.includes('抉擇') ||
-      lower.includes('選A') || lower.includes('選B') || lower.includes('二選一') ||
+      lower.includes('選a') || lower.includes('選b') || lower.includes('二選一') ||
       lower.includes('冒險') || lower.includes('風險') || lower.includes('正確嗎') ||
       lower.includes('對不對') || lower.includes('該選') || lower.includes('有沒有利') ||
       lower.includes('冷這個險') || lower.includes('這個險') ||
@@ -1030,13 +988,11 @@ const App: React.FC = () => {
     }
 
     // ==================== 🎁 禮物/驚喜相關 ====================
-    // （主要判斷已前移到愛情暗戀前，這裡處理剩餘情況）
     if (lower.includes('禮物') || lower.includes('送禮') ||
       lower.includes('驚喜') || lower.includes('贈送')) {
       return 'general_gift';
     }
 
-    // ==================== 預設：一般運勢 ====================
     return 'general_luck';
   };
 
@@ -1047,11 +1003,8 @@ const App: React.FC = () => {
       '自己': 'self', '對方': 'other', '結果': 'outcome',
       '障礙': 'obstacle', '建議': 'advice', '環境': 'environment',
       '潛意識': 'subconscious',
-      // Love Spread Mappings
       '你的心': 'self', '對方的心': 'other', '連結': 'relation', '挑戰': 'obstacle', '指引': 'advice',
-      // Self Spread Mappings
       '課題': 'present', '阻礙': 'obstacle', '力量': 'self', '成長': 'future',
-      // Yearly Positions
       '一月': 'jan', '二月': 'feb', '三月': 'mar', '四月': 'apr',
       '五月': 'may', '六月': 'jun', '七月': 'jul', '八月': 'aug',
       '九月': 'sep', '十月': 'oct', '十一月': 'nov', '十二月': 'dec'
@@ -1064,19 +1017,23 @@ const App: React.FC = () => {
     cards: (CardReading & { aiImage?: string })[],
     result: { interpretations: { position: string; text: string }[]; relationships: string[]; summary: string }
   ): string => {
-    let text = '## ✨ 神諭啟示\n\n';
+    let text = `## ✨ ${t('main.oracle_reading_header')}\n\n`;
 
     // 每張牌的解讀
     cards.forEach((card, idx) => {
       const interp = result.interpretations[idx];
-      text += `### 【${interp?.position || card.position}】${card.card.nameZh}${card.isReversed ? '（逆位）' : '（正位）'}\n\n`;
-      text += (interp?.text || '此刻的能量正在流動中...') + '\n\n';
+      const posKey = card.positionId || mapPositionToKey(card.position, idx);
+      const localizedPos = t(`spreads:positions.${posKey}`, interp?.position || card.position);
+      const cardName = t(`cards:cards.${card.card.id}.name`, card.card.nameZh);
+      const reversedTag = card.isReversed ? ` (${t('share.reversed')})` : ` (${t('share.upright')})`;
+      text += `### 【${localizedPos}】${cardName}${reversedTag}\n\n`;
+      text += (interp?.text || t('main.energy_flowing')) + '\n\n';
     });
 
     // 總結
     if (result.summary) {
       text += '---\n\n';
-      text += '### 📿 總體指引\n\n';
+      text += `### 📿 ${t('main.oracle_summary')}\n\n`;
       text += result.summary + '\n';
     }
 
@@ -1095,6 +1052,12 @@ const App: React.FC = () => {
     setUserInput('');
     setSelectedSpreadId('three_card'); // 重置為預設牌陣(時間之流)
     setFollowUpCount(0); // 重置追問次數
+    setIsTypewriter(false); // 重置打字機狀態
+    skipTypewriterRef.current = false;
+    if (shuffleTimerRef.current) {
+      clearTimeout(shuffleTimerRef.current);
+      shuffleTimerRef.current = null;
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
     if (currentUser) syncLocalAssets(currentUser);
   };
@@ -1109,12 +1072,18 @@ const App: React.FC = () => {
     const node = shareCardRef.current;
     if (!node) {
       setShowShareCard(false);
-      alert('生成圖卡失敗，請重試');
+      toast.error(t('main.generate_image_failed'));
       return;
     }
 
     // 準備完整解讀文字
-    const cardNames = spread.map(s => `${s.position}: ${s.card.nameZh}(${s.isReversed ? '逆位' : '正位'})`).join('\n');
+    const cardNames = spread.map(s => {
+      const localizedPos = t(`spreads:positions.${s.positionId}`, s.position);
+      const localizedCard = t(`cards:cards.${s.card.id}.name`, s.card.nameZh);
+      const localizedReversed = s.isReversed ? t('share.reversed') : t('share.upright');
+      return `${localizedPos}: ${localizedCard}(${localizedReversed})`;
+    }).join('\n');
+
     const fullInterpretation = messages.find(m => m.role === 'model')?.text || '';
     // 清理 Markdown 標記
     const cleanedInterpretation = fullInterpretation
@@ -1129,20 +1098,7 @@ const App: React.FC = () => {
       .replace(/<[^>]+>/g, '')
       .trim();
 
-    const fullShareText = `✦ 艾瑟瑞爾塔羅神諭 ✦
-
-📿 我的提問：
-「${question}」
-
-🎴 抽出的牌陣：
-${cardNames}
-
-🔮 神諭啟示：
-${cleanedInterpretation}
-
-─────────
-🌐 majorarcana.app
-在聖殿的穹頂之下，窺見命運的真相`;
+    const fullShareText = `${t('share.template_header')}\n\n${t('share.template_question', { question })}\n\n${t('share.template_cards')}\n${cardNames}\n\n${t('share.template_oracle')}\n${cleanedInterpretation}\n\n─────────\n${t('share.template_footer')}`;
 
     try {
       // 生成圖片
@@ -1172,13 +1128,13 @@ ${cleanedInterpretation}
         link.click();
         // 同時複製完整文字到剪貼簿
         await navigator.clipboard.writeText(fullShareText);
-        alert('✅ 圖卡已下載！\n📋 完整解讀內容已複製到剪貼簿\n\n您可以將圖片和文字一起分享至社群媒體。');
+        toast.success(t('main.download_success'));
       }
     } catch (err) {
       console.error('Share image failed:', err);
       // 再次降級：只複製完整文字
       await navigator.clipboard.writeText(fullShareText);
-      alert('圖卡生成失敗，但完整神諭內容已複製到剪貼簿！');
+      toast.error(t('main.generate_failed_copied'));
     } finally {
       setShowShareCard(false);
     }
@@ -1186,7 +1142,13 @@ ${cleanedInterpretation}
 
   // 分享純文字（完整解讀）
   const handleShareText = async () => {
-    const cardNames = spread.map(s => `${s.position}: ${s.card.nameZh}(${s.isReversed ? '逆位' : '正位'})`).join('\n');
+    const cardNames = spread.map(s => {
+      const localizedPos = t(`spreads:positions.${s.positionId}`, s.position);
+      const localizedCard = t(`cards:cards.${s.card.id}.name`, s.card.nameZh);
+      const localizedReversed = s.isReversed ? t('share.reversed') : t('share.upright');
+      return `${localizedPos}: ${localizedCard}(${localizedReversed})`;
+    }).join('\n');
+
     const fullInterpretation = messages.find(m => m.role === 'model')?.text || '';
     const cleanedInterpretation = fullInterpretation
       .replace(/^#+\s+/gm, '【')
@@ -1200,20 +1162,7 @@ ${cleanedInterpretation}
       .replace(/<[^>]+>/g, '')
       .trim();
 
-    const fullShareText = `✦ 艾瑟瑞爾塔羅神諭 ✦
-
-📿 我的提問：
-「${question}」
-
-🎴 抽出的牌陣：
-${cardNames}
-
-🔮 神諭啟示：
-${cleanedInterpretation}
-
-─────────
-🌐 majorarcana.app
-在聖殿的穹頂之下，窺見命運的真相`;
+    const fullShareText = `${t('share.template_header')}\n\n${t('share.template_question', { question })}\n\n${t('share.template_cards')}\n${cardNames}\n\n${t('share.template_oracle')}\n${cleanedInterpretation}\n\n─────────\n${t('share.template_footer')}`;
 
     if (navigator.share) {
       try {
@@ -1224,11 +1173,11 @@ ${cleanedInterpretation}
       } catch (err) {
         console.log('Share failed, copying to clipboard');
         await navigator.clipboard.writeText(fullShareText);
-        alert('📋 完整神諭內容已複製到剪貼簿！');
+        toast.success(t('main.copied_to_clipboard'));
       }
     } else {
       await navigator.clipboard.writeText(fullShareText);
-      alert('📋 完整神諭內容已複製到剪貼簿！');
+      toast.success(t('main.copied_to_clipboard'));
     }
   };
 
@@ -1238,7 +1187,7 @@ ${cleanedInterpretation}
 
     // 檢查追問次數限制 (非 VIP 用戶)
     if (!currentUser?.isVip && followUpCount >= MAX_FREE_FOLLOWUPS) {
-      alert('您已用完免費追問次數\n\n升級 VIP 可獲得無限追問次數，深入探究命運的奥秘。');
+      toast.info(t('main.followup_limit_reached'));
       return;
     }
 
@@ -1264,7 +1213,7 @@ ${cleanedInterpretation}
     } catch (error) {
       setMessages(prev => {
         const updated = [...prev];
-        updated[updated.length - 1] = { role: 'model', text: "連線異常..." };
+        updated[updated.length - 1] = { role: 'model', text: t('main.copy_failed') };
         return updated;
       });
     } finally {
@@ -1277,11 +1226,19 @@ ${cleanedInterpretation}
     return (
       <div className="min-h-screen mystic-gradient flex flex-col items-center justify-center p-10 text-center">
         <div className="w-32 h-32 border-4 border-[#d4af37]/20 border-t-[#d4af37] animate-spin rounded-full mb-8"></div>
-        <h2 className="text-2xl font-cinzel text-[#d4af37] mb-2 tracking-widest font-black">聖物祝聖中 {calibrationProgress}%</h2>
-        <p className="font-lora italic text-[#d4af37]/60">正在為您的靈魂構築專屬藝廊...</p>
+        <h2 className="text-2xl font-cinzel text-[#d4af37] mb-2 tracking-widest font-black">
+          {t('main.calibrating', { progress: calibrationProgress })}
+        </h2>
+        <p className="font-lora italic text-[#d4af37]/60">
+          {t('main.calibrating_hint')}
+        </p>
       </div>
     );
   }
+
+  // ==================== 渲染 ====================
+  const allFlipped = isFlipped.length > 0 && isFlipped.every(v => v);
+  const cardsDrawn = spread.length > 0;
 
   return (
     <div className="min-h-screen flex flex-col items-center py-20 px-4 relative">
@@ -1302,6 +1259,40 @@ ${cleanedInterpretation}
 
       {/* 漢堡設定選單 */}
       <SettingsMenu />
+
+      {/* 語言切換器 - 右上角 */}
+      <div className="fixed top-6 right-6 z-[100]">
+        <div className="relative">
+          <button
+            onClick={() => setShowLanguageMenu(!showLanguageMenu)}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-full bg-black/60 border border-[#d4af37]/30 shadow-lg text-[#d4af37]/80 text-sm hover:scale-110 active:scale-95 transition-all"
+            title={t('settings.language')}
+            aria-label={t('settings.language')}
+            aria-expanded={showLanguageMenu}
+          >
+            <span>{SUPPORTED_LANGUAGES.find(l => l.code === i18n.language)?.flag || '🌐'}</span>
+            <span className="hidden sm:inline text-xs font-cinzel tracking-wider">{SUPPORTED_LANGUAGES.find(l => l.code === i18n.language)?.label}</span>
+            <span className="text-[10px]">{showLanguageMenu ? '▲' : '▼'}</span>
+          </button>
+          {showLanguageMenu && (
+            <>
+              <div className="fixed inset-0 z-40" onClick={() => setShowLanguageMenu(false)} />
+              <div className="absolute right-0 mt-2 w-44 rounded-xl overflow-hidden bg-black/95 border border-[#d4af37]/30 shadow-2xl z-50 animate-fade-up">
+                {SUPPORTED_LANGUAGES.map(opt => (
+                  <button
+                    key={opt.code}
+                    onClick={() => { i18n.changeLanguage(opt.code); setShowLanguageMenu(false); }}
+                    className={`w-full text-left px-4 py-2.5 text-sm transition-all flex items-center gap-2 ${i18n.language === opt.code ? 'text-amber-400 bg-[#d4af37]/10' : 'text-gray-300 hover:bg-white/5'}`}
+                  >
+                    <span>{opt.flag}</span>
+                    <span>{opt.label}</span>
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      </div>
 
       {/* 🆕 升級 VIP 彈窗 */}
       {showUpgradeModal && (
@@ -1356,13 +1347,15 @@ ${cleanedInterpretation}
                 className="w-full p-4 rounded-xl border-2 border-[#ffd700]/50 hover:border-[#ffd700] hover:bg-[#ffd700]/10 transition-all group"
               >
                 <div className="flex flex-col items-center justify-center">
-                  <p className="text-xs md:text-sm font-cinzel text-[#ffd700]/80 tracking-widest uppercase mb-1 group-hover:text-[#ffd700]">點擊此處可更換牌陣</p>
+                  <p className="text-xs md:text-sm font-cinzel text-[#ffd700]/80 tracking-widest uppercase mb-1 group-hover:text-[#ffd700]">
+                    {t('main.click_to_change_spread')}
+                  </p>
                   <div className="flex items-center gap-2">
-                    <span className="text-[#ffd700]/60 text-sm">現在牌陣:</span>
+                    <span className="text-[#ffd700]/60 text-sm">{t('main.current_spread')}</span>
                     <p className="text-lg md:text-2xl font-cinzel text-[#ffd700] font-black">
                       {selectedSpreadId
-                        ? Object.values(SPREADS).find(s => s.id === selectedSpreadId)?.nameZh
-                        : '請選擇牌陣'}
+                        ? t(`spreads:spreads.${selectedSpreadId}.name`, Object.values(SPREADS).find(s => s.id === selectedSpreadId)?.nameZh)
+                        : t('main.select_spread')}
                     </p>
                     <span className="text-[#ffd700] text-xl group-hover:translate-x-1 transition-transform">→</span>
                   </div>
@@ -1371,8 +1364,12 @@ ${cleanedInterpretation}
             </div>
 
             <div className="mb-6 text-center">
-              <h2 className="text-2xl md:text-4xl font-cinzel text-[#d4af37] tracking-[0.2em] md:tracking-[0.3em] font-black uppercase mb-2">叩問星穹</h2>
-              <p className="text-[#d4af37]/40 font-lora italic text-sm md:text-base">請於心中默唸您的靈魂之惑，星穹之靈將為您撥開命運的塵埃。</p>
+              <h2 className="text-2xl md:text-4xl font-cinzel text-[#d4af37] tracking-[0.2em] md:tracking-[0.3em] font-black uppercase mb-2">
+                {t('main.consult_oracle')}
+              </h2>
+              <p className="text-[#d4af37]/40 font-lora italic text-sm md:text-base">
+                {t('main.consult_hint')}
+              </p>
             </div>
 
             <div className="border-2 border-[#d4af37]/40 rounded-xl p-1 mb-6 shadow-[0_0_30px_rgba(212,175,55,0.1)]">
@@ -1380,7 +1377,7 @@ ${cleanedInterpretation}
                 <textarea
                   value={question}
                   onChange={(e) => setQuestion(e.target.value)}
-                  placeholder="在此輸入您的靈魂之惑..."
+                  placeholder={t('main.question_placeholder')}
                   className="w-full h-24 md:h-40 bg-transparent text-[#f3e5ab] placeholder-[#d4af37]/40 focus:outline-none font-lora italic text-base md:text-xl leading-relaxed custom-scrollbar resize-none"
                 />
               </div>
@@ -1392,13 +1389,13 @@ ${cleanedInterpretation}
                 disabled={(!question.trim() && !Object.values(SPREADS).find(s => s.id === selectedSpreadId)?.defaultScenario) || !selectedSpreadId}
                 className="flex-[2] py-3 md:py-5 rounded-full gold-button text-base md:text-xl font-black tracking-[0.2em] md:tracking-[0.5em] disabled:opacity-20 disabled:grayscale transition-all shadow-[0_10px_30px_rgba(0,0,0,0.5)]"
               >
-                領受天啟
+                {t('main.start_reading')}
               </button>
               <button
                 onClick={() => setShowHistory(true)}
                 className="flex-1 py-3 md:py-5 rounded-full border border-[#d4af37]/40 text-[#d4af37] font-cinzel text-xs tracking-widest uppercase hover:bg-[#d4af37]/10 transition-all"
               >
-                歷史記錄
+                {t('main.history')}
               </button>
             </div>
 
@@ -1407,7 +1404,7 @@ ${cleanedInterpretation}
               <div className="mt-6 text-center">
                 {currentUser.isVip ? (
                   <p className="text-[#d4af37]/60 font-cinzel text-sm tracking-widest">
-                    👑 VIP 會員 · 無限次神諭
+                    {t('main.vip_unlimited')}
                   </p>
                 ) : (
                   <div
@@ -1415,7 +1412,7 @@ ${cleanedInterpretation}
                     onClick={() => setShowUpgradeModal(true)}
                   >
                     <span className="text-[#d4af37]/60 font-cinzel text-sm tracking-widest">
-                      本月剩餘神諭次數
+                      {t('main.readings_remaining')}
                     </span>
                     <span className={`font-cinzel font-black text-lg ${(currentUser.freeReadingsRemaining || 0) === 0
                       ? 'text-red-400'
@@ -1440,7 +1437,9 @@ ${cleanedInterpretation}
                 <div className="flex items-center gap-3">
                   <span className="text-3xl">✦</span>
                   <div>
-                    <h3 className="text-2xl font-cinzel font-black text-[#d4af37] tracking-widest">凱爾特十字</h3>
+                    <h3 className="text-2xl font-cinzel font-black text-[#d4af37] tracking-widest">
+                      {t('main.celtic_cross')}
+                    </h3>
                     <p className="text-[10px] font-cinzel text-[#d4af37]/70 tracking-widest uppercase">Celtic Cross • 10 Cards</p>
                   </div>
                 </div>
@@ -1450,11 +1449,22 @@ ${cleanedInterpretation}
               </div>
 
               <p className="text-[#d4af37]/60 font-lora italic mb-6 leading-relaxed">
-                古老而神聖的十張牌占卜法，深入剖析問題的核心、障礙、過去、未來，直至命運的最終結局。適合需要全面深度分析的重要人生抉擇。
+                {t('main.celtic_cross_desc')}
               </p>
 
               <div className="flex flex-wrap gap-2 mb-6">
-                {['核心', '障礙', '基礎', '過去', '可能', '未來', '自我', '環境', '希望與恐懼', '結果'].map((pos, i) => (
+                {[
+                  t('main.celtic_core'),
+                  t('main.celtic_obstacle'),
+                  t('main.celtic_foundation'),
+                  t('main.celtic_past'),
+                  t('main.celtic_possibility'),
+                  t('main.celtic_future'),
+                  t('main.celtic_self'),
+                  t('main.celtic_environment'),
+                  t('main.celtic_hopes_fears'),
+                  t('main.celtic_outcome')
+                ].map((pos, i) => (
                   <span key={i} className="px-3 py-1 rounded-full bg-[#d4af37]/10 text-[#d4af37]/50 text-xs font-cinzel">
                     {pos}
                   </span>
@@ -1466,7 +1476,7 @@ ${cleanedInterpretation}
                   if (currentUser?.isVip) {
                     setSelectedSpreadId('celtic_cross');
                   } else {
-                    alert('此為 VIP 專屬功能，請升級會員以解鎖凱爾特十字牌陣。');
+                    toast.info(t('main.celtic_cross_unlock_hint'));
                   }
                 }}
                 className={`w-full py-4 rounded-full font-cinzel font-black tracking-widest transition-all ${currentUser?.isVip
@@ -1474,7 +1484,7 @@ ${cleanedInterpretation}
                   : 'border-2 border-yellow-500/50 text-yellow-500 hover:bg-yellow-500/10'
                   }`}
               >
-                {currentUser?.isVip ? '使用凱爾特十字' : '🔒 解鎖 VIP 專屬牌陣'}
+                {currentUser?.isVip ? t('main.use_celtic_cross') : t('main.unlock_vip_spread')}
               </button>
             </div>
           </div>
@@ -1503,29 +1513,50 @@ ${cleanedInterpretation}
 
       {currentPage === 'main' && appState === AppState.SHUFFLING && (
         <div className="py-32 flex flex-col items-center gap-8">
-          <div className="relative w-48 h-72">
-            {[...Array(5)].map((_, i) => (
-              <div
-                key={i}
-                className="absolute inset-0 rounded-xl shadow-2xl overflow-hidden"
-                style={{
-                  zIndex: 5 - i,
-                  animation: `shuffleCard${i % 3} ${1.0 + i * 0.15}s ease-in-out infinite`,
-                  animationDelay: `${i * 0.1}s`
-                }}
-              >
-                <img
-                  src={cardBackImage}
-                  alt="牌背"
-                  className="w-full h-full object-cover rounded-xl border-2 border-[#d4af37]/40"
-                  style={{ filter: 'drop-shadow(0 0 10px rgba(212, 175, 55, 0.3))' }}
-                />
-              </div>
-            ))}
-          </div>
+          {animSettings.shuffleStyle === 'ritual' ? (
+            /* 🎬 儀式三幕洗牌：聚合 → 洗切 → 收束 */
+            <RitualShuffle
+              cardBackImage={getBackImageUrl() || cardBackImage}
+              cardBackAlt={t('main.card_back_alt')}
+              cardCount={Math.max(5, spread.length || 5)}
+            />
+          ) : (
+            /* 經典抖動洗牌 */
+            <div className="relative w-48 h-72">
+              {[...Array(5)].map((_, i) => (
+                <div
+                  key={i}
+                  className="absolute inset-0 rounded-xl shadow-2xl overflow-hidden"
+                  style={{
+                    zIndex: 5 - i,
+                    animation: `shuffleCard${i % 3} ${1.0 + i * 0.15}s ease-in-out infinite`,
+                    animationDelay: `${i * 0.1}s`
+                  }}
+                >
+                  <img
+                    src={cardBackImage}
+                    alt={t('main.card_back_alt')}
+                    className="w-full h-full object-cover rounded-xl border-2 border-[#d4af37]/40"
+                    style={{ filter: 'drop-shadow(0 0 10px rgba(212, 175, 55, 0.3))' }}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
           <div className="text-center">
-            <p className="font-cinzel text-[#d4af37] text-2xl tracking-[0.5em] font-black animate-pulse mb-2">天啟編織中</p>
-            <p className="text-[#d4af37]/40 font-lora italic text-sm">正在為您編織命運的絲線...</p>
+            <p className="font-cinzel text-[#d4af37] text-2xl tracking-[0.5em] font-black animate-pulse mb-2">
+              {t('main.weaving_destiny')}
+            </p>
+            <p className="text-[#d4af37]/40 font-lora italic text-sm">
+              {t('main.weaving_hint')}
+            </p>
+            {/* 跳過洗牌動畫 */}
+            <button
+              onClick={handleSkipShuffle}
+              className="mt-8 px-6 py-2.5 rounded-full border border-[#d4af37]/30 text-[#d4af37]/60 hover:text-[#d4af37] hover:bg-[#d4af37]/10 font-cinzel text-xs tracking-widest uppercase transition-all active:scale-95 cursor-pointer"
+            >
+              {t('main.skip_shuffle')}
+            </button>
           </div>
         </div>
       )}
@@ -1536,17 +1567,32 @@ ${cleanedInterpretation}
           {/* 手機非 Grid 模式：使用 MobileCardViewer */}
           {isMobile && displaySettings.mobileCardDisplayMode !== 'grid' ? (
             <MobileCardViewer
-              spread={spread}
+              spread={spread.map(s => ({
+                ...s,
+                position: t(`spreads:positions.${s.positionId}`, s.position),
+                card: {
+                  ...s.card,
+                  nameZh: t(`cards:cards.${s.card.id}.name`, s.card.nameZh)
+                }
+              }))}
               isFlipped={isFlipped}
               onFlipCard={flipCard}
               cardBackImage={getBackImageUrl() || cardBackImage}
               mode={displaySettings.mobileCardDisplayMode}
               spreadType={selectedSpreadId || undefined}
+              showCardNameLabel={displaySettings.showCardNameLabel}
             />
           ) : selectedSpreadId === 'celtic_cross' ? (
             /* 凱爾特十字特殊佈局 (桌面版或 Grid 模式) */
             <CelticCrossLayout
-              spread={spread}
+              spread={spread.map(s => ({
+                ...s,
+                position: t(`spreads:positions.${s.positionId}`, s.position),
+                card: {
+                  ...s.card,
+                  nameZh: t(`cards:cards.${s.card.id}.name`, s.card.nameZh)
+                }
+              }))}
               isFlipped={isFlipped}
               onFlipCard={flipCard}
               cardBackImage={getBackImageUrl() || cardBackImage}
@@ -1554,7 +1600,14 @@ ${cleanedInterpretation}
           ) : selectedSpreadId === 'yearly' ? (
             /* 年度運勢特殊佈局 */
             <YearlyLayout
-              spread={spread}
+              spread={spread.map(s => ({
+                ...s,
+                position: t(`spreads:positions.${s.positionId}`, s.position),
+                card: {
+                  ...s.card,
+                  nameZh: t(`cards:cards.${s.card.id}.name`, s.card.nameZh)
+                }
+              }))}
               isFlipped={isFlipped}
               onFlipCard={flipCard}
               cardBackImage={getBackImageUrl() || cardBackImage}
@@ -1570,12 +1623,26 @@ ${cleanedInterpretation}
               {spread.map((s, idx) => (
                 <div
                   key={`${idx}-${s.card.id}`}
-                  className="flex flex-col items-center animate-deal-card"
-                  style={{ animationDelay: `${idx * 0.2}s`, zIndex: 10 }}
+                  className={`flex flex-col items-center ${animSettings.dealStyle === 'arc' ? 'deal-arc' : 'animate-deal-card'}`}
+                  style={{
+                    animationDelay: `${idx * 0.2}s`,
+                    zIndex: 10,
+                    // 弧線飛行：奇偶交錯來源方向與旋轉
+                    ...(animSettings.dealStyle === 'arc' ? {
+                      ['--arc-x' as string]: `${(idx % 2 === 0 ? -1 : 1) * (40 + (idx % 4) * 25)}px`,
+                      ['--arc-rot' as string]: `${(idx % 2 === 0 ? -1 : 1) * (10 + (idx % 3) * 4)}deg`,
+                    } : {}),
+                  }}
                 >
-                  <p className="text-[#d4af37]/60 font-cinzel text-xs tracking-widest uppercase mb-4 text-center">{s.position}</p>
+                  <p className="text-[#d4af37]/60 font-cinzel text-xs tracking-widest uppercase mb-4 text-center">
+                    {t(`spreads:positions.${s.positionId}`, s.position)}
+                  </p>
                   <TarotCard
-                    card={{ ...s.card, image: getCardImageUrl(s.card.id) || s.aiImage || s.card.image }}
+                    card={{
+                      ...s.card,
+                      nameZh: t(`cards:cards.${s.card.id}.name`, s.card.nameZh),
+                      image: getCardImageUrl(s.card.id) || s.aiImage || s.card.image
+                    }}
                     isFlipped={isFlipped[idx]}
                     isReversed={s.isReversed}
                     onClick={() => flipCard(idx)}
@@ -1584,7 +1651,9 @@ ${cleanedInterpretation}
                     showNameLabel={displaySettings.showCardNameLabel}
                   />
                   {!isFlipped[idx] && (
-                    <p className="mt-4 text-[#d4af37]/40 font-lora italic text-xs animate-pulse">點擊揭示命運</p>
+                    <p className="mt-4 text-[#d4af37]/40 font-lora italic text-xs animate-pulse">
+                      {t('main.click_to_reveal')}
+                    </p>
                   )}
                 </div>
               ))}
@@ -1600,19 +1669,23 @@ ${cleanedInterpretation}
                     onClick={handleResetCeremony}
                     className="px-4 py-2 rounded-full border border-[#d4af37]/40 text-[#d4af37]/70 hover:text-[#d4af37] hover:border-[#d4af37] hover:bg-[#d4af37]/10 font-cinzel text-xs tracking-widest uppercase flex items-center gap-2 group transition-all"
                   >
-                    <span className="group-hover:-translate-x-1 transition-transform">←</span> 重啟儀式
+                    <span className="group-hover:-translate-x-1 transition-transform">←</span> {t('main.restart').replace('← ', '')}
                   </button>
                 </div>
 
                 <div className="mb-8 md:mb-12 text-center">
                   <div className="inline-block px-10 py-6 obsidian-mirror border-[#d4af37]/10">
-                    <p className="text-[10px] font-cinzel tracking-[0.5em] text-[#d4af37]/40 uppercase mb-3">提問魂印 (The Inquiry)</p>
+                    <p className="text-[10px] font-cinzel tracking-[0.5em] text-[#d4af37]/40 uppercase mb-3">
+                      {t('main.inquiry_seal')}
+                    </p>
                     <h3 className="text-2xl md:text-3xl font-lora italic text-[#f3e5ab] leading-relaxed">「 {question} 」</h3>
                   </div>
                 </div>
 
                 <div className="mb-8 md:mb-16 border-b border-[#d4af37]/20 pb-8 md:pb-12 text-center">
-                  <h2 className="text-xl md:text-6xl font-cinzel text-[#d4af37] font-black tracking-[0.1em] md:tracking-[0.2em] gold-text-shimmer">艾瑟瑞爾的神諭</h2>
+                  <h2 className="text-xl md:text-6xl font-cinzel text-[#d4af37] font-black tracking-[0.1em] md:tracking-[0.2em] gold-text-shimmer">
+                    {t('main.oracle_title')}
+                  </h2>
                 </div>
 
                 <div className="max-h-[1200px] overflow-y-auto pr-8 custom-scrollbar">
@@ -1627,9 +1700,17 @@ ${cleanedInterpretation}
                       </div>
                     ))}
                     {isTyping && (
-                      <div className="flex items-center gap-4 text-[#d4af37]/50 font-cinzel italic text-xl animate-pulse">
+                      <div className="flex items-center justify-center gap-4 text-[#d4af37]/50 font-cinzel italic text-xl animate-pulse">
                         <div className="w-2 h-2 bg-[#d4af37] rounded-full animate-bounce"></div>
-                        正在撥開未來的迷霧...
+                        {t('main.streaming')}
+                        {isTypewriter && (
+                          <button
+                            onClick={() => { skipTypewriterRef.current = true; }}
+                            className="ml-2 px-4 py-1.5 rounded-full border border-[#d4af37]/40 text-[#d4af37]/70 hover:text-[#d4af37] hover:bg-[#d4af37]/10 font-cinzel text-xs tracking-widest uppercase transition-all active:scale-95 cursor-pointer animate-none"
+                          >
+                            {t('main.skip_animation')}
+                          </button>
+                        )}
                       </div>
                     )}
                     <div ref={chatEndRef} />
@@ -1638,7 +1719,9 @@ ${cleanedInterpretation}
 
                 {/* 分享按鈕區域 */}
                 <div className="mt-8 pt-8 border-t border-[#d4af37]/20 text-center">
-                  <p className="text-[#d4af37]/60 font-cinzel text-sm tracking-widest uppercase mb-4">✦ 分享給好友 ✦</p>
+                  <p className="text-[#d4af37]/60 font-cinzel text-sm tracking-widest uppercase mb-4">
+                    {t('main.share')}
+                  </p>
                   <div className="flex justify-center gap-4">
                     <button
                       onClick={handleShare}
@@ -1647,7 +1730,9 @@ ${cleanedInterpretation}
                       <svg className="w-5 h-5 text-[#d4af37]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                       </svg>
-                      <span className="text-[#d4af37] font-cinzel text-sm">圖卡</span>
+                      <span className="text-[#d4af37] font-cinzel text-sm">
+                        {t('main.share_image')}
+                      </span>
                     </button>
                     <button
                       onClick={handleShareText}
@@ -1656,7 +1741,9 @@ ${cleanedInterpretation}
                       <svg className="w-5 h-5 text-[#d4af37]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                       </svg>
-                      <span className="text-[#d4af37] font-cinzel text-sm">全文</span>
+                      <span className="text-[#d4af37] font-cinzel text-sm">
+                        {t('main.share_text')}
+                      </span>
                     </button>
                   </div>
                 </div>
@@ -1667,7 +1754,18 @@ ${cleanedInterpretation}
                     <div className="text-center">
                       <div className="inline-block px-6 py-3 rounded-full border border-yellow-500/30 bg-yellow-500/5">
                         <p className="text-yellow-500/80 font-cinzel text-sm tracking-widest">
-                          🔒 想要深度追問請<span className="underline cursor-pointer hover:text-yellow-500" onClick={() => setShowUpgradeModal(true)}>升級 VIP</span>
+                          {i18n.language === 'zh-TW' || i18n.language === 'zh-CN' ? (
+                            <>
+                              🔒 想要深度追問請
+                              <span className="underline cursor-pointer hover:text-yellow-500" onClick={() => setShowUpgradeModal(true)}>
+                                {t('settings.upgrade_vip')}
+                              </span>
+                            </>
+                          ) : (
+                            <span className="cursor-pointer hover:text-yellow-500" onClick={() => setShowUpgradeModal(true)}>
+                              {t('main.upgrade_to_followup')}
+                            </span>
+                          )}
                         </p>
                       </div>
                     </div>
@@ -1675,7 +1773,7 @@ ${cleanedInterpretation}
                   {currentUser?.isVip && (
                     <div className="text-center">
                       <p className="text-[#d4af37]/40 font-cinzel text-sm tracking-widest">
-                        👑 VIP 會員 · 無限追問
+                        {t('main.vip_unlimited_followup')}
                       </p>
                     </div>
                   )}
@@ -1686,7 +1784,7 @@ ${cleanedInterpretation}
                         type="text"
                         value={userInput}
                         onChange={(e) => setUserInput(e.target.value)}
-                        placeholder="向隱士追問命運的細節..."
+                        placeholder={t('main.followup_placeholder')}
                         className="w-full bg-transparent text-[#d4af37] outline-none text-base md:text-xl font-lora italic placeholder-[#d4af37]/30"
                         disabled={!currentUser?.isVip && followUpCount >= MAX_FREE_FOLLOWUPS}
                       />
@@ -1696,7 +1794,7 @@ ${cleanedInterpretation}
                       disabled={isTyping || !userInput.trim() || (!currentUser?.isVip && followUpCount >= MAX_FREE_FOLLOWUPS)}
                       className="gold-button px-8 md:px-12 py-3 md:py-6 rounded-full text-base md:text-xl font-black tracking-widest text-black transition-all hover:scale-105 active:scale-95 disabled:opacity-30 self-center"
                     >
-                      探尋
+                      {t('main.followup_submit')}
                     </button>
                   </form>
 
@@ -1705,9 +1803,11 @@ ${cleanedInterpretation}
                       onClick={handleResetCeremony}
                       className="inline-block py-3 md:py-6 px-6 md:px-16 rounded-full border border-[#d4af37]/20 text-[#d4af37]/60 font-cinzel text-xs md:text-lg tracking-[0.1em] md:tracking-[0.3em] uppercase hover:bg-[#d4af37]/10 hover:text-[#d4af37] transition-all active:scale-95 whitespace-nowrap"
                     >
-                      † 結束解讀，重啟儀式 †
+                      {t('main.end_reading')}
                     </button>
-                    <p className="mt-4 text-[#d4af37]/20 font-lora italic text-xs tracking-widest">此段神諭將在您離開後隱入虛無</p>
+                    <p className="mt-4 text-[#d4af37]/20 font-lora italic text-xs tracking-widest">
+                      {t('main.end_reading_hint')}
+                    </p>
                   </div>
                 </div>
               </div>

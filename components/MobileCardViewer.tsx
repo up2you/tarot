@@ -5,6 +5,7 @@
  */
 
 import React, { useState, useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import TarotCard from './TarotCard';
 import { CardReading, MobileCardDisplayMode } from '../types';
 
@@ -18,19 +19,19 @@ interface MobileCardViewerProps {
     showCardNameLabel?: boolean;  // 新增：是否顯示牌卡名稱標籤
 }
 
-// 凱爾特十字分組定義
+// 凱爾特十字分組定義（名稱與描述使用 i18n key）
 const CELTIC_CROSS_GROUPS = [
     {
-        name: '十字區',
+        nameKey: 'mobile_viewer.celtic_group_cross',
         nameEn: 'The Cross',
+        descKey: 'mobile_viewer.celtic_group_cross_desc',
         indices: [0, 1, 2, 3, 4, 5],
-        description: '核心問題與影響',
     },
     {
-        name: '權杖柱',
+        nameKey: 'mobile_viewer.celtic_group_staff',
         nameEn: 'The Staff',
+        descKey: 'mobile_viewer.celtic_group_staff_desc',
         indices: [6, 7, 8, 9],
-        description: '深層分析與結果',
     },
 ];
 
@@ -43,6 +44,7 @@ const MobileCardViewer: React.FC<MobileCardViewerProps> = ({
     spreadType,
     showCardNameLabel = true,  // 預設顯示
 }) => {
+    const { t } = useTranslation();
     const [currentIndex, setCurrentIndex] = useState(0);
     const [currentGroup, setCurrentGroup] = useState(0);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -108,11 +110,13 @@ const MobileCardViewer: React.FC<MobileCardViewerProps> = ({
 
     // 渲染進度指示器
     const renderProgressIndicator = () => (
-        <div className="flex justify-center items-center gap-2 py-4">
+        <div className="flex justify-center items-center gap-2 py-4" role="tablist" aria-label={t('mobile_viewer.card_progress')}>
             {cards.map((_, idx) => (
                 <button
                     key={idx}
                     onClick={() => setCurrentIndex(idx)}
+                    aria-label={t('mobile_viewer.card_progress_item', { index: idx + 1, total: cards.length })}
+                    aria-current={idx === currentIndex ? 'true' : undefined}
                     className={`w-2 h-2 rounded-full transition-all ${idx === currentIndex
                         ? 'w-4 bg-[#d4af37]'
                         : 'bg-[#d4af37]/30 hover:bg-[#d4af37]/50'
@@ -130,15 +134,15 @@ const MobileCardViewer: React.FC<MobileCardViewerProps> = ({
             <div className="flex justify-center gap-4 py-4 border-b border-[#d4af37]/20 mb-4">
                 {CELTIC_CROSS_GROUPS.map((group, idx) => (
                     <button
-                        key={group.name}
+                        key={group.nameEn}
                         onClick={() => switchGroup(idx)}
                         className={`px-4 py-2 rounded-full text-sm font-cinzel transition-all ${idx === currentGroup
                             ? 'bg-[#d4af37] text-black font-bold'
                             : 'border border-[#d4af37]/30 text-[#d4af37]/60 hover:bg-[#d4af37]/10'
                             }`}
                     >
-                        {group.name}
-                        <span className="text-xs ml-1 opacity-60">({group.indices.length}張)</span>
+                        {t(group.nameKey)}
+                        <span className="text-xs ml-1 opacity-60">{t('mobile_viewer.cards_in_group', { count: group.indices.length })}</span>
                     </button>
                 ))}
             </div>
@@ -163,7 +167,7 @@ const MobileCardViewer: React.FC<MobileCardViewerProps> = ({
                     {/* 位置標題 */}
                     <div className="text-center mb-4">
                         <p className="text-[#d4af37]/40 text-xs font-cinzel tracking-widest uppercase">
-                            {isCelticCross && <span className="mr-2">{CELTIC_CROSS_GROUPS[currentGroup].name}</span>}
+                            {isCelticCross && <span className="mr-2">{t(CELTIC_CROSS_GROUPS[currentGroup].nameKey)}</span>}
                             {currentIndex + 1} / {cards.length}
                         </p>
                         <p className="text-[#d4af37] text-lg font-cinzel tracking-widest mt-1">
@@ -181,13 +185,14 @@ const MobileCardViewer: React.FC<MobileCardViewerProps> = ({
                             size="lg"
                             customBack={cardBackImage}
                             showNameLabel={showCardNameLabel}
+                            enableTouchTilt={false} // 全螢幕滑動手勢優先，停用觸控傾斜避免衝突
                         />
                     </div>
 
                     {/* 翻牌提示 */}
                     {!isFlipped[currentCard.index] && (
                         <p className="mt-4 text-[#d4af37]/40 font-lora italic text-sm animate-pulse">
-                            點擊揭示命運
+                            {t('main.click_to_reveal')}
                         </p>
                     )}
 
@@ -196,8 +201,8 @@ const MobileCardViewer: React.FC<MobileCardViewerProps> = ({
 
                     {/* 滑動提示 */}
                     <p className="text-[#d4af37]/20 text-xs font-cinzel mt-2">
-                        {currentIndex < cards.length - 1 ? '↓ 下滑查看下一張' :
-                            (isCelticCross && currentGroup < totalGroups - 1) ? '切換到權杖柱 →' : '已是最後一張'}
+                        {currentIndex < cards.length - 1 ? t('mobile_viewer.swipe_down_next') :
+                            (isCelticCross && currentGroup < totalGroups - 1) ? t('mobile_viewer.switch_to_staff') : t('mobile_viewer.last_card')}
                     </p>
                 </div>
             </div>
@@ -222,7 +227,7 @@ const MobileCardViewer: React.FC<MobileCardViewerProps> = ({
                     {/* 位置標題 */}
                     <div className="text-center mb-4">
                         <p className="text-[#d4af37]/40 text-xs font-cinzel tracking-widest uppercase">
-                            {isCelticCross && <span className="mr-2">{CELTIC_CROSS_GROUPS[currentGroup].name}</span>}
+                            {isCelticCross && <span className="mr-2">{t(CELTIC_CROSS_GROUPS[currentGroup].nameKey)}</span>}
                             {currentIndex + 1} / {cards.length}
                         </p>
                         <p className="text-[#d4af37] text-lg font-cinzel tracking-widest mt-1">
@@ -235,6 +240,7 @@ const MobileCardViewer: React.FC<MobileCardViewerProps> = ({
                         <button
                             onClick={() => setCurrentIndex(prev => Math.max(0, prev - 1))}
                             disabled={currentIndex === 0}
+                            aria-label={t('mobile_viewer.previous_card')}
                             className="w-10 h-10 rounded-full border border-[#d4af37]/30 flex items-center justify-center text-[#d4af37] disabled:opacity-20 hover:bg-[#d4af37]/10 transition-all"
                         >
                             ←
@@ -249,12 +255,14 @@ const MobileCardViewer: React.FC<MobileCardViewerProps> = ({
                                 size="lg"
                                 customBack={cardBackImage}
                                 showNameLabel={showCardNameLabel}
+                                enableTouchTilt={false} // 輪播滑動手勢優先，停用觸控傾斜避免衝突
                             />
                         </div>
 
                         <button
                             onClick={() => setCurrentIndex(prev => Math.min(cards.length - 1, prev + 1))}
                             disabled={currentIndex === cards.length - 1}
+                            aria-label={t('mobile_viewer.next_card')}
                             className="w-10 h-10 rounded-full border border-[#d4af37]/30 flex items-center justify-center text-[#d4af37] disabled:opacity-20 hover:bg-[#d4af37]/10 transition-all"
                         >
                             →
@@ -264,7 +272,7 @@ const MobileCardViewer: React.FC<MobileCardViewerProps> = ({
                     {/* 翻牌提示 */}
                     {!isFlipped[currentCard.index] && (
                         <p className="mt-4 text-[#d4af37]/40 font-lora italic text-sm animate-pulse">
-                            點擊揭示命運
+                            {t('main.click_to_reveal')}
                         </p>
                     )}
 
@@ -273,7 +281,7 @@ const MobileCardViewer: React.FC<MobileCardViewerProps> = ({
 
                     {/* 滑動提示 */}
                     <p className="text-[#d4af37]/20 text-xs font-cinzel mt-2">
-                        ← 左右滑動或點擊箭頭 →
+                        {t('mobile_viewer.swipe_hint')}
                     </p>
                 </div>
             </div>

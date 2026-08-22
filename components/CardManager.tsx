@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { MAJOR_ARCANA } from '../constants';
 import { AppTheme, User } from '../types';
 import { cacheArt, getCachedArt, clearAllArt, generateThemedCardArt } from '../services/imageService';
+import { useToast } from './Toast';
 
 interface CardManagerProps {
   user: User;
@@ -15,6 +16,7 @@ const CardManager: React.FC<CardManagerProps> = ({ user, onClose, onAssetsChange
   const [batchLoading, setBatchLoading] = useState(false);
   const [currentTask, setCurrentTask] = useState('');
   const [progress, setProgress] = useState(0);
+  const toast = useToast();
 
   const theme = user.theme || AppTheme.BAROQUE;
 
@@ -97,7 +99,7 @@ const CardManager: React.FC<CardManagerProps> = ({ user, onClose, onAssetsChange
       await loadPreviews();
       onAssetsChanged();
     } catch (e) {
-      alert('祈願中斷，可能達到 API 頻率限制。');
+      toast.error('祈願中斷，可能達到 API 頻率限制。');
     } finally {
       setBatchLoading(false);
       setCurrentTask('');
@@ -130,7 +132,7 @@ const CardManager: React.FC<CardManagerProps> = ({ user, onClose, onAssetsChange
             >
               † 淨化快取 †
             </button>
-            <button onClick={onClose} className="text-[#d4af37]/60 hover:text-[#d4af37] text-4xl font-cinzel leading-none ml-4">&times;</button>
+            <button onClick={onClose} aria-label="關閉" className="text-[#d4af37]/60 hover:text-[#d4af37] text-4xl font-cinzel leading-none ml-4">&times;</button>
           </div>
         </div>
 

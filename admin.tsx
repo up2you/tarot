@@ -6,6 +6,8 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import AdminApp from './admin/AdminApp';
+import { ToastProvider } from './components/Toast';
+import { AnimationSettingsProvider } from './hooks/useAnimationSettings';
 
 // 渲染管理員後台
 const container = document.getElementById('root');
@@ -13,7 +15,11 @@ if (container) {
     const root = createRoot(container);
     root.render(
         <React.StrictMode>
-            <AdminApp />
+            <ToastProvider>
+                <AnimationSettingsProvider>
+                    <AdminApp />
+                </AnimationSettingsProvider>
+            </ToastProvider>
         </React.StrictMode>
     );
 }

@@ -80,6 +80,8 @@
     "inquiry_seal": "問いの魂印（The Inquiry）",
     "oracle_title": "エーセリエルの神託",
     "streaming": "未来の霧を晴らしています...",
+    "skip_animation": "アニメーションをスキップ",
+    "skip_shuffle": "シャッフルをスキップ",
     "remaining": "残り",
     "times": "回",
     "back_to_basic_spread": "← 基本の展開に戻る",
@@ -271,6 +273,21 @@
     "vip_required": "この展開はVIP限定です。アップグレードしてください。",
     "card_count": "{{count}}枚",
     "more": " もっと見る"
+  },
+  "mobile_viewer": {
+    "swipe_down_next": "↓ 下にスワイプして次のカード",
+    "switch_to_staff": "スタッフに切り替え →",
+    "last_card": "最後のカードです",
+    "swipe_hint": "← 左右にスワイプまたは矢印をクリック →",
+    "celtic_group_cross": "十字エリア",
+    "celtic_group_cross_desc": "核心的な問題と影響",
+    "celtic_group_staff": "スタッフ",
+    "celtic_group_staff_desc": "深層分析と結果",
+    "cards_in_group": "({count}枚)",
+    "previous_card": "前のカード",
+    "next_card": "次のカード",
+    "card_progress": "カードの進捗",
+    "card_progress_item": "{{total}}枚中{{index}}枚目"
   },
   "share": {
     "template_header": "✦ エーセリエルのタロット神託 ✦",

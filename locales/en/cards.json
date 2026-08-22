@@ -1,0 +1,30 @@
+{
+  "cards": {
+    "0":  { "name": "The Fool",           "upright": "Upright", "reversed": "Reversed" },
+    "1":  { "name": "The Magician",       "upright": "Upright", "reversed": "Reversed" },
+    "2":  { "name": "The High Priestess", "upright": "Upright", "reversed": "Reversed" },
+    "3":  { "name": "The Empress",        "upright": "Upright", "reversed": "Reversed" },
+    "4":  { "name": "The Emperor",        "upright": "Upright", "reversed": "Reversed" },
+    "5":  { "name": "The Hierophant",     "upright": "Upright", "reversed": "Reversed" },
+    "6":  { "name": "The Lovers",         "upright": "Upright", "reversed": "Reversed" },
+    "7":  { "name": "The Chariot",        "upright": "Upright", "reversed": "Reversed" },
+    "8":  { "name": "Strength",           "upright": "Upright", "reversed": "Reversed" },
+    "9":  { "name": "The Hermit",         "upright": "Upright", "reversed": "Reversed" },
+    "10": { "name": "Wheel of Fortune",   "upright": "Upright", "reversed": "Reversed" },
+    "11": { "name": "Justice",            "upright": "Upright", "reversed": "Reversed" },
+    "12": { "name": "The Hanged Man",     "upright": "Upright", "reversed": "Reversed" },
+    "13": { "name": "Death",              "upright": "Upright", "reversed": "Reversed" },
+    "14": { "name": "Temperance",         "upright": "Upright", "reversed": "Reversed" },
+    "15": { "name": "The Devil",          "upright": "Upright", "reversed": "Reversed" },
+    "16": { "name": "The Tower",          "upright": "Upright", "reversed": "Reversed" },
+    "17": { "name": "The Star",           "upright": "Upright", "reversed": "Reversed" },
+    "18": { "name": "The Moon",           "upright": "Upright", "reversed": "Reversed" },
+    "19": { "name": "The Sun",            "upright": "Upright", "reversed": "Reversed" },
+    "20": { "name": "Judgement",          "upright": "Upright", "reversed": "Reversed" },
+    "21": { "name": "The World",          "upright": "Upright", "reversed": "Reversed" }
+  },
+  "position": {
+    "upright": "Upright",
+    "reversed": "Reversed"
+  }
+}

@@ -80,6 +80,8 @@
     "inquiry_seal": "提問魂印 (The Inquiry)",
     "oracle_title": "艾瑟瑞爾的神諭",
     "streaming": "正在撥開未來的迷霧...",
+    "skip_animation": "跳過動畫",
+    "skip_shuffle": "跳過洗牌",
     "remaining": "剩餘",
     "times": "次",
     "back_to_basic_spread": "← 返回基礎牌陣",
@@ -270,6 +272,21 @@
     "vip_required": "此牌陣為 VIP 專屬，請升級會員",
     "card_count": "{{count}} 張牌",
     "more": " 更多"
+  },
+  "mobile_viewer": {
+    "swipe_down_next": "↓ 下滑查看下一張",
+    "switch_to_staff": "切換到權杖柱 →",
+    "last_card": "已是最後一張",
+    "swipe_hint": "← 左右滑動或點擊箭頭 →",
+    "celtic_group_cross": "十字區",
+    "celtic_group_cross_desc": "核心問題與影響",
+    "celtic_group_staff": "權杖柱",
+    "celtic_group_staff_desc": "深層分析與結果",
+    "cards_in_group": "({count}張)",
+    "previous_card": "上一張",
+    "next_card": "下一張",
+    "card_progress": "牌卡進度",
+    "card_progress_item": "第 {{index}} 張，共 {{total}} 張"
   },
   "share": {
     "template_header": "✦ 艾瑟瑞爾塔羅神諭 ✦",

@@ -1,6 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { TarotCardData } from '../types';
+import { useAnimationSettings } from '../hooks/useAnimationSettings';
+import { useTilt } from '../hooks/useTilt';
 
 interface TarotCardProps {
   card?: TarotCardData;
@@ -11,6 +13,7 @@ interface TarotCardProps {
   size?: 'xs' | 'sm' | 'md' | 'lg';
   customBack?: string;
   showNameLabel?: boolean;  // 新增：是否顯示牌名標籤
+  enableTouchTilt?: boolean; // 觸控傾斜開關（滑動手勢容器內應關閉，避免手勢衝突）
 }
 
 const TarotCard: React.FC<TarotCardProps> = ({
@@ -22,8 +25,16 @@ const TarotCard: React.FC<TarotCardProps> = ({
   size = 'md',
   customBack,
   showNameLabel = true,  // 預設顯示
+  enableTouchTilt = true,
 }) => {
   const [showLight, setShowLight] = useState(false);
+  const [showRipple, setShowRipple] = useState(false);
+  const { settings: animSettings } = useAnimationSettings();
+  // 小尺寸（xs）卡片不啟用觸控傾斜：效果不明顯且會干擾小卡片點擊
+  const { tilt, onMouseMove, onMouseLeave, onTouchStart, onTouchMove, onTouchEnd } = useTilt(
+    animSettings.tiltEnabled,
+    enableTouchTilt && size !== 'xs'
+  );
 
   // 當翻轉狀態改變時，觸發聖光閃爍
   useEffect(() => {
@@ -34,6 +45,20 @@ const TarotCard: React.FC<TarotCardProps> = ({
       setShowLight(false);
     }
   }, [isFlipped]);
+
+  // 物理翻牌風格：翻轉完成瞬間觸發能量漣漪
+  useEffect(() => {
+    if (isFlipped && animSettings.flipStyle === 'physical') {
+      const rippleTimer = setTimeout(() => {
+        setShowRipple(true);
+        // 漣漪動畫 0.9s 後移除
+        setTimeout(() => setShowRipple(false), 950);
+      }, 500);
+      return () => clearTimeout(rippleTimer);
+    } else {
+      setShowRipple(false);
+    }
+  }, [isFlipped, animSettings.flipStyle]);
 
   const sizeClasses = {
     xs: 'w-20 h-[9rem]',     // 超小尺寸 - 凱爾特十字手機版
@@ -53,10 +78,21 @@ const TarotCard: React.FC<TarotCardProps> = ({
     </div>
   );
 
+  // 跟手 3D 傾斜的 transform（套在外層容器上）
+  const tiltTransform = animSettings.tiltEnabled
+    ? `perspective(900px) rotateX(${tilt.rotateX}deg) rotateY(${tilt.rotateY}deg) scale(${tilt.scale})`
+    : undefined;
+
   return (
     <div
       className={`relative perspective-3000 ${sizeClasses[size]} ${className}`}
       onClick={onClick}
+      onMouseMove={onMouseMove}
+      onMouseLeave={onMouseLeave}
+      onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}
+      style={tiltTransform ? { transform: tiltTransform, transition: 'transform 0.2s ease-out' } : undefined}
     >
       {/* 聖光擴散層 - 僅在翻牌瞬間出現 */}
       {showLight && (
@@ -66,7 +102,10 @@ const TarotCard: React.FC<TarotCardProps> = ({
         </div>
       )}
 
-      <div className={`card-inner ${isFlipped ? 'card-flipped' : ''} cursor-pointer shadow-[0_30px_60px_rgba(0,0,0,0.9)]`}>
+      {/* 物理翻牌風格：能量漣漪環 */}
+      {showRipple && <div className="card-ripple" />}
+
+      <div className={`card-inner ${isFlipped ? 'card-flipped' : ''} ${animSettings.flipStyle === 'physical' ? 'card-inner-flip-physical' : ''} ${isFlipped && animSettings.flipStyle === 'physical' ? 'card-breathe' : ''} cursor-pointer shadow-[0_30px_60px_rgba(0,0,0,0.9)]`}>
 
         {/* 牌背 (Back side) */}
         <div className="card-face card-back-side">

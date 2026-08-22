@@ -1,0 +1,30 @@
+{
+  "cards": {
+    "0":  { "name": "愚者",           "upright": "正位", "reversed": "逆位" },
+    "1":  { "name": "魔术师",         "upright": "正位", "reversed": "逆位" },
+    "2":  { "name": "女教皇",         "upright": "正位", "reversed": "逆位" },
+    "3":  { "name": "皇后",           "upright": "正位", "reversed": "逆位" },
+    "4":  { "name": "皇帝",           "upright": "正位", "reversed": "逆位" },
+    "5":  { "name": "教皇",           "upright": "正位", "reversed": "逆位" },
+    "6":  { "name": "恋人",           "upright": "正位", "reversed": "逆位" },
+    "7":  { "name": "战车",           "upright": "正位", "reversed": "逆位" },
+    "8":  { "name": "力量",           "upright": "正位", "reversed": "逆位" },
+    "9":  { "name": "隐士",           "upright": "正位", "reversed": "逆位" },
+    "10": { "name": "命运之轮",       "upright": "正位", "reversed": "逆位" },
+    "11": { "name": "正义",           "upright": "正位", "reversed": "逆位" },
+    "12": { "name": "倒吊人",         "upright": "正位", "reversed": "逆位" },
+    "13": { "name": "死亡",           "upright": "正位", "reversed": "逆位" },
+    "14": { "name": "节制",           "upright": "正位", "reversed": "逆位" },
+    "15": { "name": "恶魔",           "upright": "正位", "reversed": "逆位" },
+    "16": { "name": "高塔",           "upright": "正位", "reversed": "逆位" },
+    "17": { "name": "星星",           "upright": "正位", "reversed": "逆位" },
+    "18": { "name": "月亮",           "upright": "正位", "reversed": "逆位" },
+    "19": { "name": "太阳",           "upright": "正位", "reversed": "逆位" },
+    "20": { "name": "审判",           "upright": "正位", "reversed": "逆位" },
+    "21": { "name": "世界",           "upright": "正位", "reversed": "逆位" }
+  },
+  "position": {
+    "upright": "正位",
+    "reversed": "逆位"
+  }
+}

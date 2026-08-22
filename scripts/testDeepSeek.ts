@@ -4,7 +4,13 @@
  */
 
 const DEEPSEEK_API_URL = 'https://api.deepseek.com/v1/chat/completions';
-const DEEPSEEK_API_KEY = 'sk-e6ea454451754c26aa989b61a80776f3';
+const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY;
+
+if (!DEEPSEEK_API_KEY) {
+  console.error('❌ 缺少 DEEPSEEK_API_KEY 環境變數');
+  console.error('執行方式：$env:DEEPSEEK_API_KEY="your_key" npx ts-node scripts/testDeepSeek.ts');
+  process.exit(1);
+}
 
 // 測試用牌卡
 const TEST_CARD = { id: 0, name: 'The Fool', nameZh: '愚者', keywords: '新開始、純真、冒險' };

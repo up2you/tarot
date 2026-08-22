@@ -7,9 +7,14 @@
  * node scripts/analyze_supabase.js
  */
 
-const SUPABASE_URL = 'https://pcwmbhbqzmndqwmgvevq.supabase.co';
+const SUPABASE_URL = process.env.SUPABASE_URL || 'https://pcwmbhbqzmndqwmgvevq.supabase.co';
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const ANON_KEY = 'sb_publishable_i-KqkTBGauoo96ozj_Yxvw_vG4cKJ3C';
+const ANON_KEY = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY;
+
+if (!SERVICE_KEY) {
+  console.error('❌ 缺少 SUPABASE_SERVICE_ROLE_KEY 環境變數');
+  process.exit(1);
+}
 
 if (!SERVICE_KEY) {
     console.error('❌ 請設置 SUPABASE_SERVICE_ROLE_KEY 環境變數');

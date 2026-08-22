@@ -141,6 +141,178 @@
       }
     }
 
+    /* === Toast 通知動畫 === */
+    @keyframes toast-slide-in {
+      0% {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.95);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .toast-enter {
+      animation: toast-slide-in 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+
+    /* === 🎬 儀式洗牌：三幕式敘事 === */
+    .ritual-shuffle-stage {
+      perspective: 1400px;
+      transform-style: preserve-3d;
+    }
+
+    .ritual-shuffle-card {
+      transform-style: preserve-3d;
+      animation: ritual-shuffle-card 3s cubic-bezier(0.34, 1.2, 0.64, 1) forwards;
+      will-change: transform, opacity;
+    }
+
+    /* 三幕：聚合(0-22%) → 洗切(22-78%) → 收束(78-100%) */
+    @keyframes ritual-shuffle-card {
+      /* 第一幕：從四方飛入聚合 */
+      0% {
+        opacity: 0;
+        transform: translate3d(var(--gather-x, -160px), var(--gather-y, -120px), -40px) rotate(var(--gather-rot, -24deg)) scale(0.6);
+      }
+      10% {
+        opacity: 1;
+      }
+      22% {
+        opacity: 1;
+        transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+      }
+
+      /* 第二幕：3D 傾斜 + 上下交錯洗切 */
+      30% {
+        transform: translate3d(0, var(--shuffle-shift, 20px), 10px) rotateX(22deg) rotate(-5deg) scale(1);
+      }
+      42% {
+        transform: translate3d(0, calc(var(--shuffle-shift, 20px) * -0.7), -8px) rotateX(-16deg) rotate(4deg) scale(1);
+      }
+      55% {
+        transform: translate3d(0, var(--shuffle-shift, 20px), 12px) rotateX(18deg) rotate(-4deg) scale(1);
+      }
+      68% {
+        transform: translate3d(0, calc(var(--shuffle-shift, 20px) * -0.6), -6px) rotateX(-12deg) rotate(3deg) scale(1);
+      }
+      78% {
+        transform: translate3d(0, 0, 0) rotateX(0deg) rotate(0deg) scale(1);
+      }
+
+      /* 第三幕：收束聚合，微微脈動 */
+      90% {
+        transform: translate3d(0, 0, 0) rotate(0deg) scale(1.05);
+      }
+      100% {
+        opacity: 1;
+        transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+      }
+    }
+
+    /* 能量匯聚光暈 */
+    .ritual-shuffle-glow {
+      background: radial-gradient(circle, rgba(212, 175, 55, 0.28) 0%, rgba(212, 175, 55, 0.08) 45%, transparent 70%);
+      filter: blur(6px);
+      animation: ritual-shuffle-glow 3s ease-out forwards;
+    }
+
+    @keyframes ritual-shuffle-glow {
+      0%,
+      20% {
+        opacity: 0;
+        transform: scale(0.5);
+      }
+      45% {
+        opacity: 0.5;
+        transform: scale(0.9);
+      }
+      100% {
+        opacity: 0.9;
+        transform: scale(1.15);
+      }
+    }
+
+    /* === 🎬 發牌：弧線飛行（從牌堆飛到牌位 + 落地微彈） === */
+    .deal-arc {
+      animation: deal-arc 0.9s cubic-bezier(0.22, 1.2, 0.36, 1) forwards;
+      will-change: transform, opacity;
+    }
+
+    @keyframes deal-arc {
+      0% {
+        opacity: 0;
+        transform: translate3d(var(--arc-x, 0px), 220px, 0) rotate(var(--arc-rot, -14deg)) scale(0.5);
+      }
+      35% {
+        opacity: 1;
+      }
+      70% {
+        opacity: 1;
+        transform: translate3d(calc(var(--arc-x, 0px) * 0.3), -18px, 0) rotate(calc(var(--arc-rot, -14deg) * -0.3)) scale(1.02);
+      }
+      100% {
+        opacity: 1;
+        transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+      }
+    }
+
+    /* === 🎬 翻牌：物理回彈 + 能量漣漪 + 呼吸光暈 === */
+    .card-inner-flip-physical {
+      transition: transform 0.85s cubic-bezier(0.34, 1.4, 0.5, 1) !important;
+    }
+
+    .card-ripple {
+      position: absolute;
+      inset: -12px;
+      border-radius: 1.4rem;
+      border: 2px solid rgba(212, 175, 55, 0.9);
+      pointer-events: none;
+      animation: card-ripple 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      z-index: 60;
+    }
+
+    @keyframes card-ripple {
+      0% {
+        opacity: 0.9;
+        transform: scale(0.55);
+      }
+      70% {
+        opacity: 0.5;
+      }
+      100% {
+        opacity: 0;
+        transform: scale(1.6);
+      }
+    }
+
+    /* 已翻牌：緩慢呼吸光暈 */
+    .card-breathe {
+      animation: card-breathe 3.5s ease-in-out infinite;
+    }
+
+    @keyframes card-breathe {
+      0%,
+      100% {
+        box-shadow: 0 0 18px rgba(212, 175, 55, 0.18), 0 30px 60px rgba(0, 0, 0, 0.9);
+      }
+      50% {
+        box-shadow: 0 0 42px rgba(212, 175, 55, 0.45), 0 30px 60px rgba(0, 0, 0, 0.9);
+      }
+    }
+
+    /* === 🎬 卡片跟手 3D 傾斜 === */
+    .card-tilt {
+      transform-style: preserve-3d;
+      transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+      will-change: transform;
+    }
+
+    .card-tilt-active {
+      transition: transform 0.12s ease-out;
+    }
+
     /* === 主題變數定義 === */
     :root {
       --theme-primary: #d4af37;

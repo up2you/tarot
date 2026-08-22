@@ -4,6 +4,8 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import i18n from '../hooks/i18n';
 import { ReadingRecord } from '../types';
 import {
     getReadings,
@@ -18,6 +20,7 @@ interface HistoryPanelProps {
 }
 
 const HistoryPanel: React.FC<HistoryPanelProps> = ({ onClose }) => {
+    const { t } = useTranslation();
     const [records, setRecords] = useState<ReadingRecord[]>([]);
     const [expandedId, setExpandedId] = useState<string | null>(null);
     const [showConfirmClear, setShowConfirmClear] = useState(false);
@@ -49,10 +52,10 @@ const HistoryPanel: React.FC<HistoryPanelProps> = ({ onClose }) => {
             <div className="flex items-center justify-between p-6 border-b border-[#d4af37]/20">
                 <div>
                     <h2 className="text-2xl font-cinzel text-[#d4af37] font-black tracking-widest">
-                        占卜歷史
+                        {t('history.title')}
                     </h2>
                     <p className="text-xs text-[#d4af37]/40 font-lora italic mt-1">
-                        共 {records.length} 筆記錄 · 僅保存於此裝置
+                        {t('history.count', { count: records.length })}
                     </p>
                 </div>
                 <div className="flex items-center gap-4">
@@ -61,11 +64,12 @@ const HistoryPanel: React.FC<HistoryPanelProps> = ({ onClose }) => {
                             onClick={() => setShowConfirmClear(true)}
                             className="px-4 py-2 text-xs font-cinzel tracking-wider text-red-400/60 hover:text-red-400 border border-red-400/20 hover:border-red-400/40 rounded-full transition-all"
                         >
-                            清空全部
+                            {t('history.clear_all')}
                         </button>
                     )}
                     <button
                         onClick={onClose}
+                        aria-label="關閉"
                         className="w-10 h-10 rounded-full border border-[#d4af37]/30 flex items-center justify-center text-[#d4af37] hover:bg-[#d4af37]/10 transition-all"
                     >
                         ✕
@@ -77,22 +81,22 @@ const HistoryPanel: React.FC<HistoryPanelProps> = ({ onClose }) => {
             {showConfirmClear && (
                 <div className="absolute inset-0 bg-black/80 z-10 flex items-center justify-center p-6">
                     <div className="divine-vessel p-8 max-w-sm w-full text-center">
-                        <h3 className="text-xl font-cinzel text-[#d4af37] mb-4">確定清空所有記錄？</h3>
+                        <h3 className="text-xl font-cinzel text-[#d4af37] mb-4">{t('history.clear_confirm')}</h3>
                         <p className="text-[#d4af37]/60 font-lora italic text-sm mb-6">
-                            此操作無法復原，所有占卜歷史將永久刪除。
+                            {t('history.clear_confirm_detail')}
                         </p>
                         <div className="flex gap-4">
                             <button
                                 onClick={() => setShowConfirmClear(false)}
                                 className="flex-1 py-3 rounded-full border border-[#d4af37]/30 text-[#d4af37] font-cinzel text-sm hover:bg-[#d4af37]/10 transition-all"
                             >
-                                取消
+                                {t('history.cancel')}
                             </button>
                             <button
                                 onClick={handleClearAll}
                                 className="flex-1 py-3 rounded-full bg-red-900/50 border border-red-400/30 text-red-300 font-cinzel text-sm hover:bg-red-900/70 transition-all"
                             >
-                                確定清空
+                                {t('history.confirm_clear')}
                             </button>
                         </div>
                     </div>
@@ -104,9 +108,9 @@ const HistoryPanel: React.FC<HistoryPanelProps> = ({ onClose }) => {
                 {records.length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-full text-center">
                         <div className="text-6xl mb-6 opacity-20">🔮</div>
-                        <p className="text-[#d4af37]/40 font-cinzel text-lg mb-2">尚無占卜記錄</p>
+                        <p className="text-[#d4af37]/40 font-cinzel text-lg mb-2">{t('history.empty')}</p>
                         <p className="text-[#d4af37]/20 font-lora italic text-sm">
-                            完成一次占卜後，記錄將自動保存於此
+                            {t('history.empty_hint')}
                         </p>
                     </div>
                 ) : (
@@ -157,13 +161,13 @@ const HistoryPanel: React.FC<HistoryPanelProps> = ({ onClose }) => {
                                     <div className="px-5 pb-5 border-t border-[#d4af37]/10 animate-fade-up">
                                         {/* Question */}
                                         <div className="py-4 border-b border-[#d4af37]/10">
-                                            <p className="text-[10px] font-cinzel text-[#d4af37]/40 tracking-widest mb-2">問題</p>
+                                            <p className="text-[10px] font-cinzel text-[#d4af37]/40 tracking-widest mb-2">{t('history.question')}</p>
                                             <p className="text-[#f3e5ab] font-lora italic">「{record.question}」</p>
                                         </div>
 
                                         {/* Cards */}
                                         <div className="py-4 border-b border-[#d4af37]/10">
-                                            <p className="text-[10px] font-cinzel text-[#d4af37]/40 tracking-widest mb-3">牌陣</p>
+                                            <p className="text-[10px] font-cinzel text-[#d4af37]/40 tracking-widest mb-3">{t('history.spread')}</p>
                                             <div className="grid grid-cols-3 gap-3">
                                                 {record.cards.map((card, idx) => (
                                                     <div key={idx} className="text-center">
@@ -174,7 +178,7 @@ const HistoryPanel: React.FC<HistoryPanelProps> = ({ onClose }) => {
                                                             <p className="text-sm text-[#d4af37] font-cinzel">{card.nameZh}</p>
                                                             <p className="text-[10px] text-[#d4af37]/40">{card.name}</p>
                                                             <p className={`text-[10px] mt-1 ${card.isReversed ? 'text-red-400/60' : 'text-green-400/60'}`}>
-                                                                {card.isReversed ? '逆位' : '正位'}
+                                                                {card.isReversed ? i18n.t('cards:position.reversed') : i18n.t('cards:position.upright')}
                                                             </p>
                                                         </div>
                                                     </div>
@@ -185,7 +189,7 @@ const HistoryPanel: React.FC<HistoryPanelProps> = ({ onClose }) => {
                                         {/* Interpretation Summary */}
                                         {record.interpretation && (
                                             <div className="py-4 border-b border-[#d4af37]/10">
-                                                <p className="text-[10px] font-cinzel text-[#d4af37]/40 tracking-widest mb-2">解讀摘要</p>
+                                                <p className="text-[10px] font-cinzel text-[#d4af37]/40 tracking-widest mb-2">{t('history.interpretation')}</p>
                                                 <p className="text-[#d4af37]/60 font-lora text-sm leading-relaxed line-clamp-4">
                                                     {record.interpretation}
                                                 </p>
@@ -201,7 +205,7 @@ const HistoryPanel: React.FC<HistoryPanelProps> = ({ onClose }) => {
                                                 }}
                                                 className="px-4 py-2 text-xs font-cinzel tracking-wider text-red-400/60 hover:text-red-400 border border-red-400/20 hover:border-red-400/40 rounded-full transition-all"
                                             >
-                                                刪除此記錄
+                                                {t('history.delete')}
                                             </button>
                                         </div>
                                     </div>

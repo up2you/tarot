@@ -80,6 +80,8 @@
     "inquiry_seal": "질문의 영혼 인장 (The Inquiry)",
     "oracle_title": "에테리엘의 신탁",
     "streaming": "미래의 안개를 걷어내는 중...",
+    "skip_animation": "애니메이션 건너뛰기",
+    "skip_shuffle": "셔플 건너뛰기",
     "remaining": "남음",
     "times": "회",
     "back_to_basic_spread": "← 기본 스프레드로 돌아가기",
@@ -271,6 +273,21 @@
     "vip_required": "이 스프레드는 VIP 전용입니다. 업그레이드하세요.",
     "card_count": "{{count}}장",
     "more": " 더 보기"
+  },
+  "mobile_viewer": {
+    "swipe_down_next": "↓ 아래로 스와이프하여 다음 카드",
+    "switch_to_staff": "스태프로 전환 →",
+    "last_card": "마지막 카드입니다",
+    "swipe_hint": "← 좌우로 스와이프하거나 화살표 클릭 →",
+    "celtic_group_cross": "십자 영역",
+    "celtic_group_cross_desc": "핵심 문제와 영향",
+    "celtic_group_staff": "스태프",
+    "celtic_group_staff_desc": "심층 분석과 결과",
+    "cards_in_group": "({count}장)",
+    "previous_card": "이전 카드",
+    "next_card": "다음 카드",
+    "card_progress": "카드 진행 상황",
+    "card_progress_item": "총 {{total}}장 중 {{index}}번째"
   },
   "share": {
     "template_header": "✦ 에테리엘의 타로 신탁 ✦",

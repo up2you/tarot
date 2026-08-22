@@ -1,0 +1,30 @@
+{
+  "cards": {
+    "0":  { "name": "바보",             "upright": "정위치", "reversed": "역위치" },
+    "1":  { "name": "마법사",           "upright": "정위치", "reversed": "역위치" },
+    "2":  { "name": "여교황",           "upright": "정위치", "reversed": "역위치" },
+    "3":  { "name": "여제",             "upright": "정위치", "reversed": "역위치" },
+    "4":  { "name": "황제",             "upright": "정위치", "reversed": "역위치" },
+    "5":  { "name": "교황",             "upright": "정위치", "reversed": "역위치" },
+    "6":  { "name": "연인",             "upright": "정위치", "reversed": "역위치" },
+    "7":  { "name": "전차",             "upright": "정위치", "reversed": "역위치" },
+    "8":  { "name": "힘",               "upright": "정위치", "reversed": "역위치" },
+    "9":  { "name": "은둔자",           "upright": "정위치", "reversed": "역위치" },
+    "10": { "name": "운명의 수레바퀴",  "upright": "정위치", "reversed": "역위치" },
+    "11": { "name": "정의",             "upright": "정위치", "reversed": "역위치" },
+    "12": { "name": "매달린 사람",      "upright": "정위치", "reversed": "역위치" },
+    "13": { "name": "죽음",             "upright": "정위치", "reversed": "역위치" },
+    "14": { "name": "절제",             "upright": "정위치", "reversed": "역위치" },
+    "15": { "name": "악마",             "upright": "정위치", "reversed": "역위치" },
+    "16": { "name": "탑",               "upright": "정위치", "reversed": "역위치" },
+    "17": { "name": "별",               "upright": "정위치", "reversed": "역위치" },
+    "18": { "name": "달",               "upright": "정위치", "reversed": "역위치" },
+    "19": { "name": "태양",             "upright": "정위치", "reversed": "역위치" },
+    "20": { "name": "심판",             "upright": "정위치", "reversed": "역위치" },
+    "21": { "name": "세계",             "upright": "정위치", "reversed": "역위치" }
+  },
+  "position": {
+    "upright": "정위치",
+    "reversed": "역위치"
+  }
+}

@@ -19,6 +19,7 @@ export interface OracleInterpretation {
     scenario_key: string;
     position_key: string;
     interpretation: string;
+    language: string;
 }
 
 export interface CardRelationship {
@@ -27,12 +28,14 @@ export interface CardRelationship {
     card_b_id: number;
     relationship_type: string;
     description: string;
+    language: string;
 }
 
 export interface ReadingSummary {
     id: string;
     pattern_key: string;
     summary: string;
+    language: string;
 }
 
 // ============================================
@@ -65,17 +68,22 @@ const FALLBACK_SCENARIOS: Record<string, string> = {
 };
 
 /**
- * 取得單牌解釋
+ * 取得單牌解釋（支援多語言 fallback：找不到目標語言時自動降級到 zh-TW）
  */
 export const getOracleInterpretation = async (
     cardId: number,
     isReversed: boolean,
     scenarioKey: string,
-    positionKey: string
+    positionKey: string,
+    language: string = 'zh-TW'
 ): Promise<string | null> => {
     try {
         const orientation = isReversed ? 'reversed' : 'upright';
-        const tryFetch = async (key: string) => {
+
+        // 建立語言 fallback 鏈：目標語言 → zh-TW
+        const langChain = language === 'zh-TW' ? ['zh-TW'] : [language, 'zh-TW'];
+
+        const tryFetch = async (key: string, lang: string) => {
             const { data, error } = await supabase
                 .from('oracle_interpretations')
                 .select('interpretation')
@@ -83,41 +91,40 @@ export const getOracleInterpretation = async (
                 .eq('orientation', orientation)
                 .eq('scenario_key', key)
                 .eq('position_key', positionKey)
+                .eq('language', lang)
                 .maybeSingle();
 
             if (error) return null;
             return data?.interpretation || null;
         };
 
-        // 1. 嘗試原始場景
-        let text = await tryFetch(scenarioKey);
-        if (text) return text;
-
-        // 1.5 Yearly Spread Fallback Strategy
-        // 對於年度運勢，如果找不到特定月份（例如 jan, feb）的解釋
-        // 則嘗試使用共用的 "monthly" 解釋
-        if (scenarioKey === 'yearly') {
-            const originalPosition = positionKey;
-            // 暫時切換查詢條件為 monthly
-            positionKey = 'monthly';
-            text = await tryFetch('yearly');
-            // 恢復原始位置 Key 以避免副作用
-            positionKey = originalPosition;
-
-            if (text) return text;
-        }
-
-        // 2. 嘗試 Fallback 場景
+        // 嘗試所有場景 key + 所有語言
+        const scenarioKeys = [scenarioKey];
         const fallbackKey = FALLBACK_SCENARIOS[scenarioKey];
-        if (fallbackKey) {
-            text = await tryFetch(fallbackKey);
-            if (text) return text;
+        if (fallbackKey) scenarioKeys.push(fallbackKey);
+        if (scenarioKey !== 'general_luck' && fallbackKey !== 'general_luck') {
+            scenarioKeys.push('general_luck');
         }
 
-        // 3. 嘗試通用運勢 (general_luck) 作為最後防線
-        if (scenarioKey !== 'general_luck' && fallbackKey !== 'general_luck') {
-            text = await tryFetch('general_luck');
-            if (text) return text;
+        for (const lang of langChain) {
+            for (const sKey of scenarioKeys) {
+                const text = await tryFetch(sKey, lang);
+                if (text) return text;
+            }
+
+            // Yearly spread fallback: try 'monthly' position with same scenario
+            if (scenarioKey === 'yearly') {
+                const { data, error } = await supabase
+                    .from('oracle_interpretations')
+                    .select('interpretation')
+                    .eq('card_id', cardId)
+                    .eq('orientation', orientation)
+                    .eq('scenario_key', 'yearly')
+                    .eq('position_key', 'monthly')
+                    .eq('language', lang)
+                    .maybeSingle();
+                if (!error && data?.interpretation) return data.interpretation;
+            }
         }
 
         return null;
@@ -132,33 +139,32 @@ export const getOracleInterpretation = async (
  */
 export const getBatchInterpretations = async (
     cards: { cardId: number; isReversed: boolean; positionKey: string }[],
-    scenarioKey: string
+    scenarioKey: string,
+    language: string = 'zh-TW'
 ): Promise<Map<string, string>> => {
     const results = new Map<string, string>();
+    const langChain = language === 'zh-TW' ? ['zh-TW'] : [language, 'zh-TW'];
 
     try {
-        // 建立查詢條件
-        const queries = cards.map(card => ({
-            card_id: card.cardId,
-            orientation: card.isReversed ? 'reversed' : 'upright',
-            scenario_key: scenarioKey,
-            position_key: card.positionKey,
-        }));
+        // 批量查詢（先試目標語言，失敗 fallback zh-TW）
+        for (const lang of langChain) {
+            for (const card of cards) {
+                const mapKey = `${card.cardId}_${card.isReversed ? 'rev' : 'up'}_${card.positionKey}`;
+                if (results.has(mapKey)) continue; // 已有結果跳過
 
-        // 批量查詢
-        for (const query of queries) {
-            const { data, error } = await supabase
-                .from('oracle_interpretations')
-                .select('interpretation, position_key')
-                .eq('card_id', query.card_id)
-                .eq('orientation', query.orientation)
-                .eq('scenario_key', query.scenario_key)
-                .eq('position_key', query.position_key)
-                .maybeSingle();
+                const { data, error } = await supabase
+                    .from('oracle_interpretations')
+                    .select('interpretation, position_key')
+                    .eq('card_id', card.cardId)
+                    .eq('orientation', card.isReversed ? 'reversed' : 'upright')
+                    .eq('scenario_key', scenarioKey)
+                    .eq('position_key', card.positionKey)
+                    .eq('language', lang)
+                    .maybeSingle();
 
-            if (!error && data) {
-                const key = `${query.card_id}_${query.orientation}_${query.position_key}`;
-                results.set(key, data.interpretation);
+                if (!error && data) {
+                    results.set(mapKey, data.interpretation);
+                }
             }
         }
 
@@ -178,7 +184,8 @@ export const getBatchInterpretations = async (
  */
 export const getCardRelationship = async (
     cardAId: number,
-    cardBId: number
+    cardBId: number,
+    language: string = 'zh-TW'
 ): Promise<string | null> => {
     try {
         // 確保順序一致（較小 ID 在前）
@@ -186,18 +193,23 @@ export const getCardRelationship = async (
             ? [cardAId, cardBId]
             : [cardBId, cardAId];
 
-        const { data, error } = await supabase
-            .from('oracle_relationships')
-            .select('description')
-            .eq('card_a_id', first)
-            .eq('card_b_id', second)
-            .maybeSingle();
+        const langChain = language === 'zh-TW' ? ['zh-TW'] : [language, 'zh-TW'];
 
-        if (error) {
-            return null;
+        for (const lang of langChain) {
+            const { data, error } = await supabase
+                .from('oracle_relationships')
+                .select('description')
+                .eq('card_a_id', first)
+                .eq('card_b_id', second)
+                .eq('language', lang)
+                .maybeSingle();
+
+            if (!error && data?.description) {
+                return data.description;
+            }
         }
 
-        return data?.description || null;
+        return null;
     } catch (err) {
         console.error('[OracleService] getCardRelationship error:', err);
         return null;
@@ -211,19 +223,27 @@ export const getCardRelationship = async (
 /**
  * 根據牌陣模式取得總結
  */
-export const getReadingSummary = async (patternKey: string): Promise<string | null> => {
+export const getReadingSummary = async (
+    patternKey: string,
+    language: string = 'zh-TW'
+): Promise<string | null> => {
     try {
-        const { data, error } = await supabase
-            .from('oracle_summaries')
-            .select('summary')
-            .eq('pattern_key', patternKey)
-            .maybeSingle();
+        const langChain = language === 'zh-TW' ? ['zh-TW'] : [language, 'zh-TW'];
 
-        if (error) {
-            return null;
+        for (const lang of langChain) {
+            const { data, error } = await supabase
+                .from('oracle_summaries')
+                .select('summary')
+                .eq('pattern_key', patternKey)
+                .eq('language', lang)
+                .maybeSingle();
+
+            if (!error && data?.summary) {
+                return data.summary;
+            }
         }
 
-        return data?.summary || null;
+        return null;
     } catch (err) {
         console.error('[OracleService] getReadingSummary error:', err);
         return null;
@@ -255,7 +275,8 @@ export const analyzePattern = (
  */
 export const generateFreeReading = async (
     cards: { cardId: number; cardName: string; isReversed: boolean; positionKey: string }[],
-    scenarioKey: string
+    scenarioKey: string,
+    language: string = 'zh-TW'
 ): Promise<{
     interpretations: { position: string; text: string }[];
     relationships: string[];
@@ -274,19 +295,24 @@ export const generateFreeReading = async (
                 card.cardId,
                 card.isReversed,
                 scenarioKey,
-                card.positionKey
+                card.positionKey,
+                language
             );
 
             const position = getPositionByKey(card.positionKey);
+            const posName = language === 'en' ? (position?.nameEn || card.positionKey)
+                          : language === 'zh-CN' ? (position?.key === 'past' ? '过去' : position?.key === 'present' ? '现在' : position?.key === 'future' ? '未来' : position?.nameZh)
+                          : (position?.nameZh || card.positionKey);
+
             result.interpretations.push({
-                position: position?.nameZh || card.positionKey,
-                text: text || `${card.cardName}${card.isReversed ? '（逆位）' : '（正位）'}的能量正在影響這個位置...`,
+                position: posName || card.positionKey,
+                text: text || `${card.cardName} (${card.isReversed ? 'Reversed' : 'Upright'})`,
             });
         }
 
         // 2. 取得牌卡關係
         for (let i = 0; i < cards.length - 1; i++) {
-            const relationship = await getCardRelationship(cards[i].cardId, cards[i + 1].cardId);
+            const relationship = await getCardRelationship(cards[i].cardId, cards[i + 1].cardId, language);
             if (relationship) {
                 result.relationships.push(relationship);
             }
@@ -315,7 +341,7 @@ export const generateFreeReading = async (
             } else {
                 // 依然使用各種 Pattern 分析作為備案
                 const patternKey = analyzePattern(cards);
-                const summary = await getReadingSummary(patternKey);
+                const summary = await getReadingSummary(patternKey, language);
                 result.summary = summary || '這個牌陣揭示了方向的線索，請靜心感受牌面指出的道路。';
             }
         } else if (scenarioKey === 'general_decision') {
@@ -344,7 +370,7 @@ export const generateFreeReading = async (
                 result.summary = `# 艾瑟瑞爾的最終回答：${answer}\n\n${finalAdvice}`;
             } else {
                 const patternKey = analyzePattern(cards);
-                const summary = await getReadingSummary(patternKey);
+                const summary = await getReadingSummary(patternKey, language);
                 result.summary = summary || '這個決定需要更深層的直覺，請靜心感受牌面傳遞的微妙平衡。';
             }
         } else if (scenarioKey === 'house_rent') {
@@ -362,7 +388,7 @@ export const generateFreeReading = async (
                 result.summary = `# 艾瑟瑞爾的最終神諭：${advice}\n\n綜合牌面能量，針對這間房子的最終建議是「${advice}」。請相信你的直覺與這份指引，做出最適合當下的選擇。`;
             } else {
                 const patternKey = analyzePattern(cards);
-                const summary = await getReadingSummary(patternKey);
+                const summary = await getReadingSummary(patternKey, language);
                 result.summary = summary || '這間房子有其獨特的氣場，請細讀牌面訊息，感受它是否與你的頻率共振。';
             }
         } else if (scenarioKey.startsWith('love_') || scenarioKey.startsWith('relation_')) {
@@ -525,7 +551,7 @@ export const generateFreeReading = async (
             const patternKey = analyzePattern(cards);
             // 優先嘗試取得「場景專用」的總結 (例如 career_seeking_all_upright, health_gender_all_upright)
             const specificSummaryKey = `${scenarioKey}_${patternKey}`;
-            let summary = await getReadingSummary(specificSummaryKey);
+            let summary = await getReadingSummary(specificSummaryKey, language);
 
             if (summary && summary.trim()) {
                 result.summary = summary;
@@ -549,7 +575,7 @@ export const generateFreeReading = async (
                     result.summary = `# ${title}\n\n${cleanText}...\n\n${closing}`;
                 } else {
                     // 如果連主牌解釋都沒有，使用通用 Pattern 總結
-                    summary = await getReadingSummary(patternKey);
+                    summary = await getReadingSummary(patternKey, language);
                     result.summary = (summary && summary.trim()) ? summary : '命運的星圖錯綜複雜，請相信此刻的際遇都有其深意。';
                 }
             }
@@ -558,10 +584,10 @@ export const generateFreeReading = async (
             const patternKey = analyzePattern(cards);
             // 同樣嘗試取得場景專用總結
             const specificSummaryKey = `${scenarioKey}_${patternKey}`;
-            let summary = await getReadingSummary(specificSummaryKey);
+            let summary = await getReadingSummary(specificSummaryKey, language);
 
             if (!summary) {
-                summary = await getReadingSummary(patternKey);
+                summary = await getReadingSummary(patternKey, language);
             }
             result.summary = (summary && summary.trim()) ? summary : '這個牌陣揭示了重要的訊息，請細細體會每張牌帶來的指引。';
         }

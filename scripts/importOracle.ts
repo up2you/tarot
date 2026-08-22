@@ -19,9 +19,15 @@ import { createClient } from '@supabase/supabase-js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Supabase 配置 - 請替換為您的 Service Role Key
+// Supabase 配置 - 從環境變數讀取（勿在程式碼中寫死金鑰）
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL || 'https://pcwmbhbqzmndqwmgvevq.supabase.co';
-const SUPABASE_SERVICE_KEY = process.env.VITE_SUPABASE_SERVICE_ROLE_KEY || 'sb_secret_nv7SWOuM50i3Jf3HVPtdyA_i-PBC9On';
+const SUPABASE_SERVICE_KEY = process.env.VITE_SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+if (!SUPABASE_SERVICE_KEY) {
+  console.error('❌ 缺少 VITE_SUPABASE_SERVICE_ROLE_KEY 環境變數');
+  console.error('執行方式：$env:VITE_SUPABASE_SERVICE_ROLE_KEY="your_key" npx ts-node scripts/importOracle.ts');
+  process.exit(1);
+}
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 

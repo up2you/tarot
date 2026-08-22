@@ -6,6 +6,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../services/supabaseClient';
 import { isAdminEmail } from '../services/settingsService';
+import { useToast } from '../components/Toast';
 
 // 側邊欄選項
 const MENU_ITEMS = [
@@ -30,6 +31,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, currentPage, onNavi
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [isVerifying, setIsVerifying] = useState(true);
     const [adminEmail, setAdminEmail] = useState<string>('');
+    const toast = useToast();
 
     // 驗證管理員權限
     useEffect(() => {
@@ -49,7 +51,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, currentPage, onNavi
 
                 if (!isAdmin) {
                     console.warn('[AdminLayout] 非管理員帳號，重導向至首頁');
-                    alert('您沒有管理員權限');
+                    toast.error('您沒有管理員權限');
                     window.location.href = '/';
                     return;
                 }
@@ -76,7 +78,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, currentPage, onNavi
             window.location.href = '/';
         } catch (error) {
             console.error('[AdminLayout] 登出失敗:', error);
-            alert('登出失敗，請重試');
+            toast.error('登出失敗，請重試');
         }
     };
 

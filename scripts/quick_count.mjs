@@ -1,6 +1,11 @@
 // 使用 anon key 測試公開資料表行數
-const SUPABASE_URL = 'https://pcwmbhbqzmndqwmgvevq.supabase.co';
-const KEY = 'sb_publishable_i-KqkTBGauoo96ozj_Yxvw_vG4cKJ3C';
+const SUPABASE_URL = process.env.SUPABASE_URL || 'https://pcwmbhbqzmndqwmgvevq.supabase.co';
+const KEY = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY;
+
+if (!KEY) {
+  console.error('❌ 缺少 SUPABASE_ANON_KEY 環境變數');
+  process.exit(1);
+}
 
 const tables = ['oracle_interpretations', 'oracle_summaries', 'card_styles', 'profiles', 'tarot_readings', 'announcements', 'gender_summaries'];
 

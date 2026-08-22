@@ -303,6 +303,7 @@ const CardStyleShop: React.FC<CardStyleShopProps> = ({ onStyleChange, onClose })
                                     </div>
                                     <button
                                         onClick={() => setPreviewStyle(null)}
+                                        aria-label="關閉預覽"
                                         className="text-gray-400 hover:text-white text-2xl"
                                     >
                                         ×

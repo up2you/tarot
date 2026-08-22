@@ -5,6 +5,11 @@
 
 import { supabase } from './supabaseClient';
 
+// ── 動畫風格選項 ──────────────────────────────────────────────
+export type ShuffleAnimationStyle = 'classic' | 'ritual';   // 洗牌動畫：經典抖動 / 儀式三幕
+export type DealAnimationStyle = 'fade' | 'arc';            // 發牌動畫：原地浮現 / 弧線飛行
+export type FlipAnimationStyle = 'standard' | 'physical';   // 翻牌動畫：標準翻轉 / 物理回彈+漣漪
+
 export interface AppSettings {
     id: string;
     maintenance_mode: boolean;
@@ -15,6 +20,11 @@ export interface AppSettings {
     mobile_display_mode: 'grid' | 'fullscreen' | 'carousel';
     show_card_name_label: boolean;
     active_card_style: string;  // 新增：當前使用的牌面風格 ID
+    // 🎬 動畫演出風格（後台可控制）
+    shuffle_animation: ShuffleAnimationStyle;  // 洗牌動畫風格
+    deal_animation: DealAnimationStyle;        // 發牌動畫風格
+    flip_animation: FlipAnimationStyle;        // 翻牌動畫風格
+    card_tilt: boolean;                        // 跟手 3D 傾斜開關
     updated_at: string;
 }
 
@@ -28,6 +38,10 @@ const DEFAULT_SETTINGS: AppSettings = {
     mobile_display_mode: 'grid',
     show_card_name_label: true,
     active_card_style: 'classic',  // 預設經典風格
+    shuffle_animation: 'classic',  // 預設：經典洗牌抖動
+    deal_animation: 'fade',        // 預設：原地浮現
+    flip_animation: 'standard',    // 預設：標準翻轉
+    card_tilt: false,              // 預設：關閉跟手傾斜
     updated_at: new Date().toISOString(),
 };
 
@@ -47,7 +61,8 @@ export const getSettings = async (): Promise<AppSettings> => {
             return DEFAULT_SETTINGS;
         }
 
-        return data as AppSettings;
+        // 合併預設值：確保新欄位在舊資料庫中也有合理值
+        return { ...DEFAULT_SETTINGS, ...(data as Partial<AppSettings>) } as AppSettings;
     } catch (err) {
         console.error('[Settings] Error:', err);
         return DEFAULT_SETTINGS;

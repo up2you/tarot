@@ -15,7 +15,13 @@ import * as path from 'path';
 // ============================================
 
 const DEEPSEEK_API_URL = 'https://api.deepseek.com/v1/chat/completions';
-const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY || 'sk-e6ea454451754c26aa989b61a80776f3';
+const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY;
+
+if (!DEEPSEEK_API_KEY) {
+  console.error('❌ 缺少 DEEPSEEK_API_KEY 環境變數');
+  console.error('執行方式：$env:DEEPSEEK_API_KEY="your_key" npx ts-node scripts/generateOracle.ts');
+  process.exit(1);
+}
 
 // 輸出目錄 (ESM compatible)
 import { fileURLToPath } from 'url';

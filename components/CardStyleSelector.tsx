@@ -5,6 +5,7 @@
 
 import React, { useState } from 'react';
 import { CARD_STYLES, CardStyle } from '../constants/cardStyles';
+import { useToast } from './Toast';
 
 interface CardStyleSelectorProps {
     currentStyle: string;
@@ -20,13 +21,14 @@ const CardStyleSelector: React.FC<CardStyleSelectorProps> = ({
     isVip = false
 }) => {
     const [hoveredStyle, setHoveredStyle] = useState<string | null>(null);
+    const toast = useToast();
 
     const handleSelect = (style: CardStyle) => {
         if (style.isComingSoon) {
             return; // 即將推出的風格不可選
         }
         if (style.isVip && !isVip) {
-            alert('此風格為 VIP 專屬，請升級會員');
+            toast.info('此風格為 VIP 專屬，請升級會員');
             return;
         }
         onSelect(style.id);
@@ -51,6 +53,7 @@ const CardStyleSelector: React.FC<CardStyleSelectorProps> = ({
                     </div>
                     <button
                         onClick={onClose}
+                        aria-label="關閉"
                         className="text-[#d4af37]/40 hover:text-[#d4af37] text-2xl"
                     >
                         ✕

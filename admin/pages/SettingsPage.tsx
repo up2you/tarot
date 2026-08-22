@@ -4,7 +4,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { MobileCardDisplayMode } from '../../types';
-import { getSettings, updateSettings } from '../../services/settingsService';
+import { getSettings, updateSettings, ShuffleAnimationStyle, DealAnimationStyle, FlipAnimationStyle } from '../../services/settingsService';
 import { getAllStylesForAdmin, CardStyle } from '../../services/cardStyleService';
 
 
@@ -25,6 +25,12 @@ const SettingsPage: React.FC = () => {
     const [showCardNameLabel, setShowCardNameLabel] = useState(true);
     const [activeCardStyle, setActiveCardStyle] = useState('classic');  // 新增
 
+    // 🎬 動畫演出風格
+    const [shuffleAnimation, setShuffleAnimation] = useState<ShuffleAnimationStyle>('classic');
+    const [dealAnimation, setDealAnimation] = useState<DealAnimationStyle>('fade');
+    const [flipAnimation, setFlipAnimation] = useState<FlipAnimationStyle>('standard');
+    const [cardTilt, setCardTilt] = useState(false);
+
     // 載入設定
     useEffect(() => {
         const loadSettings = async () => {
@@ -40,6 +46,12 @@ const SettingsPage: React.FC = () => {
                 setMobileDisplayMode(settings.mobile_display_mode || 'grid');
                 setShowCardNameLabel(settings.show_card_name_label ?? true);
                 setActiveCardStyle(settings.active_card_style || 'classic');
+
+                // 動畫設定
+                setShuffleAnimation(settings.shuffle_animation || 'classic');
+                setDealAnimation(settings.deal_animation || 'fade');
+                setFlipAnimation(settings.flip_animation || 'standard');
+                setCardTilt(settings.card_tilt ?? false);
 
                 // 載入風格列表
                 const allStyles = await getAllStylesForAdmin();
@@ -71,6 +83,10 @@ const SettingsPage: React.FC = () => {
                 allow_free_reading: allowFreeReading,
                 mobile_display_mode: mobileDisplayMode,
                 show_card_name_label: showCardNameLabel,  // 新增
+                shuffle_animation: shuffleAnimation,
+                deal_animation: dealAnimation,
+                flip_animation: flipAnimation,
+                card_tilt: cardTilt,
             });
 
             if (success) {
@@ -198,6 +214,135 @@ const SettingsPage: React.FC = () => {
                             ⚠️ 請確保已在「牌面管理」中上傳此風格的22張牌+牌背
                         </p>
                     )}
+                </div>
+            </div>
+
+            {/* 🎬 動畫演出風格 */}
+            <div className="bg-gray-800 rounded-xl p-6 border border-gray-700">
+                <h3 className="text-xl font-bold text-white flex items-center gap-2 mb-2">
+                    🎬 動畫演出風格
+                </h3>
+                <p className="text-gray-400 text-sm mb-6">
+                    控制占卜流程的動畫風格（洗牌 / 發牌 / 翻牌），變更後立即套用於所有裝置
+                </p>
+
+                {/* 洗牌動畫 */}
+                <div className="mb-6">
+                    <p className="text-white font-medium mb-1">🔀 洗牌動畫</p>
+                    <p className="text-gray-400 text-sm mb-3">抽牌前的洗牌演出</p>
+                    <div className="grid grid-cols-2 gap-4">
+                        <button
+                            onClick={() => { setShuffleAnimation('classic'); updateSettings({ shuffle_animation: 'classic' }); }}
+                            className={`p-4 rounded-lg border-2 transition-all text-center ${shuffleAnimation === 'classic'
+                                ? 'border-amber-500 bg-amber-500/10'
+                                : 'border-gray-600 hover:border-gray-500 bg-gray-700/30'
+                                }`}
+                        >
+                            <div className="text-3xl mb-2">🎴</div>
+                            <div className={`font-bold ${shuffleAnimation === 'classic' ? 'text-amber-400' : 'text-white'}`}>
+                                經典抖動
+                            </div>
+                            <div className="text-gray-400 text-xs mt-1">傳統的牌堆擺動效果</div>
+                        </button>
+                        <button
+                            onClick={() => { setShuffleAnimation('ritual'); updateSettings({ shuffle_animation: 'ritual' }); }}
+                            className={`p-4 rounded-lg border-2 transition-all text-center ${shuffleAnimation === 'ritual'
+                                ? 'border-amber-500 bg-amber-500/10'
+                                : 'border-gray-600 hover:border-gray-500 bg-gray-700/30'
+                                }`}
+                        >
+                            <div className="text-3xl mb-2">✨</div>
+                            <div className={`font-bold ${shuffleAnimation === 'ritual' ? 'text-amber-400' : 'text-white'}`}>
+                                儀式三幕
+                            </div>
+                            <div className="text-gray-400 text-xs mt-1">聚合 → 洗切 → 收束 的敘事演出</div>
+                        </button>
+                    </div>
+                </div>
+
+                {/* 發牌動畫 */}
+                <div className="mb-6">
+                    <p className="text-white font-medium mb-1">🃏 發牌動畫</p>
+                    <p className="text-gray-400 text-sm mb-3">牌張飛往牌位的演出</p>
+                    <div className="grid grid-cols-2 gap-4">
+                        <button
+                            onClick={() => { setDealAnimation('fade'); updateSettings({ deal_animation: 'fade' }); }}
+                            className={`p-4 rounded-lg border-2 transition-all text-center ${dealAnimation === 'fade'
+                                ? 'border-amber-500 bg-amber-500/10'
+                                : 'border-gray-600 hover:border-gray-500 bg-gray-700/30'
+                                }`}
+                        >
+                            <div className="text-3xl mb-2">🌫️</div>
+                            <div className={`font-bold ${dealAnimation === 'fade' ? 'text-amber-400' : 'text-white'}`}>
+                                原地浮現
+                            </div>
+                            <div className="text-gray-400 text-xs mt-1">牌張在原地淡入浮現</div>
+                        </button>
+                        <button
+                            onClick={() => { setDealAnimation('arc'); updateSettings({ deal_animation: 'arc' }); }}
+                            className={`p-4 rounded-lg border-2 transition-all text-center ${dealAnimation === 'arc'
+                                ? 'border-amber-500 bg-amber-500/10'
+                                : 'border-gray-600 hover:border-gray-500 bg-gray-700/30'
+                                }`}
+                        >
+                            <div className="text-3xl mb-2">🌀</div>
+                            <div className={`font-bold ${dealAnimation === 'arc' ? 'text-amber-400' : 'text-white'}`}>
+                                弧線飛行
+                            </div>
+                            <div className="text-gray-400 text-xs mt-1">牌張從牌堆弧線飛往牌位</div>
+                        </button>
+                    </div>
+                </div>
+
+                {/* 翻牌動畫 */}
+                <div className="mb-6">
+                    <p className="text-white font-medium mb-1">🔮 翻牌動畫</p>
+                    <p className="text-gray-400 text-sm mb-3">揭示牌面的演出</p>
+                    <div className="grid grid-cols-2 gap-4">
+                        <button
+                            onClick={() => { setFlipAnimation('standard'); updateSettings({ flip_animation: 'standard' }); }}
+                            className={`p-4 rounded-lg border-2 transition-all text-center ${flipAnimation === 'standard'
+                                ? 'border-amber-500 bg-amber-500/10'
+                                : 'border-gray-600 hover:border-gray-500 bg-gray-700/30'
+                                }`}
+                        >
+                            <div className="text-3xl mb-2">🔄</div>
+                            <div className={`font-bold ${flipAnimation === 'standard' ? 'text-amber-400' : 'text-white'}`}>
+                                標準翻轉
+                            </div>
+                            <div className="text-gray-400 text-xs mt-1">平滑的 3D 翻轉</div>
+                        </button>
+                        <button
+                            onClick={() => { setFlipAnimation('physical'); updateSettings({ flip_animation: 'physical' }); }}
+                            className={`p-4 rounded-lg border-2 transition-all text-center ${flipAnimation === 'physical'
+                                ? 'border-amber-500 bg-amber-500/10'
+                                : 'border-gray-600 hover:border-gray-500 bg-gray-700/30'
+                                }`}
+                        >
+                            <div className="text-3xl mb-2">💫</div>
+                            <div className={`font-bold ${flipAnimation === 'physical' ? 'text-amber-400' : 'text-white'}`}>
+                                物理回彈
+                            </div>
+                            <div className="text-gray-400 text-xs mt-1">回彈翻轉 + 能量漣漪 + 呼吸光暈</div>
+                        </button>
+                    </div>
+                </div>
+
+                {/* 跟手 3D 傾斜 */}
+                <div className="flex items-center justify-between">
+                    <div>
+                        <p className="text-white font-medium">🖱️ 跟手 3D 傾斜</p>
+                        <p className="text-gray-400 text-sm">滑鼠移動 / 觸控拖動時，牌面隨視角微微傾斜</p>
+                    </div>
+                    <button
+                        onClick={() => {
+                            setCardTilt(!cardTilt);
+                            updateSettings({ card_tilt: !cardTilt });
+                        }}
+                        className={`w-12 h-6 rounded-full relative transition-all ${cardTilt ? 'bg-green-500' : 'bg-gray-600'}`}
+                    >
+                        <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${cardTilt ? 'right-1' : 'left-1'}`} />
+                    </button>
                 </div>
             </div>
 

@@ -8,7 +8,7 @@ const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 
 if (!supabaseUrl || !supabaseAnonKey) {
-    console.warn('[Supabase] Missing environment variables');
+    console.warn('[Supabase] 缺少環境變數 VITE_SUPABASE_URL 或 VITE_SUPABASE_ANON_KEY');
 }
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
@@ -16,7 +16,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
         persistSession: true,           // 持久化 session 到 localStorage
         detectSessionInUrl: true,       // 偵測 URL 中的 OAuth callback 參數
         autoRefreshToken: true,         // 自動刷新 token
-        storageKey: 'supabase.auth.token', // 明確指定 storage key
+        storageKey: 'supabase.auth.token',
     }
 });
 

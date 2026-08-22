@@ -80,6 +80,8 @@
     "inquiry_seal": "提问魂印 (The Inquiry)",
     "oracle_title": "艾瑟瑞尔的神谕",
     "streaming": "正在拨开未来的迷雾...",
+    "skip_animation": "跳过动画",
+    "skip_shuffle": "跳过洗牌",
     "remaining": "剩余",
     "times": "次",
     "back_to_basic_spread": "← 返回基础牌阵",
@@ -271,6 +273,21 @@
     "vip_required": "此牌阵为 VIP 专属，请升级会员",
     "card_count": "{{count}} 张牌",
     "more": " 更多"
+  },
+  "mobile_viewer": {
+    "swipe_down_next": "↓ 下滑查看下一张",
+    "switch_to_staff": "切换到权杖柱 →",
+    "last_card": "已是最后一张",
+    "swipe_hint": "← 左右滑动或点击箭头 →",
+    "celtic_group_cross": "十字区",
+    "celtic_group_cross_desc": "核心问题与影响",
+    "celtic_group_staff": "权杖柱",
+    "celtic_group_staff_desc": "深层分析与结果",
+    "cards_in_group": "({count}张)",
+    "previous_card": "上一张",
+    "next_card": "下一张",
+    "card_progress": "卡牌进度",
+    "card_progress_item": "第 {{index}} 张，共 {{total}} 张"
   },
   "share": {
     "template_header": "✦ 艾瑟瑞尔塔罗神谕 ✦",

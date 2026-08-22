@@ -46,7 +46,7 @@ const ProfilePanel: React.FC<ProfilePanelProps> = ({ user, onUpdate, onDelete, o
         <div className="relative z-10 flex flex-col gap-10">
           <div className="flex justify-between items-center border-b border-[var(--theme-primary)]/20 pb-6">
             <h2 className="text-4xl font-cinzel text-[var(--theme-primary)] font-black tracking-widest">聖殿金銀帳本</h2>
-            <button onClick={onClose} className="text-[var(--theme-primary)]/40 hover:text-[var(--theme-primary)] text-3xl font-cinzel">×</button>
+            <button onClick={onClose} aria-label="關閉" className="text-[var(--theme-primary)]/40 hover:text-[var(--theme-primary)] text-3xl font-cinzel">×</button>
           </div>
 
           {/* 風格切換 */}
