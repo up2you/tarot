@@ -34,8 +34,10 @@ import PricingPage from './components/PricingPage';
 import { SUPPORTED_LANGUAGES } from './hooks/i18n';
 import { useToast } from './components/Toast';
 import { detectScenario, mapPositionToKey } from './services/scenarioDetection';
+import { getGuestRemaining, consumeGuestQuota, GUEST_DAILY_QUOTA_LIMIT } from './services/guestQuota';
 import { useAnimationSettings } from './hooks/useAnimationSettings';
 import RitualShuffle from './components/RitualShuffle';
+import DailyCard from './components/DailyCard';
 
 const App: React.FC = () => {
   const { t, i18n } = useTranslation();
@@ -68,6 +70,7 @@ const App: React.FC = () => {
   const [showHistory, setShowHistory] = useState(false);
   const [showLanguageMenu, setShowLanguageMenu] = useState(false);
   const [isTypewriter, setIsTypewriter] = useState(false); // 打字機效果播放中（供跳過按鈕使用）
+  const [showDailyFirst, setShowDailyFirst] = useState(true); // 首屏：冥想式每日卡入口（改造核心）
   const isPerformingRef = useRef(false);
   const hasRecordedRef = useRef(false); // 防止重複記錄
   const hasConsumedQuotaRef = useRef(false); // 防止重複扣除額度
@@ -181,6 +184,28 @@ const App: React.FC = () => {
     syncLocalAssets(user);
   };
 
+  // 🆕 訪客模式：跳過登入直接體驗（本地會話，不寫入 Supabase）
+  const handleGuestMode = () => {
+    playSound('draw');
+    const guestUser: User = {
+      username: 'guest',
+      displayName: t('profile_page.default_name') || '神秘旅人',
+      joinedDate: Date.now(),
+      readingsCount: 0,
+      spending: 0,
+      isVip: false,
+      theme: currentTheme,
+      provider: 'local',
+    };
+    // 訪客身分標記（localStorage 持久化，關閉瀏覽器仍在）
+    localStorage.setItem('aetheris_guest', 'true');
+    sessionStorage.setItem('ethereal_user', JSON.stringify(guestUser));
+    setCurrentUser(guestUser);
+    setShowDailyFirst(true); // 訪客進入冥想式每日卡首屏
+    setAppState(AppState.WELCOME);
+    syncLocalAssets(guestUser);
+  };
+
   // 🆕 Supabase 認證成功處理
   const handleSupabaseAuthSuccess = async () => {
     playSound('draw');
@@ -255,6 +280,15 @@ const App: React.FC = () => {
     if (!selectedSpreadId || (!question.trim() && !spreadDef?.defaultScenario)) return;
 
     if (!spreadDef) return;
+
+    // 🆕 訪客額度檢查（設計藍圖：3 次免費制）
+    if (!currentUser?.email && !currentUser?.isVip) {
+      if (getGuestRemaining() <= 0) {
+        toast.info(t('main.guest_quota_exhausted'));
+        setShowUpgradeModal(true);
+        return;
+      }
+    }
 
     // 🆕 如果是有默認場景的牌陣且問題為空，自動填入預設問題 (確保顯示正確)
     if (!question.trim() && spreadDef.defaultScenario) {
@@ -457,6 +491,11 @@ const App: React.FC = () => {
         }));
         const interpretationSummary = fullText.substring(0, 200);
         saveReading(question, cardsForRecord, currentUser?.theme || AppTheme.BAROQUE, interpretationSummary);
+
+        // 🆕 訪客：扣除一次免費額度
+        if (!currentUser?.email && !currentUser?.isVip) {
+          consumeGuestQuota();
+        }
       }
     } catch (error) {
       console.error('Interpretation error:', error);
@@ -501,6 +540,7 @@ const App: React.FC = () => {
   const handleResetCeremony = () => {
     playSound('draw');
     setAppState(AppState.WELCOME);
+    setShowDailyFirst(true); // 回到冥想式每日卡首屏
     setQuestion('');
     setSpread([]);
     setIsFlipped([]);
@@ -786,10 +826,26 @@ const App: React.FC = () => {
       )}
 
       {currentPage === 'main' && appState === AppState.AUTH && (
-        <AuthPage onAuthSuccess={handleSupabaseAuthSuccess} />
+        <AuthPage onAuthSuccess={handleSupabaseAuthSuccess} onGuestMode={handleGuestMode} />
       )}
 
-      {currentPage === 'main' && appState === AppState.WELCOME && (
+      {currentPage === 'main' && appState === AppState.WELCOME && showDailyFirst && (
+        /* 🎯 冥想式首屏：每日卡入口（設計藍圖核心改造） */
+        <div className="w-full mt-10 md:mt-16 animate-fade-up">
+          <header className="mb-8 md:mb-12 text-center">
+            <h1 className="text-4xl md:text-6xl font-cinzel font-black tracking-tighter gold-text-shimmer mb-2">AETHERIS</h1>
+            <p className="text-[10px] font-cinzel tracking-[0.5em] md:tracking-[1em] text-[#d4af37]/70 uppercase">
+              {t('app.subtitle')}
+            </p>
+          </header>
+          <DailyCard
+            cardBack={getBackImageUrl() || cardBackImage}
+            onStartReading={() => setShowDailyFirst(false)}
+          />
+        </div>
+      )}
+
+      {currentPage === 'main' && appState === AppState.WELCOME && !showDailyFirst && (
         <div className="max-w-4xl w-full mt-6 md:mt-20 animate-fade-up">
           <header className="mb-8 md:mb-20 text-center animate-float">
             <h1 className="text-5xl md:text-8xl font-cinzel font-black tracking-tighter gold-text-shimmer mb-2">AETHERIS</h1>
@@ -826,6 +882,43 @@ const App: React.FC = () => {
               </h2>
               <p className="text-[#d4af37]/40 font-lora italic text-sm md:text-base">
                 {t('main.consult_hint')}
+              </p>
+            </div>
+
+            {/* 🎯 主題引導 chips（設計藍圖：避免空白輸入框的認知負擔） */}
+            <div className="mb-4">
+              <p className="text-[#d4af37]/50 font-cinzel text-xs tracking-widest uppercase mb-3 text-center">
+                {t('main.intent_title')}
+              </p>
+              <div className="flex flex-wrap justify-center gap-2">
+                {[
+                  { key: 'love', label: t('main.intent_love'), question: t('main.intent_love_q') },
+                  { key: 'career', label: t('main.intent_career'), question: t('main.intent_career_q') },
+                  { key: 'money', label: t('main.intent_money'), question: t('main.intent_money_q') },
+                  { key: 'self', label: t('main.intent_self'), question: t('main.intent_self_q') },
+                  { key: 'guidance', label: t('main.intent_guidance'), question: t('main.intent_guidance_q') },
+                ].map((intent) => (
+                  <button
+                    key={intent.key}
+                    onClick={() => {
+                      setQuestion(intent.question);
+                      // 今日指引：使用預設牌陣
+                      if (intent.key === 'guidance') {
+                        setSelectedSpreadId('three_card');
+                      }
+                    }}
+                    className={`px-5 py-2.5 rounded-full border transition-all text-sm md:text-base font-cinzel tracking-wider active:scale-95 cursor-pointer ${
+                      question === intent.question
+                        ? 'border-[#d4af37] bg-[#d4af37]/15 text-[#d4af37] shadow-[0_0_20px_rgba(212,175,55,0.2)]'
+                        : 'border-[#d4af37]/30 text-[#d4af37]/60 hover:border-[#d4af37]/60 hover:text-[#d4af37] hover:bg-[#d4af37]/5'
+                    }`}
+                  >
+                    {intent.label}
+                  </button>
+                ))}
+              </div>
+              <p className="text-[#d4af37]/30 font-lora italic text-xs text-center mt-2">
+                {t('main.intent_hint')}
               </p>
             </div>
 
@@ -871,13 +964,16 @@ const App: React.FC = () => {
                     <span className="text-[#d4af37]/60 font-cinzel text-sm tracking-widest">
                       {t('main.readings_remaining')}
                     </span>
-                    <span className={`font-cinzel font-black text-lg ${(currentUser.freeReadingsRemaining || 0) === 0
-                      ? 'text-red-400'
-                      : 'text-[#d4af37]'
+                    <span className={`font-cinzel font-black text-lg ${
+                      (currentUser.email
+                        ? (currentUser.freeReadingsRemaining || 0)
+                        : getGuestRemaining()) === 0
+                        ? 'text-red-400'
+                        : 'text-[#d4af37]'
                       }`}>
-                      {currentUser.freeReadingsRemaining ?? 3}
+                      {currentUser.email ? (currentUser.freeReadingsRemaining ?? 3) : getGuestRemaining()}
                     </span>
-                    <span className="text-[#d4af37]/40 text-xs">/ 3</span>
+                    <span className="text-[#d4af37]/40 text-xs">/ {currentUser.email ? 3 : GUEST_DAILY_QUOTA_LIMIT}</span>
                   </div>
                 )}
               </div>
@@ -1145,8 +1241,37 @@ const App: React.FC = () => {
                   </h2>
                 </div>
 
-                <div className="max-h-[1200px] overflow-y-auto pr-8 custom-scrollbar">
-                  <div className="space-y-20">
+                {/* 🎯 摘要先行：首牌卡名金句（設計藍圖：30 秒抓到核心） */}
+                {spread.length > 0 && !isTypewriter && messages.length > 0 && (
+                  <div className="mb-12 text-center animate-fade-up">
+                    <div className="inline-block px-8 py-6 rounded-2xl bg-[#0a0505]/80 border border-[#d4af37]/30 shadow-[0_0_40px_rgba(212,175,55,0.1)] backdrop-blur-sm">
+                      <p className="text-[10px] font-cinzel tracking-[0.4em] text-[#d4af37]/40 uppercase mb-3">
+                        {t('main.oracle_summary')}
+                      </p>
+                      <div className="flex items-center justify-center gap-4">
+                        {spread.slice(0, 3).map((s, i) => (
+                          <div key={i} className="flex flex-col items-center gap-2">
+                            <img
+                              src={s.aiImage || s.card.image}
+                              alt={s.card.nameZh}
+                              className="w-14 h-20 md:w-16 md:h-24 object-cover rounded-md border border-[#d4af37]/30 shadow-lg"
+                            />
+                            <span className="text-[#f3e5ab] font-cinzel text-[10px] md:text-xs tracking-wider">
+                              {t(`cards:cards.${s.card.id}.name`, s.card.nameZh)}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                      <p className="mt-4 text-[#d4af37]/50 font-lora italic text-sm">
+                        {t('main.reading_begins_hint')}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* 解讀區：自然流動（移除內嵌滾動，改由頁面滾動承接，閱讀更流暢） */}
+                <div className="px-1 md:px-2">
+                  <div className="space-y-16">
                     {messages.map((msg, idx) => (
                       <div key={idx} className="animate-fade-up">
                         {msg.role === 'user' ? (

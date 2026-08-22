@@ -31,9 +31,11 @@ type AuthMode = 'login' | 'register' | 'forgot' | 'magic';
 interface AuthPageProps {
     onAuthSuccess?: () => void;
     initialMode?: AuthMode;
+    /** 訪客模式入口：跳過登入直接體驗 */
+    onGuestMode?: () => void;
 }
 
-export const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, initialMode = 'login' }) => {
+export const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, initialMode = 'login', onGuestMode }) => {
     const { t, i18n } = useTranslation();
     const [mode, setMode] = useState<AuthMode>(initialMode);
     const [email, setEmail] = useState('');
@@ -232,6 +234,19 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, initialMode =
                             onMagicLinkClick={() => setMode('magic')}
                             t={t}
                         />
+
+                        {/* 訪客模式入口 */}
+                        {onGuestMode && (
+                            <div className="mt-4 text-center">
+                                <button
+                                    type="button"
+                                    onClick={onGuestMode}
+                                    className="text-[#8A8A9E] hover:text-[#F6E7B7] font-serif text-sm tracking-wide transition-colors cursor-pointer underline underline-offset-4 decoration-[#D4AF37]/30 hover:decoration-[#D4AF37]"
+                                >
+                                    {t('auth.skip_login') || '跳過登入，直接體驗'}
+                                </button>
+                            </div>
+                        )}
                     </div>
 
                 </div>

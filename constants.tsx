@@ -181,6 +181,17 @@ export const SPREADS: Record<string, SpreadDefinition> = {
   },
 
   // 🔮 通用類
+  SINGLE_CARD: {
+    id: 'single_card',
+    name: 'Today Guidance',
+    nameZh: '今日指引',
+    category: SpreadCategory.GENERAL,
+    description: '一張牌，快速獲得指引',
+    isVip: false,
+    positions: [
+      { key: 'advice', name: '指引', description: '此刻最需要知道的訊息' },
+    ]
+  },
   THREE_CARD: {
     id: 'three_card',
     name: 'Past Present Future',

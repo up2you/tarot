@@ -20,7 +20,8 @@ const SpreadSelector: React.FC<SpreadSelectorProps> = ({ isVip, onSelectSpread, 
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
     const categories = Object.values(SPREAD_CATEGORIES);
-    const spreadsInCategory = selectedCategory ? getSpreadsByCategory(selectedCategory) : [];
+    const isBrowseMode = selectedCategory === '__browse__';
+    const spreadsInCategory = selectedCategory && !isBrowseMode ? getSpreadsByCategory(selectedCategory) : [];
 
     const handleSelectCategory = (categoryId: string) => {
         setSelectedCategory(categoryId);
@@ -39,7 +40,7 @@ const SpreadSelector: React.FC<SpreadSelectorProps> = ({ isVip, onSelectSpread, 
             {/* 標題區 */}
             <header className="mb-6 sm:mb-10 text-center">
                 <h1 className="text-3xl sm:text-5xl md:text-6xl font-cinzel font-black tracking-tighter gold-text-shimmer mb-2 drop-shadow-[0_2px_15px_rgba(212,175,55,0.4)]">
-                    {selectedCategory ? t('spread_selector.select_spread') : t('spread_selector.today_question')}
+                    {selectedCategory && !isBrowseMode ? t('spread_selector.select_spread') : isBrowseMode ? t('spread_selector.select_spread') : t('spread_selector.today_question')}
                 </h1>
                 <p className="text-[10px] sm:text-xs font-cinzel tracking-[0.6em] sm:tracking-[0.8em] text-[#D4AF37]/90 uppercase ml-[0.6em] font-semibold">
                     {selectedCategory ? 'Select Your Spread' : 'Choose Your Path'}
@@ -50,16 +51,93 @@ const SpreadSelector: React.FC<SpreadSelectorProps> = ({ isVip, onSelectSpread, 
             <div className="mb-6 flex justify-start">
                 <button
                     type="button"
-                    onClick={selectedCategory ? () => setSelectedCategory(null) : onBack}
+                    onClick={selectedCategory && selectedCategory !== '__browse__' ? () => setSelectedCategory(null) : selectedCategory === '__browse__' ? () => setSelectedCategory(null) : onBack}
                     className="relative z-40 text-[#F6E7B7] hover:text-[#FFD700] font-cinzel text-xs sm:text-sm font-semibold tracking-widest uppercase flex items-center gap-2 group transition-all duration-300 border-2 border-[#D4AF37]/70 bg-[#160E2A]/95 backdrop-blur-xl px-5 py-2.5 rounded-full hover:bg-[#D4AF37]/25 shadow-[0_4px_20px_rgba(0,0,0,0.8),0_0_15px_rgba(212,175,55,0.3)] active:scale-95 cursor-pointer"
                 >
                     <span className="group-hover:-translate-x-1 transition-transform text-base sm:text-lg text-[#FFD700]">←</span>
-                    <span>{selectedCategory ? t('spread_selector.back_to_categories') : t('spread_selector.back_to_home')}</span>
+                    <span>{selectedCategory === '__browse__' ? t('spread_selector.featured_title') : selectedCategory ? t('spread_selector.back_to_categories') : t('spread_selector.back_to_home')}</span>
                 </button>
             </div>
 
+            {/* 🎯 精選牌陣（情境導向，設計藍圖核心） */}
+            {!selectedCategory && (                <div className="mb-10 relative z-30">
+                    <div className="text-center mb-5">
+                        <p className="text-[10px] sm:text-xs font-cinzel tracking-[0.6em] text-[#D4AF37]/70 uppercase font-semibold">
+                            {t('spread_selector.featured_title')}
+                        </p>
+                        <p className="text-[#8A8A9E] font-serif italic text-sm mt-1">
+                            {t('spread_selector.featured_hint')}
+                        </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5">
+                        {/* 今日方向（單卡） */}
+                        <button
+                            type="button"
+                            onClick={() => handleSelectSpread('single_card', false)}
+                            className="relative p-6 text-center bg-[#160E2A]/90 border-2 border-[#D4AF37]/50 hover:border-[#FFD700] hover:bg-[#D4AF37]/20 transition-all duration-300 rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.8)] hover:shadow-[0_15px_40px_rgba(0,0,0,0.9),0_0_25px_rgba(212,175,55,0.3)] active:scale-[0.98] cursor-pointer group"
+                        >
+                            <div className="text-4xl mb-3 group-hover:scale-110 transition-transform">🃏</div>
+                            <h3 className="text-lg font-cinzel font-black text-[#F6E7B7] tracking-wider">
+                                {t('spread_selector.featured_single')}
+                            </h3>
+                            <p className="text-[#D4AF37]/70 font-cinzel text-xs mt-1">1 Card</p>
+                            <p className="text-gray-300 font-lora italic text-xs mt-3 leading-relaxed">
+                                {t('spread_selector.featured_single_desc')}
+                            </p>
+                        </button>
+
+                        {/* 時間之流（三卡） */}
+                        <button
+                            type="button"
+                            onClick={() => handleSelectSpread('three_card', false)}
+                            className="relative p-6 text-center bg-[#160E2A]/90 border-2 border-[#FFD700] hover:bg-[#D4AF37]/20 transition-all duration-300 rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.8),0_0_15px_rgba(212,175,55,0.25)] hover:shadow-[0_15px_40px_rgba(0,0,0,0.9),0_0_25px_rgba(212,175,55,0.35)] active:scale-[0.98] cursor-pointer group scale-[1.02] sm:scale-105"
+                        >
+                            <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-gradient-to-r from-yellow-600 to-yellow-500 rounded-full text-[10px] text-black font-cinzel font-black tracking-widest">
+                                {t('spread_selector.featured_label')}
+                            </span>
+                            <div className="text-4xl mb-3 group-hover:scale-110 transition-transform">🌟</div>
+                            <h3 className="text-lg font-cinzel font-black text-[#F6E7B7] tracking-wider">
+                                {t('spread_selector.featured_three')}
+                            </h3>
+                            <p className="text-[#D4AF37]/70 font-cinzel text-xs mt-1">3 Cards</p>
+                            <p className="text-gray-300 font-lora italic text-xs mt-3 leading-relaxed">
+                                {t('spread_selector.featured_three_desc')}
+                            </p>
+                        </button>
+
+                        {/* 全面探索（凱爾特十字） */}
+                        <button
+                            type="button"
+                            onClick={() => handleSelectSpread('celtic_cross', false)}
+                            className="relative p-6 text-center bg-[#160E2A]/90 border-2 border-[#D4AF37]/50 hover:border-[#FFD700] hover:bg-[#D4AF37]/20 transition-all duration-300 rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.8)] hover:shadow-[0_15px_40px_rgba(0,0,0,0.9),0_0_25px_rgba(212,175,55,0.3)] active:scale-[0.98] cursor-pointer group"
+                        >
+                            <div className="text-4xl mb-3 group-hover:scale-110 transition-transform">🔮</div>
+                            <h3 className="text-lg font-cinzel font-black text-[#F6E7B7] tracking-wider">
+                                {t('spread_selector.featured_celtic')}
+                            </h3>
+                            <p className="text-[#D4AF37]/70 font-cinzel text-xs mt-1">10 Cards</p>
+                            <p className="text-gray-300 font-lora italic text-xs mt-3 leading-relaxed">
+                                {t('spread_selector.featured_celtic_desc')}
+                            </p>
+                        </button>
+                    </div>
+
+                    {/* 瀏覽全部分類 */}
+                    <div className="mt-8 text-center">
+                        <button
+                            type="button"
+                            onClick={() => setSelectedCategory('__browse__')}
+                            className="px-6 py-2.5 rounded-full border border-[#D4AF37]/40 text-[#D4AF37]/60 hover:text-[#D4AF37] hover:bg-[#D4AF37]/10 font-cinzel text-xs tracking-widest uppercase transition-all"
+                        >
+                            {t('spread_selector.browse_all_btn')} →
+                        </button>
+                    </div>
+                </div>
+            )}
+
             {/* 第一階段：問題分類選擇 (感情, 事業, 運勢, 靈性, 人際) */}
-            {!selectedCategory && (
+            {(!selectedCategory || selectedCategory === '__browse__') && (
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-6 relative z-30">
                     {categories.map((cat) => (
                         <button
@@ -86,7 +164,7 @@ const SpreadSelector: React.FC<SpreadSelectorProps> = ({ isVip, onSelectSpread, 
             )}
 
             {/* 第二階段：詳細牌陣選擇 */}
-            {selectedCategory && (
+            {selectedCategory && selectedCategory !== '__browse__' && (
                 <div className="space-y-4 relative z-30">
                     {spreadsInCategory.length === 0 ? (
                         <div className="text-center py-16 bg-[#160E2A]/80 rounded-2xl border border-[#D4AF37]/30">
