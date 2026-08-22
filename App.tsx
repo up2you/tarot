@@ -38,7 +38,6 @@ import { getGuestRemaining, consumeGuestQuota, GUEST_DAILY_QUOTA_LIMIT } from '.
 import { useAnimationSettings } from './hooks/useAnimationSettings';
 import RitualShuffle from './components/RitualShuffle';
 import DailyCard from './components/DailyCard';
-import StructuredReading from './components/StructuredReading';
 
 const App: React.FC = () => {
   const { t, i18n } = useTranslation();
@@ -1310,9 +1309,9 @@ const App: React.FC = () => {
                 <div className="px-1 md:px-2">
                   <div className="space-y-16">
                     {messages.map((msg, idx) => {
-                      // 第一個 model 訊息（主要解讀）在打字機完成後用結構化呈現
+                      // 主要解讀（第一個 model）與打字機階段一致，一律用 markdown 渲染
+                      // （依使用者回饋：保持大小標題 + 分段跳行排版，不切換結構化卡片）
                       const isFirstModel = msg.role === 'model' && messages.filter(m => m.role === 'model').indexOf(msg) === 0;
-                      const useStructured = isFirstModel && !isTypewriter && spread.length > 0 && msg.text.includes('###');
                       // 追問對話：第一個 model 之後的 user/model 訊息用對話氣泡
                       const isFollowUp = !isFirstModel && msg.role === 'model';
                       const isFollowUpQuestion = msg.role === 'user' && messages.filter(m => m.role === 'user').indexOf(msg) > 0;
@@ -1329,8 +1328,6 @@ const App: React.FC = () => {
                             ) : (
                               <div className="user-query-box">「 {msg.text} 」</div>
                             )
-                          ) : useStructured ? (
-                            <StructuredReading spread={spread} text={msg.text} />
                           ) : isFollowUp ? (
                             /* 追問回應：對話氣泡（靠左） */
                             <div className="flex justify-start">
