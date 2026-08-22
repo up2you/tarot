@@ -70,7 +70,7 @@ const UserProfilePage: React.FC<UserProfilePageProps> = ({ onClose, onNavigate }
                 const styles = await getStylesWithOwnership(user.id);
                 setOwnedStyles(styles.filter(s => s.is_owned));
             } catch (e) {
-                console.log('[UserProfilePage] getStylesWithOwnership failed, using empty array');
+                console.warn('[UserProfilePage] getStylesWithOwnership failed, using empty array');
                 setOwnedStyles([]);
             }
 
@@ -79,7 +79,7 @@ const UserProfilePage: React.FC<UserProfilePageProps> = ({ onClose, onNavigate }
                 const readings = await getUserReadings(user.id, 5);
                 setRecentReadings(readings);
             } catch (e) {
-                console.log('[UserProfilePage] getUserReadings failed, using empty array');
+                console.warn('[UserProfilePage] getUserReadings failed, using empty array');
                 setRecentReadings([]);
             }
         } catch (err) {

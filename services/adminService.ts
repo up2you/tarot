@@ -132,7 +132,7 @@ export const updateUserVipStatus = async (
             return false;
         }
 
-        console.log('[AdminService] VIP status updated:', id, isVip);
+        console.debug('[AdminService] VIP status updated:', id, isVip);
         return true;
     } catch (err) {
         console.error('[AdminService] updateUserVipStatus error:', err);
@@ -161,7 +161,7 @@ export const updateUserFreeQuota = async (
             return false;
         }
 
-        console.log('[AdminService] Free quota updated:', id, newQuota);
+        console.debug('[AdminService] Free quota updated:', id, newQuota);
         return true;
     } catch (err) {
         console.error('[AdminService] updateUserFreeQuota error:', err);
@@ -192,7 +192,7 @@ export const resetUserMonthlyQuota = async (id: string): Promise<boolean> => {
             return false;
         }
 
-        console.log('[AdminService] Monthly quota reset:', id);
+        console.debug('[AdminService] Monthly quota reset:', id);
         return true;
     } catch (err) {
         console.error('[AdminService] resetUserMonthlyQuota error:', err);
@@ -221,7 +221,7 @@ export const toggleUserActive = async (
             return false;
         }
 
-        console.log('[AdminService] User active status:', id, isActive);
+        console.debug('[AdminService] User active status:', id, isActive);
         return true;
     } catch (err) {
         console.error('[AdminService] toggleUserActive error:', err);

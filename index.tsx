@@ -5,6 +5,7 @@ import App from './App';
 import { ToastProvider } from './components/Toast';
 import { AnimationSettingsProvider } from './hooks/useAnimationSettings';
 import './hooks/i18n';
+import './styles.css';
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {

@@ -73,7 +73,7 @@ export const upsertUserProfile = async (
                 console.error('[UserService] Insert failed:', error);
                 return null;
             }
-            console.log('[UserService] New user created:', email);
+            console.debug('[UserService] New user created:', email);
             return data as UserProfile;
         }
     } catch (err) {
@@ -104,7 +104,7 @@ const checkAndResetMonthlyQuota = async (profile: UserProfile): Promise<UserProf
             .single();
 
         if (!error && data) {
-            console.log('[UserService] Monthly quota reset for:', profile.email);
+            console.debug('[UserService] Monthly quota reset for:', profile.email);
             return data as UserProfile;
         }
     }
@@ -201,7 +201,7 @@ export const consumeFreeReading = async (email: string): Promise<boolean> => {
             return false;
         }
 
-        console.log('[UserService] Quota consumed for:', email, 'Remaining:', profile.free_readings_remaining - 1);
+        console.debug('[UserService] Quota consumed for:', email, 'Remaining:', profile.free_readings_remaining - 1);
         return true;
     } catch (err) {
         console.error('[UserService] consumeFreeReading error:', err);
@@ -231,7 +231,7 @@ export const checkVipStatus = async (email: string): Promise<boolean> => {
                     updated_at: new Date().toISOString(),
                 })
                 .eq('email', email);
-            console.log('[UserService] VIP expired for:', email);
+            console.debug('[UserService] VIP expired for:', email);
             return false;
         }
     }

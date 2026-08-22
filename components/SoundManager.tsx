@@ -41,7 +41,7 @@ export const useThemedSounds = (theme: ThemeId = 'baroque') => {
 
       audio.play().catch(err => {
         // 瀏覽器可能阻擋自動播放，靜默失敗
-        console.log('[Sound] Playback blocked:', err.message);
+        console.warn('[Sound] Playback blocked:', err.message);
       });
     }
   }, []);

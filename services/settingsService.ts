@@ -73,7 +73,7 @@ export const getSettings = async (): Promise<AppSettings> => {
  * 更新應用程式設定
  */
 export const updateSettings = async (updates: Partial<AppSettings>): Promise<boolean> => {
-    console.log('[Settings] Attempting to update:', updates);
+    console.debug('[Settings] Attempting to update:', updates);
 
     try {
         const { data, error } = await supabase
@@ -85,14 +85,14 @@ export const updateSettings = async (updates: Partial<AppSettings>): Promise<boo
             .eq('id', 'global')
             .select();
 
-        console.log('[Settings] Update response:', { data, error });
+        console.debug('[Settings] Update response:', { data, error });
 
         if (error) {
             console.error('[Settings] Failed to update:', error);
             return false;
         }
 
-        console.log('[Settings] Update successful!');
+        console.debug('[Settings] Update successful!');
         return true;
     } catch (err) {
         console.error('[Settings] Update error:', err);

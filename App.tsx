@@ -24,6 +24,7 @@ import { saveReading } from './services/historyService';
 import { checkFreeQuota, consumeFreeReading } from './services/userService';
 import { generateFreeReading } from './services/oracleService';
 import { marked } from 'marked';
+import DOMPurify from 'dompurify';
 import { toPng } from 'html-to-image';
 import ShareCardPreview from './components/ShareCardPreview';
 import UpgradeModal from './components/UpgradeModal';
@@ -1171,7 +1172,7 @@ const App: React.FC = () => {
           text: fullShareText,
         });
       } catch (err) {
-        console.log('Share failed, copying to clipboard');
+        console.warn('Share failed, copying to clipboard');
         await navigator.clipboard.writeText(fullShareText);
         toast.success(t('main.copied_to_clipboard'));
       }
@@ -1695,7 +1696,7 @@ const App: React.FC = () => {
                         {msg.role === 'user' ? (
                           <div className="user-query-box">「 {msg.text} 」</div>
                         ) : (
-                          <div className="prose-mystic min-h-[200px]" dangerouslySetInnerHTML={{ __html: marked.parse(msg.text) }} />
+                          <div className="prose-mystic min-h-[200px]" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(marked.parse(msg.text)) }} />
                         )}
                       </div>
                     ))}

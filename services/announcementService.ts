@@ -110,7 +110,7 @@ export const createAnnouncement = async (input: CreateAnnouncementInput): Promis
             return null;
         }
 
-        console.log('[AnnouncementService] Announcement created:', data.id);
+        console.debug('[AnnouncementService] Announcement created:', data.id);
         return data as Announcement;
     } catch (err) {
         console.error('[AnnouncementService] createAnnouncement error:', err);
@@ -139,7 +139,7 @@ export const updateAnnouncement = async (
             return false;
         }
 
-        console.log('[AnnouncementService] Announcement updated:', id);
+        console.debug('[AnnouncementService] Announcement updated:', id);
         return true;
     } catch (err) {
         console.error('[AnnouncementService] updateAnnouncement error:', err);
@@ -169,7 +169,7 @@ export const deleteAnnouncement = async (id: string): Promise<boolean> => {
             return false;
         }
 
-        console.log('[AnnouncementService] Announcement deleted:', id);
+        console.debug('[AnnouncementService] Announcement deleted:', id);
         return true;
     } catch (err) {
         console.error('[AnnouncementService] deleteAnnouncement error:', err);
@@ -201,7 +201,7 @@ export const reorderAnnouncements = async (orderedIds: string[]): Promise<boolea
             }
         }
 
-        console.log('[AnnouncementService] Announcements reordered');
+        console.debug('[AnnouncementService] Announcements reordered');
         return true;
     } catch (err) {
         console.error('[AnnouncementService] reorderAnnouncements error:', err);

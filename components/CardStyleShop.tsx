@@ -48,7 +48,7 @@ const CardStyleShop: React.FC<CardStyleShopProps> = ({ onStyleChange, onClose })
                 const stylesData = await getStylesWithOwnership(user.id);
                 setStyles(stylesData);
             } catch (e) {
-                console.log('[CardStyleShop] getStylesWithOwnership failed');
+                console.warn('[CardStyleShop] getStylesWithOwnership failed');
                 setStyles([]);
             }
 

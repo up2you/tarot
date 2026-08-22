@@ -53,7 +53,7 @@ export const initMobileApp = async (): Promise<void> => {
 
         // 監聯應用狀態變化
         App.addListener('appStateChange', ({ isActive }) => {
-            console.log('App state changed. Is active:', isActive);
+            console.debug('App state changed. Is active:', isActive);
         });
 
     } catch (error) {

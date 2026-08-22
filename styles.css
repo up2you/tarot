@@ -1,0 +1,699 @@
+/* ============================================================
+   Aetheris 全域樣式
+   由 index.html 的 <style> 區塊遷移而來（建置時編譯，離線可用）
+   ============================================================ */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* === 洗牌動畫（經典抖動） === */
+@keyframes shuffleCard0 {
+
+  0%,
+  100% {
+    transform: rotate(-16deg) translateX(0) translateY(0);
+  }
+
+  25% {
+    transform: rotate(-20deg) translateX(-30px) translateY(-20px);
+  }
+
+  50% {
+    transform: rotate(-12deg) translateX(20px) translateY(10px);
+  }
+
+  75% {
+    transform: rotate(-18deg) translateX(-10px) translateY(-15px);
+  }
+}
+
+@keyframes shuffleCard1 {
+
+  0%,
+  100% {
+    transform: rotate(-8deg) translateX(0) translateY(0);
+  }
+
+  25% {
+    transform: rotate(5deg) translateX(25px) translateY(-15px);
+  }
+
+  50% {
+    transform: rotate(-15deg) translateX(-20px) translateY(20px);
+  }
+
+  75% {
+    transform: rotate(10deg) translateX(15px) translateY(-10px);
+  }
+}
+
+@keyframes shuffleCard2 {
+
+  0%,
+  100% {
+    transform: rotate(0deg) translateX(0) translateY(0);
+  }
+
+  25% {
+    transform: rotate(-10deg) translateX(-20px) translateY(25px);
+  }
+
+  50% {
+    transform: rotate(15deg) translateX(30px) translateY(-20px);
+  }
+
+  75% {
+    transform: rotate(-5deg) translateX(-25px) translateY(15px);
+  }
+}
+
+/* === Toast 通知動畫 === */
+@keyframes toast-slide-in {
+  0% {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.toast-enter {
+  animation: toast-slide-in 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* === 🎬 儀式洗牌：三幕式敘事 === */
+.ritual-shuffle-stage {
+  perspective: 1400px;
+  transform-style: preserve-3d;
+}
+
+.ritual-shuffle-card {
+  transform-style: preserve-3d;
+  animation: ritual-shuffle-card 3s cubic-bezier(0.34, 1.2, 0.64, 1) forwards;
+  will-change: transform, opacity;
+}
+
+/* 三幕：聚合(0-22%) → 洗切(22-78%) → 收束(78-100%) */
+@keyframes ritual-shuffle-card {
+  /* 第一幕：從四方飛入聚合 */
+  0% {
+    opacity: 0;
+    transform: translate3d(var(--gather-x, -160px), var(--gather-y, -120px), -40px) rotate(var(--gather-rot, -24deg)) scale(0.6);
+  }
+  10% {
+    opacity: 1;
+  }
+  22% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+  }
+
+  /* 第二幕：3D 傾斜 + 上下交錯洗切 */
+  30% {
+    transform: translate3d(0, var(--shuffle-shift, 20px), 10px) rotateX(22deg) rotate(-5deg) scale(1);
+  }
+  42% {
+    transform: translate3d(0, calc(var(--shuffle-shift, 20px) * -0.7), -8px) rotateX(-16deg) rotate(4deg) scale(1);
+  }
+  55% {
+    transform: translate3d(0, var(--shuffle-shift, 20px), 12px) rotateX(18deg) rotate(-4deg) scale(1);
+  }
+  68% {
+    transform: translate3d(0, calc(var(--shuffle-shift, 20px) * -0.6), -6px) rotateX(-12deg) rotate(3deg) scale(1);
+  }
+  78% {
+    transform: translate3d(0, 0, 0) rotateX(0deg) rotate(0deg) scale(1);
+  }
+
+  /* 第三幕：收束聚合，微微脈動 */
+  90% {
+    transform: translate3d(0, 0, 0) rotate(0deg) scale(1.05);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+  }
+}
+
+/* 能量匯聚光暈 */
+.ritual-shuffle-glow {
+  background: radial-gradient(circle, rgba(212, 175, 55, 0.28) 0%, rgba(212, 175, 55, 0.08) 45%, transparent 70%);
+  filter: blur(6px);
+  animation: ritual-shuffle-glow 3s ease-out forwards;
+}
+
+@keyframes ritual-shuffle-glow {
+  0%,
+  20% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  45% {
+    opacity: 0.5;
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 0.9;
+    transform: scale(1.15);
+  }
+}
+
+/* === 🎬 發牌：弧線飛行（從牌堆飛到牌位 + 落地微彈） === */
+.deal-arc {
+  animation: deal-arc 0.9s cubic-bezier(0.22, 1.2, 0.36, 1) forwards;
+  will-change: transform, opacity;
+}
+
+@keyframes deal-arc {
+  0% {
+    opacity: 0;
+    transform: translate3d(var(--arc-x, 0px), 220px, 0) rotate(var(--arc-rot, -14deg)) scale(0.5);
+  }
+  35% {
+    opacity: 1;
+  }
+  70% {
+    opacity: 1;
+    transform: translate3d(calc(var(--arc-x, 0px) * 0.3), -18px, 0) rotate(calc(var(--arc-rot, -14deg) * -0.3)) scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+  }
+}
+
+/* === 🎬 翻牌：物理回彈 + 能量漣漪 + 呼吸光暈 === */
+.card-inner-flip-physical {
+  transition: transform 0.85s cubic-bezier(0.34, 1.4, 0.5, 1) !important;
+}
+
+.card-ripple {
+  position: absolute;
+  inset: -12px;
+  border-radius: 1.4rem;
+  border: 2px solid rgba(212, 175, 55, 0.9);
+  pointer-events: none;
+  animation: card-ripple 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  z-index: 60;
+}
+
+@keyframes card-ripple {
+  0% {
+    opacity: 0.9;
+    transform: scale(0.55);
+  }
+  70% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.6);
+  }
+}
+
+/* 已翻牌：緩慢呼吸光暈 */
+.card-breathe {
+  animation: card-breathe 3.5s ease-in-out infinite;
+}
+
+@keyframes card-breathe {
+  0%,
+  100% {
+    box-shadow: 0 0 18px rgba(212, 175, 55, 0.18), 0 30px 60px rgba(0, 0, 0, 0.9);
+  }
+  50% {
+    box-shadow: 0 0 42px rgba(212, 175, 55, 0.45), 0 30px 60px rgba(0, 0, 0, 0.9);
+  }
+}
+
+/* === 🎬 卡片跟手 3D 傾斜 === */
+.card-tilt {
+  transform-style: preserve-3d;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+.card-tilt-active {
+  transition: transform 0.12s ease-out;
+}
+
+/* === 主題變數定義 === */
+:root {
+  --theme-primary: #d4af37;
+  --theme-primary-light: #f3e5ab;
+  --theme-secondary: #8b0000;
+  --theme-bg: #050505;
+  --theme-bg-gradient: radial-gradient(circle at center, #1e0a0a 0%, #050000 100%);
+  --theme-vessel-bg: linear-gradient(180deg, rgba(5, 5, 5, 1) 0%, rgba(15, 5, 5, 1) 100%);
+  --theme-card-border: rgba(212, 175, 55, 0.4);
+  --theme-text: #ddd;
+  /* 保持金色的標題元素 */
+  --theme-gold: #d4af37;
+  --theme-gold-light: #f3e5ab;
+}
+
+/* Baroque 主題 (預設) */
+[data-theme="baroque"],
+:root {
+  --theme-primary: #d4af37;
+  --theme-primary-light: #f3e5ab;
+  --theme-secondary: #8b0000;
+  --theme-bg: #050505;
+  --theme-bg-gradient: radial-gradient(circle at center, #1e0a0a 0%, #050000 100%);
+  --theme-vessel-bg: linear-gradient(180deg, rgba(5, 5, 5, 1) 0%, rgba(15, 5, 5, 1) 100%);
+  --theme-card-border: rgba(212, 175, 55, 0.4);
+  --theme-gold: #d4af37;
+  --theme-gold-light: #f3e5ab;
+  /* 容器漸變色 (Baroque: 咖啡紅) */
+  --vessel-color-1: rgba(15, 8, 8, 0.95);
+  --vessel-color-2: rgba(25, 12, 12, 0.9);
+  --vessel-glow: rgba(212, 175, 55, 0.06);
+  --vessel-border: rgba(212, 175, 55, 0.25);
+  --vessel-shadow-glow: rgba(212, 175, 55, 0.08);
+}
+
+/* Cyberpunk 主題 */
+[data-theme="cyberpunk"] {
+  --theme-primary: #00fff9;
+  --theme-primary-light: #00fff9;
+  --theme-secondary: #ff00ff;
+  --theme-bg: #0a0014;
+  --theme-bg-gradient: radial-gradient(circle at center, #1a0033 0%, #0a0014 100%);
+  --theme-vessel-bg: linear-gradient(180deg, rgba(10, 0, 20, 0.95) 0%, rgba(26, 0, 51, 0.9) 100%);
+  --theme-card-border: rgba(0, 255, 249, 0.4);
+  /* 保持金色標題 */
+  --theme-gold: #d4af37;
+  --theme-gold-light: #f3e5ab;
+  /* 容器漸變色 (Cyberpunk: 紫黑) */
+  --vessel-color-1: rgba(10, 0, 20, 0.95);
+  --vessel-color-2: rgba(26, 0, 51, 0.9);
+  --vessel-glow: rgba(0, 255, 249, 0.06);
+  --vessel-border: rgba(0, 255, 249, 0.25);
+  --vessel-shadow-glow: rgba(0, 255, 249, 0.08);
+}
+
+/* Celestial 主題 */
+[data-theme="celestial"] {
+  --theme-primary: #a78bfa;
+  --theme-primary-light: #c4b5fd;
+  --theme-secondary: #fbbf24;
+  --theme-bg: #020617;
+  --theme-bg-gradient: radial-gradient(circle at center, #0f172a 0%, #020617 100%);
+  --theme-vessel-bg: linear-gradient(180deg, rgba(2, 6, 23, 0.95) 0%, rgba(15, 23, 42, 0.9) 100%);
+  --theme-card-border: rgba(167, 139, 250, 0.4);
+  /* 保持金色標題 */
+  --theme-gold: #d4af37;
+  --theme-gold-light: #f3e5ab;
+  /* 容器漸變色 (Celestial: 深藍) */
+  --vessel-color-1: rgba(2, 6, 23, 0.95);
+  --vessel-color-2: rgba(15, 23, 42, 0.9);
+  --vessel-glow: rgba(167, 139, 250, 0.06);
+  --vessel-border: rgba(167, 139, 250, 0.25);
+  --vessel-shadow-glow: rgba(167, 139, 250, 0.08);
+}
+
+body {
+  font-family: 'Lora', serif;
+  background-color: var(--theme-bg);
+  color: var(--theme-text);
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+}
+
+.mystic-gradient {
+  background: var(--theme-bg-gradient);
+  background-attachment: fixed;
+  position: relative;
+}
+
+.divine-vessel {
+  border: 1px solid var(--vessel-border);
+  background: linear-gradient(135deg,
+      var(--vessel-color-1) 0%,
+      var(--vessel-color-2) 50%,
+      var(--vessel-color-1) 100%);
+  box-shadow:
+    0 0 0 1px var(--vessel-shadow-glow),
+    0 -80px 200px rgba(0, 0, 0, 1),
+    0 25px 80px rgba(0, 0, 0, 0.8),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+  border-radius: 4rem;
+  position: relative;
+  backdrop-filter: blur(40px) saturate(140%);
+  overflow: hidden;
+}
+
+/* 容器頂部光暈 */
+.divine-vessel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(ellipse 100% 50% at 50% 0%,
+      var(--vessel-glow) 0%,
+      transparent 60%);
+  pointer-events: none;
+}
+
+/* 容器邊緣微光 */
+.divine-vessel::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 60px var(--vessel-shadow-glow);
+  pointer-events: none;
+}
+
+.perspective-3000 {
+  perspective: 3000px;
+}
+
+.card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-style: preserve-3d;
+}
+
+.card-flipped {
+  transform: rotateY(180deg);
+}
+
+.card-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: 1rem;
+  overflow: hidden;
+}
+
+.card-back-side {
+  transform: rotateY(0deg);
+  border: 4px solid rgba(212, 175, 55, 0.4);
+  background: #1a0505;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+}
+
+.card-front-side {
+  transform: rotateY(180deg);
+  border: 6px solid #d4af37;
+  background: #000;
+  box-shadow: 0 0 60px rgba(212, 175, 55, 0.4);
+}
+
+.canvas-emergence {
+  animation: emergence-glow 1.8s cubic-bezier(0.2, 1, 0.3, 1) forwards;
+}
+
+@keyframes emergence-glow {
+  0% {
+    filter: blur(15px) sepia(1) brightness(0.5) contrast(1.5);
+    transform: scale(1.1);
+    opacity: 0;
+  }
+
+  30% {
+    opacity: 1;
+    filter: blur(8px) sepia(0.5) brightness(1.8) contrast(1.2);
+  }
+
+  100% {
+    filter: blur(0) sepia(0) brightness(1) contrast(1);
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.craquelure-overlay {
+  position: absolute;
+  inset: 0;
+  background-image: url('https://www.transparenttextures.com/patterns/crackle-glaze.png');
+  opacity: 0.3;
+  pointer-events: none;
+  mix-blend-mode: multiply;
+}
+
+.prose-mystic {
+  color: #ccc;
+  line-height: 1.8;
+  font-size: 1.25rem;
+  /* 微調內文字級使排版更精緻 */
+}
+
+.prose-mystic h1 {
+  font-family: 'Cinzel', serif;
+  color: var(--theme-gold);
+  font-size: 2.5rem;
+  text-align: center;
+  letter-spacing: 0.4em;
+  margin-bottom: 4rem;
+  text-shadow: 0 0 30px rgba(212, 175, 55, 0.5);
+}
+
+/* 主標題 (h2)：揭示牌位與牌名。進一步縮小字級以適應長句。 */
+.prose-mystic h2 {
+  font-family: 'Cinzel', serif;
+  color: var(--theme-gold-light);
+  font-size: 1.45rem;
+  /* 再次縮小字級 (從 1.75rem 下調) */
+  margin-top: 4rem;
+  margin-bottom: 2rem;
+  padding: 1.2rem 1.5rem;
+  text-align: center;
+  letter-spacing: 0.1em;
+  background: linear-gradient(to right, transparent, rgba(212, 175, 55, 0.08), transparent);
+  border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+/* 副標題 (h3)：如「牌面本質」，保持顯眼但按比例縮小 */
+.prose-mystic h3 {
+  font-family: 'Cinzel', serif;
+  color: var(--theme-gold);
+  font-size: 1.35rem;
+  /* 配合 h2 調整比例 */
+  font-weight: 700;
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+  letter-spacing: 0.05em;
+  text-shadow: 0 0 5px rgba(212, 175, 55, 0.2);
+}
+
+.highlight-gold {
+  color: #d4af37;
+  font-weight: 700;
+  text-shadow: 0 0 5px rgba(212, 175, 55, 0.3);
+}
+
+.highlight-crimson {
+  color: #ff4d4d;
+  font-weight: 700;
+  text-shadow: 0 0 5px rgba(255, 77, 77, 0.3);
+}
+
+.user-query-box {
+  border: 2px solid rgba(212, 175, 55, 0.4);
+  background: rgba(0, 0, 0, 0.9);
+  padding: 3rem;
+  border-radius: 4rem;
+  margin: 5rem auto;
+  max-width: 80%;
+  font-style: italic;
+  color: var(--theme-gold-light);
+  text-align: center;
+  font-size: 1.6rem;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 1);
+  position: relative;
+}
+
+.gold-button {
+  background: linear-gradient(90deg, #a68527, #e6c673, #d4af37, #e6c673, #a68527);
+  animation: shimmer 5s infinite linear;
+  background-size: 200% auto;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--theme-gold);
+  border-radius: 10px;
+}
+
+.gold-text-shimmer {
+  background: linear-gradient(90deg,
+      #a68527 0%,
+      #d4af37 20%,
+      #fdfcf0 50%,
+      #d4af37 80%,
+      #a68527 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  background-size: 300% auto;
+  animation: shimmer 4s linear infinite, title-pulse 3s ease-in-out infinite;
+  filter: drop-shadow(0 0 30px rgba(212, 175, 55, 0.4));
+}
+
+@keyframes title-pulse {
+
+  0%,
+  100% {
+    filter: drop-shadow(0 0 20px rgba(212, 175, 55, 0.3));
+  }
+
+  50% {
+    filter: drop-shadow(0 0 50px rgba(212, 175, 55, 0.6));
+  }
+}
+
+.prose-mystic hr {
+  border: 0;
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(212, 175, 55, 0.2), transparent);
+  margin: 3.5rem 0;
+}
+
+/* ===== 聖光射線 ===== */
+.divine-rays {
+  position: fixed;
+  inset: 0;
+  background: conic-gradient(from 180deg at 50% 120%,
+      transparent 0deg,
+      rgba(212, 175, 55, 0.02) 10deg,
+      transparent 20deg,
+      transparent 160deg,
+      rgba(212, 175, 55, 0.015) 170deg,
+      transparent 180deg);
+  animation: rotate-rays 90s linear infinite;
+  opacity: 0.8;
+  pointer-events: none;
+  z-index: 1;
+}
+
+@keyframes rotate-rays {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ===== 底部霧氣 ===== */
+.mist-layer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 50vh;
+  background: linear-gradient(to top,
+      rgba(212, 175, 55, 0.03) 0%,
+      rgba(139, 0, 0, 0.02) 30%,
+      transparent 100%);
+  animation: mist-pulse 10s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+
+@keyframes mist-pulse {
+
+  0%,
+  100% {
+    opacity: 0.4;
+    transform: translateY(0);
+  }
+
+  50% {
+    opacity: 0.7;
+    transform: translateY(-30px);
+  }
+}
+
+/* ===== 手機版響應式樣式 ===== */
+@media (max-width: 768px) {
+  body {
+    overflow-x: hidden;
+    width: 100vw;
+  }
+
+  /* 修正右側空白 */
+  #root {
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
+
+  /* 主標題縮小 */
+  .prose-mystic h1 {
+    font-size: 1.5rem;
+    letter-spacing: 0.1em;
+    margin-bottom: 2rem;
+    padding: 0 1rem;
+  }
+
+  /* h2 標題縮小 */
+  .prose-mystic h2 {
+    font-size: 1rem;
+    letter-spacing: 0.05em;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    padding: 0.8rem 1rem;
+    line-height: 1.5;
+  }
+
+  /* h3 標題縮小 */
+  .prose-mystic h3 {
+    font-size: 0.95rem;
+    margin-top: 1.5rem;
+    margin-bottom: 0.8rem;
+  }
+
+  /* 內文增加段落間距 */
+  .prose-mystic p {
+    font-size: 0.9rem;
+    line-height: 1.8;
+    margin-bottom: 1.2rem;
+    text-align: justify;
+  }
+
+  /* 列表間距 */
+  .prose-mystic ul,
+  .prose-mystic ol {
+    padding-left: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .prose-mystic li {
+    font-size: 0.9rem;
+    line-height: 1.7;
+    margin-bottom: 0.5rem;
+  }
+
+  /* 使用者問題框 */
+  .user-query-box {
+    padding: 1.5rem;
+    margin: 2rem auto;
+    border-radius: 2rem;
+    font-size: 0.95rem;
+  }
+
+  /* 分隔線 */
+  .oracle-divider {
+    margin: 2rem 0;
+  }
+}

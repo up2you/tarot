@@ -181,7 +181,7 @@ export const uploadMusic = async (input: UploadMusicInput): Promise<{ success: b
             return { success: false, message: '儲存記錄失敗' };
         }
 
-        console.log('[MediaService] Music uploaded:', dbData.id);
+        console.debug('[MediaService] Music uploaded:', dbData.id);
         return { success: true, file: dbData as MusicFile, message: '上傳成功' };
 
     } catch (err) {
@@ -228,7 +228,7 @@ export const deleteMusic = async (id: string): Promise<boolean> => {
             return false;
         }
 
-        console.log('[MediaService] Music deleted:', id);
+        console.debug('[MediaService] Music deleted:', id);
         return true;
 
     } catch (err) {
@@ -259,7 +259,7 @@ export const setActiveMusic = async (id: string, theme: ThemeType): Promise<bool
             return false;
         }
 
-        console.log('[MediaService] Active music set:', id);
+        console.debug('[MediaService] Active music set:', id);
         return true;
 
     } catch (err) {
@@ -289,7 +289,7 @@ export const updateMusic = async (
             return false;
         }
 
-        console.log('[MediaService] Music updated:', id);
+        console.debug('[MediaService] Music updated:', id);
         return true;
 
     } catch (err) {

@@ -59,7 +59,6 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, currentPage, onNavi
                 // 驗證通過
                 setAdminEmail(user.email || '');
                 setIsVerifying(false);
-                console.log('[AdminLayout] 管理員驗證通過:', user.email);
             } catch (error) {
                 console.error('[AdminLayout] 驗證失敗:', error);
                 window.location.href = '/';

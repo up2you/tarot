@@ -153,7 +153,7 @@ export const uploadCardImage = async (
             .from(BUCKET_NAME)
             .getPublicUrl(fileName);
 
-        console.log('[CardStorage] Uploaded:', fileName);
+        console.debug('[CardStorage] Uploaded:', fileName);
 
         // 更新風格上傳進度
         await updateProgress(styleId);
@@ -279,7 +279,7 @@ export const deleteCardImage = async (
             return false;
         }
 
-        console.log('[CardStorage] Deleted:', fileName);
+        console.debug('[CardStorage] Deleted:', fileName);
 
         // 更新風格上傳進度
         await updateProgress(styleId);
@@ -312,7 +312,7 @@ export const deleteStyleImages = async (styleId: string): Promise<boolean> => {
             return false;
         }
 
-        console.log('[CardStorage] Deleted style:', styleId);
+        console.debug('[CardStorage] Deleted style:', styleId);
 
         // 更新風格上傳進度（應該變成 0）
         await updateProgress(styleId);
@@ -337,7 +337,7 @@ const updateProgress = async (styleKey: string): Promise<void> => {
         // 更新資料庫
         await updateStyleProgress(styleKey, uploadedCount);
 
-        console.log(`[CardStorage] Updated progress for ${styleKey}: ${uploadedCount}/23`);
+        console.debug(`[CardStorage] Updated progress for ${styleKey}: ${uploadedCount}/23`);
     } catch (err) {
         console.error('[CardStorage] updateProgress error:', err);
     }

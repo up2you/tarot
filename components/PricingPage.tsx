@@ -45,7 +45,7 @@ const PricingPage: React.FC<PricingPageProps> = ({ onPurchase, onClose }) => {
             const pricingPlans = await getPricingPlans();
             setPlans(pricingPlans);
         } catch (e) {
-            console.log('[PricingPage] getPricingPlans failed');
+            console.warn('[PricingPage] getPricingPlans failed');
             setPlans([]);
         }
 
@@ -56,13 +56,13 @@ const PricingPage: React.FC<PricingPageProps> = ({ onPurchase, onClose }) => {
                 const access = await checkUserAccess(user.id);
                 setUserAccess(access);
             } catch (e) {
-                console.log('[PricingPage] checkUserAccess failed');
+                console.warn('[PricingPage] checkUserAccess failed');
             }
             try {
                 const sub = await getUserSubscription(user.id);
                 setUserSub(sub);
             } catch (e) {
-                console.log('[PricingPage] getUserSubscription failed');
+                console.warn('[PricingPage] getUserSubscription failed');
             }
         }
 

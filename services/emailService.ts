@@ -157,7 +157,7 @@ export const sendBulkEmail = async (input: SendEmailInput): Promise<{ success: b
 
         } catch (funcErr) {
             // Edge Function 不存在，記錄為待處理
-            console.log('[EmailService] Email queued for manual processing');
+            console.debug('[EmailService] Email queued for manual processing');
 
             return {
                 success: true,
