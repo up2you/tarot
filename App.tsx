@@ -17,7 +17,7 @@ import { useTheme } from './hooks/useTheme';
 import { useDisplaySettings } from './hooks/useDisplaySettings';
 import { useCardStyle } from './hooks/useCardStyle';
 import { useThemedSounds } from './components/SoundManager';
-import { createTarotSession, DeepSeekChat, generateAISummary } from './services/geminiService';
+import { createTarotSession, createEasternTarotSession, DeepSeekChat, generateAISummary, ReadingLens } from './services/geminiService';
 import { generateThemedCardArt, isThemeComplete, getCachedArt } from './services/imageService';
 import { initMobileApp, hapticFeedback, hapticNotification } from './services/mobileService';
 import { saveReading } from './services/historyService';
@@ -71,6 +71,8 @@ const App: React.FC = () => {
   const [showLanguageMenu, setShowLanguageMenu] = useState(false);
   const [isTypewriter, setIsTypewriter] = useState(false); // 打字機效果播放中（供跳過按鈕使用）
   const [showDailyFirst, setShowDailyFirst] = useState(true); // 首屏：冥想式每日卡入口（改造核心）
+  const [activeLens, setActiveLens] = useState<ReadingLens>('western'); // 🎭 雙透鏡：西方原型 / 東方智慧
+  const [easternReading, setEasternReading] = useState<string | null>(null); // 東方視角解讀（快取）
   const isPerformingRef = useRef(false);
   const hasRecordedRef = useRef(false); // 防止重複記錄
   const hasConsumedQuotaRef = useRef(false); // 防止重複扣除額度
@@ -514,6 +516,47 @@ const App: React.FC = () => {
       setIsTyping(false);
       setIsTypewriter(false);
       skipTypewriterRef.current = false;
+    }
+  };
+
+  // 🎭 雙透鏡解讀：切換西方原型 / 東方智慧視角
+  const handleSwitchLens = async (lens: ReadingLens) => {
+    // 切回西方：直接切換顯示（西方解讀已在 messages 中）
+    if (lens === 'western') {
+      setActiveLens('western');
+      return;
+    }
+
+    // 切到東方：若已生成過則直接顯示，否則即時生成
+    setActiveLens('eastern');
+    if (easternReading) return; // 已快取
+
+    if (!currentUser?.isVip) {
+      toast.info(t('main.lens_vip_only'));
+      setShowUpgradeModal(true);
+      setActiveLens('western');
+      return;
+    }
+
+    try {
+      setIsTyping(true);
+      const chat = createEasternTarotSession(question, spread, i18n.language);
+      let fullText = '';
+      await chat.sendMessageStream(
+        { message: t('main.seeking_eastern') },
+        (chunk, accumulated) => {
+          fullText = accumulated;
+          setEasternReading(accumulated);
+          setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }), 50);
+        }
+      );
+      setEasternReading(fullText);
+    } catch (error) {
+      console.error('Eastern lens error:', error);
+      toast.error(t('main.error_message'));
+      setActiveLens('western');
+    } finally {
+      setIsTyping(false);
     }
   };
 
@@ -1277,6 +1320,34 @@ const App: React.FC = () => {
                   </h2>
                 </div>
 
+                {/* 🎭 雙透鏡視角切換器 */}
+                {!isTypewriter && messages.length > 0 && (
+                  <div className="mb-10 flex justify-center animate-fade-up">
+                    <div className="inline-flex p-1.5 rounded-full bg-[#0a0505]/80 border border-[#d4af37]/30 backdrop-blur-sm">
+                      <button
+                        onClick={() => handleSwitchLens('western')}
+                        className={`px-5 md:px-7 py-2.5 rounded-full font-cinzel text-xs md:text-sm tracking-widest transition-all ${
+                          activeLens === 'western'
+                            ? 'bg-[#d4af37] text-black font-bold shadow-[0_0_20px_rgba(212,175,55,0.4)]'
+                            : 'text-[#d4af37]/60 hover:text-[#d4af37]'
+                        }`}
+                      >
+                        🔮 {t('main.lens_western')}
+                      </button>
+                      <button
+                        onClick={() => handleSwitchLens('eastern')}
+                        className={`px-5 md:px-7 py-2.5 rounded-full font-cinzel text-xs md:text-sm tracking-widest transition-all ${
+                          activeLens === 'eastern'
+                            ? 'bg-[#d4af37] text-black font-bold shadow-[0_0_20px_rgba(212,175,55,0.4)]'
+                            : 'text-[#d4af37]/60 hover:text-[#d4af37]'
+                        }`}
+                      >
+                        ☯️ {t('main.lens_eastern')}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
                 {/* 🎯 摘要先行：首牌卡名金句（設計藍圖：30 秒抓到核心） */}
                 {spread.length > 0 && !isTypewriter && messages.length > 0 && (
                   <div className="mb-12 text-center animate-fade-up">
@@ -1305,7 +1376,24 @@ const App: React.FC = () => {
                   </div>
                 )}
 
+                {/* 🎭 東方智慧視角解讀（雙透鏡） */}
+                {activeLens === 'eastern' && (
+                  <div className="mb-12 animate-fade-up">
+                    {easternReading ? (
+                      <div className="px-1 md:px-2">
+                        <div className="prose-mystic min-h-[200px]" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(marked.parse(easternReading) as string) }} />
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-center gap-4 text-[#d4af37]/50 font-cinzel italic text-xl animate-pulse py-16">
+                        <div className="w-2 h-2 bg-[#d4af37] rounded-full animate-bounce"></div>
+                        {t('main.seeking_eastern')}
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {/* 解讀區：自然流動（移除內嵌滾動，改由頁面滾動承接，閱讀更流暢） */}
+                {activeLens !== 'eastern' && (
                 <div className="px-1 md:px-2">
                   <div className="space-y-16">
                     {messages.map((msg, idx) => {
@@ -1358,6 +1446,7 @@ const App: React.FC = () => {
                     <div ref={chatEndRef} />
                   </div>
                 </div>
+                )}
 
                 {/* 分享按鈕區域 */}
                 <div className="mt-8 pt-8 border-t border-[#d4af37]/20 text-center">

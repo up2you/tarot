@@ -196,6 +196,69 @@ export function createTarotSession(userQuestion: string, spread: CardReading[], 
   return chat;
 }
 
+// ============================================================
+// 🎭 雙透鏡解讀：東方智慧視角
+// 同一牌面，以東方智慧（道家 / 易經 / 陰陽 / 冥想心法）重新詮釋
+// 與西方塔羅原型形成對照，提供更全面的啟示
+// ============================================================
+
+export type ReadingLens = 'western' | 'eastern';
+
+// 東方視角的語言標籤
+const EASTERN_LABELS: Record<string, { lens: string; essence: string; guidance: string; closing: string; opening: string }> = {
+  'zh-TW': { lens: '東方智慧視角', essence: '象外之意', guidance: '心法指引', closing: '靜觀之悟', opening: '靜下心來，觀照這幅牌景...' },
+  'zh-CN': { lens: '东方智慧视角', essence: '象外之意', guidance: '心法指引', closing: '静观之悟', opening: '静下心来，观照这幅牌景...' },
+  'en':    { lens: 'Eastern Wisdom Lens', essence: 'Beyond the Symbol', guidance: 'Mindful Guidance', closing: 'The Still Insight', opening: 'Still your mind and behold this tableau...' },
+  'ja':    { lens: '東洋の智慧の視点', essence: '象の奥の意味', guidance: '心法の導き', closing: '静観の悟り', opening: '心を静めて、この景色を観照しましょう...' },
+  'ko':    { lens: '동양 지혜의 시선', essence: '상징 너머의 뜻', guidance: '마음의 지침', closing: '고요한 깨달음', opening: '마음을 가라앉히고 이 장면을 관조하세요...' },
+};
+
+// 建立東方智慧視角的 System Prompt
+export function buildEasternSystemPrompt(userQuestion: string, spread: CardReading[], language: string = 'zh-TW'): string {
+  const persona = ORACLE_PERSONAS[language] || ORACLE_PERSONAS['zh-TW'];
+  const L = EASTERN_LABELS[persona.locale] || EASTERN_LABELS['zh-TW'];
+
+  const spreadDetails = spread.map(s =>
+    `${s.position}: ${s.card.nameZh} (${s.isReversed ? (persona.locale === 'en' ? 'Reversed' : persona.locale === 'ja' ? '逆位置' : persona.locale === 'ko' ? '역위치' : '逆位') : (persona.locale === 'en' ? 'Upright' : persona.locale === 'ja' ? '正位置' : persona.locale === 'ko' ? '정위치' : '正位')})`
+  ).join('\n');
+
+  return `你是一位融合東方智慧的冥想導師「${persona.name}」，擅長以道家、易經與陰陽哲學的角度解讀牌卡，用現代白話為人指點迷津。
+
+【當前尋求者問題】 「${userQuestion}」
+【牌陣】
+${spreadDetails}
+
+【${L.lens} —— 請嚴格執行排版】
+
+1. **結構分明 (嚴格使用 Markdown)**:
+   - **第一段 (導讀)**: 必須以「${L.opening}」開頭，引導尋求者進入靜觀狀態。
+   - **單張解讀**: 為每張牌建立冥想式區塊。
+     - **主標題 (h2)**：格式為「牌位：意象 —— 牌名 (${persona.locale === 'en' ? 'Upright/Reversed' : persona.locale === 'ja' ? '正位置/逆位置' : persona.locale === 'ko' ? '정위치/역위치' : '正位/逆位'})」。
+     - **副標題 (h3)**：僅限「${L.essence}」與「${L.guidance}」。
+     - ${L.essence}：描述這張牌在東方智慧下的象徵——如陰陽消長、五行流轉、時位之道。
+     - ${L.guidance}：對問題「${userQuestion}」的心法指引——如「順勢而為」「守靜致虛」「以柔克剛」。
+   - 每張牌之間使用 "---" 分隔。
+   - **結尾**: 使用 "# ${L.closing}：[主題名稱]"。
+
+2. **語氣規範**:
+   - 用${persona.lang}回答，語氣${persona.style}，帶著東方智慧的從容與通透。
+   - **禁止使用文言文或古語**（如「汝」「吾」「之乎者也」「矣」「焉」），全程使用${persona.lang}的現代白話，讓一般使用者能輕鬆讀懂。
+   - 避免宿命論與恐嚇性語言，強調「調和」「覺察」「順應自然」的正面引導。`;
+}
+
+// 建立東方視角 session
+export function createEasternTarotSession(userQuestion: string, spread: CardReading[], language: string = 'zh-TW') {
+  const apiKey = getApiKey();
+  if (!apiKey) {
+    throw new Error('DeepSeek API Key not configured');
+  }
+
+  const systemPrompt = buildEasternSystemPrompt(userQuestion, spread, language);
+  const chat = new DeepSeekChat(systemPrompt, apiKey);
+
+  return chat;
+}
+
 // 舊版 startTarotSession (保持向後兼容，但現在不再使用)
 export async function startTarotSession(
   userQuestion: string,
