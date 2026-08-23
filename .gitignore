@@ -68,3 +68,11 @@ login sample.png
 
 # 生成器輸出的 SQL 大檔（已匯入 Supabase，不需備份）
 tarot-generator/output/
+
+# 東方詮釋生成暫存（可重新生成）
+data/eastern_batches/
+data/eastern_done/
+data/eastern_progress.json
+data/eastern_import_progress.json
+data/oracle_batches/
+data/eastern_translation_source.json
