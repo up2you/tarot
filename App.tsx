@@ -17,12 +17,12 @@ import { useTheme } from './hooks/useTheme';
 import { useDisplaySettings } from './hooks/useDisplaySettings';
 import { useCardStyle } from './hooks/useCardStyle';
 import { useThemedSounds } from './components/SoundManager';
-import { createTarotSession, createEasternTarotSession, DeepSeekChat, generateAISummary, ReadingLens } from './services/geminiService';
+import { createTarotSession, createEasternTarotSession, DeepSeekChat, generateAISummary, generateEasternSummary, ReadingLens } from './services/geminiService';
 import { generateThemedCardArt, isThemeComplete, getCachedArt } from './services/imageService';
 import { initMobileApp, hapticFeedback, hapticNotification } from './services/mobileService';
 import { saveReading } from './services/historyService';
 import { checkFreeQuota, consumeFreeReading } from './services/userService';
-import { generateFreeReading } from './services/oracleService';
+import { generateFreeReading, getBatchEasternInterpretations, formatEasternReading } from './services/oracleService';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import { toPng } from 'html-to-image';
@@ -528,26 +528,59 @@ const App: React.FC = () => {
     }
 
     // 東方 / 對照模式：若東方解讀尚未生成，先即時生成
+    // 🎭 混合模式：資料庫東方詮釋（所有使用者）+ AI 個人化總結（VIP）
     if (!easternReading) {
-      if (!currentUser?.isVip) {
-        toast.info(t('main.lens_vip_only'));
-        setShowUpgradeModal(true);
-        return;
-      }
-
       try {
         setIsTyping(true);
-        const chat = createEasternTarotSession(question, spread, i18n.language);
-        let fullText = '';
-        await chat.sendMessageStream(
-          { message: t('main.seeking_eastern') },
-          (chunk, accumulated) => {
-            fullText = accumulated;
-            setEasternReading(accumulated);
-            setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }), 50);
-          }
+
+        // 1. 從資料庫取得東方詮釋（免費用戶也可用）
+        const positions = spread.map(s => t(`spreads:positions.${s.positionId}`, s.position));
+        const easternMap = await getBatchEasternInterpretations(
+          spread.map(s => ({ cardId: s.card.id, isReversed: s.isReversed })),
+          i18n.language
         );
-        setEasternReading(fullText);
+
+        if (easternMap.size === 0) {
+          // 資料庫無資料（或語言未匯入）：VIP 用全 AI 生成，免費提示
+          if (!currentUser?.isVip) {
+            toast.info(t('main.lens_vip_only'));
+            setShowUpgradeModal(true);
+            return;
+          }
+          const chat = createEasternTarotSession(question, spread, i18n.language);
+          let fullText = '';
+          await chat.sendMessageStream(
+            { message: t('main.seeking_eastern') },
+            (chunk, accumulated) => {
+              fullText = accumulated;
+              setEasternReading(accumulated);
+              setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }), 50);
+            }
+          );
+          setEasternReading(fullText);
+        } else {
+          // 2. 組合資料庫東方解讀
+          let easternText = formatEasternReading(spread, easternMap, positions);
+
+          // 3. VIP：追加 AI 個人化總結
+          if (currentUser?.isVip) {
+            const aiSummary = await generateEasternSummary(
+              question,
+              spread.map((s, idx) => ({
+                cardName: s.card.nameZh,
+                isReversed: s.isReversed,
+                position: positions[idx] || s.position,
+                interpretation: easternMap.get(`${s.card.id}-${s.isReversed ? 'r' : 'u'}`) || ''
+              })),
+              i18n.language
+            );
+            if (aiSummary) {
+              easternText += '\n\n---\n\n' + aiSummary;
+            }
+          }
+
+          setEasternReading(easternText);
+        }
       } catch (error) {
         console.error('Eastern lens error:', error);
         toast.error(t('main.error_message'));

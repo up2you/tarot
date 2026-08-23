@@ -345,3 +345,73 @@ ${cardDetails}
     return '';
   }
 }
+
+// ============================================================
+// 🎭 東方智慧視角：混合模式 AI 個人化總結
+// 基於資料庫的東方詮釋 + 使用者的具體問題，生成個人化的東方智慧總結
+// ============================================================
+
+export async function generateEasternSummary(
+  userQuestion: string,
+  spread: { cardName: string; isReversed: boolean; position: string; interpretation: string }[],
+  language: string = 'zh-TW'
+): Promise<string> {
+  const apiKey = getApiKey();
+  if (!apiKey) return '';
+
+  const persona = ORACLE_PERSONAS[language] || ORACLE_PERSONAS['zh-TW'];
+  const closingLabel: Record<string, string> = {
+    'zh-TW': '靜觀之悟',
+    'zh-CN': '静观之悟',
+    'en': 'The Still Insight',
+    'ja': '静観の悟り',
+    'ko': '고요한 깨달음',
+  };
+  const closing = closingLabel[persona.locale] || closingLabel['zh-TW'];
+
+  const cardDetails = spread.map(s =>
+    `${s.position} - ${s.cardName} (${s.isReversed ? (persona.locale === 'en' ? 'Reversed' : persona.locale === 'ja' ? '逆位置' : persona.locale === 'ko' ? '역위치' : '逆位') : (persona.locale === 'en' ? 'Upright' : persona.locale === 'ja' ? '正位置' : persona.locale === 'ko' ? '정위치' : '正位')}) - ${s.interpretation}`
+  ).join('\n\n');
+
+  const prompt = `你是一位融合東方智慧的冥想導師「${persona.name}」，擅長以道家、易經與陰陽哲學為人解惑。
+現在有一位尋求者提出了問題：「${userQuestion}」
+
+以下是這次占卜的東方智慧視角解讀（基於牌面的道家/易經詮釋）：
+${cardDetails}
+
+請以東方智慧的角度，為尋求者寫一段「${closing}」總結。
+要求：
+1. **使用${persona.lang}的白話口語**，溫暖真誠、清楚易懂，絕對不要使用文言文或古語（如「汝」「吾」「之乎者也」）。
+2. **必須正面回答尋求者的問題**，將牌面的東方詮釋轉化為對問題的具體心法指引（如「順勢而為」「守靜致虛」「以柔克剛」）。
+3. 強調「調和」「覺察」「順應自然」的正面引導，避免宿命論與恐嚇性語言。
+4. 使用 Markdown 格式。
+5. 結構：先寫 1-2 段深度分析，最後以「# ${closing}：[主題名稱]」作為標題結尾。
+6. 總長度約 200 字左右。`;
+
+  try {
+    const response = await fetch(DEEPSEEK_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: 'deepseek-chat',
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.7,
+        max_tokens: 1024
+      })
+    });
+
+    if (!response.ok) {
+      console.error('Eastern Summary Error:', response.status);
+      return '';
+    }
+
+    const data = await response.json();
+    return data.choices[0]?.message?.content || '';
+  } catch (err) {
+    console.error('Eastern Summary Fetch Error:', err);
+    return '';
+  }
+}

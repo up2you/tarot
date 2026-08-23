@@ -6,6 +6,7 @@
 import { supabase } from './supabaseClient';
 import { ORACLE_SCENARIOS } from '../constants/oracleScenarios';
 import { ORACLE_POSITIONS, getPositionByKey } from '../constants/oraclePositions';
+import { CardReading } from '../types';
 
 // ============================================
 // 類型定義
@@ -132,6 +133,92 @@ export const getOracleInterpretation = async (
         console.error('[OracleService] getInterpretation error:', err);
         return null;
     }
+};
+
+// ============================================
+// 🎭 東方智慧詮釋查詢（雙透鏡混合模式資料庫部分）
+// ============================================
+
+export interface EasternInterpretation {
+    id: string;
+    card_id: number;
+    card_name: string;
+    orientation: 'upright' | 'reversed';
+    interpretation: string;
+    language: string;
+}
+
+/**
+ * 取得單張牌的東方智慧詮釋（支援多語言 fallback → zh-TW）
+ * 若資料庫無此語言，自動降級到 zh-TW
+ */
+export const getEasternInterpretation = async (
+    cardId: number,
+    isReversed: boolean,
+    language: string = 'zh-TW'
+): Promise<string | null> => {
+    try {
+        const orientation = isReversed ? 'reversed' : 'upright';
+        const langChain = language === 'zh-TW' ? ['zh-TW'] : [language, 'zh-TW'];
+
+        for (const lang of langChain) {
+            const { data, error } = await supabase
+                .from('eastern_interpretations')
+                .select('interpretation')
+                .eq('card_id', cardId)
+                .eq('orientation', orientation)
+                .eq('language', lang)
+                .maybeSingle();
+
+            if (!error && data?.interpretation) return data.interpretation;
+        }
+        return null;
+    } catch (err) {
+        console.error('[OracleService] getEasternInterpretation error:', err);
+        return null;
+    }
+};
+
+/**
+ * 批量取得多張牌的東方智慧詮釋
+ * 返回 Map<cardId-orientation, text>
+ */
+export const getBatchEasternInterpretations = async (
+    cards: { cardId: number; isReversed: boolean }[],
+    language: string = 'zh-TW'
+): Promise<Map<string, string>> => {
+    const results = new Map<string, string>();
+    try {
+        await Promise.all(cards.map(async (card) => {
+            const text = await getEasternInterpretation(card.cardId, card.isReversed, language);
+            if (text) results.set(`${card.cardId}-${card.isReversed ? 'r' : 'u'}`, text);
+        }));
+    } catch (err) {
+        console.error('[OracleService] getBatchEasternInterpretations error:', err);
+    }
+    return results;
+};
+
+/**
+ * 組合東方智慧視角的完整解讀（資料庫部分）
+ * 格式與 formatOracleReading 類似，但用東方詮釋
+ */
+export const formatEasternReading = (
+    cards: (CardReading & { aiImage?: string })[],
+    interpretations: Map<string, string>,
+    positions: string[]
+): string => {
+    let text = `## ☯️ 東方智慧視角\n\n`;
+
+    cards.forEach((card, idx) => {
+        const interp = interpretations.get(`${card.card.id}-${card.isReversed ? 'r' : 'u'}`);
+        const reversedTag = card.isReversed ? '（逆位）' : '（正位）';
+        text += `### ${positions[idx] || card.position}：${card.card.nameZh} ${reversedTag}\n\n`;
+        text += (interp || '此刻的能量正在流動中，靜觀其變。') + '\n\n';
+        if (idx < cards.length - 1) text += '---\n\n';
+    });
+
+    return text;
 };
 
 /**
