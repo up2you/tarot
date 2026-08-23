@@ -1,7 +1,11 @@
 /**
  * 東方詮釋批次匯入引擎
- * 讀取 data/eastern_done 的已完成批次，匯入 Supabase eastern_interpretations
+ * 讀取 data/eastern_done（或 data/eastern_done_{lang}）的已完成批次，匯入 Supabase eastern_interpretations
  * 支援續跑：已匯入的批次會跳過
+ *
+ * 用法：
+ *   npx tsx scripts/easternImportEngine.ts              # zh-TW（預設）
+ *   $env:EASTERN_LANG=en npx tsx scripts/easternImportEngine.ts   # 其他語言
  */
 
 import fs from 'fs';
@@ -13,8 +17,10 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const DATA_DIR = path.join(__dirname, '../data');
-const DONE_DIR = path.join(DATA_DIR, 'eastern_done');
-const IMPORT_PROGRESS = path.join(DATA_DIR, 'eastern_import_progress.json');
+const LANG = process.env.EASTERN_LANG || 'zh-TW';
+const LANG_DIR_SUFFIX = LANG === 'zh-TW' ? '' : `_${LANG}`;
+const DONE_DIR = path.join(DATA_DIR, `eastern_done${LANG_DIR_SUFFIX}`);
+const IMPORT_PROGRESS = path.join(DATA_DIR, `eastern_import_progress${LANG_DIR_SUFFIX}.json`);
 
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://pcwmbhbqzmndqwmgvevq.supabase.co';
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_SERVICE_ROLE_KEY;
@@ -66,7 +72,7 @@ async function main() {
       scenario_key: it.scenario_key,
       position_key: it.position_key,
       interpretation: it.interpretation,
-      language: 'zh-TW',
+      language: LANG,
     }));
 
     const { error } = await supabase
