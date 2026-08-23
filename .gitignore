@@ -72,7 +72,9 @@ tarot-generator/output/
 # 東方詮釋生成暫存（可重新生成）
 data/eastern_batches/
 data/eastern_done/
+data/eastern_done_*/
 data/eastern_progress.json
-data/eastern_import_progress.json
+data/eastern_import_progress*.json
+data/eastern_translate_*_progress.json
 data/oracle_batches/
 data/eastern_translation_source.json
