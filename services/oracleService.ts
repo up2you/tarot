@@ -155,21 +155,52 @@ export interface EasternInterpretation {
 export const getEasternInterpretation = async (
     cardId: number,
     isReversed: boolean,
-    language: string = 'zh-TW'
+    language: string = 'zh-TW',
+    scenarioKey?: string,
+    positionKey?: string
 ): Promise<string | null> => {
     try {
         const orientation = isReversed ? 'reversed' : 'upright';
         const langChain = language === 'zh-TW' ? ['zh-TW'] : [language, 'zh-TW'];
 
         for (const lang of langChain) {
+            // 1. 精確情境化查詢（若提供 scenario/position）
+            if (scenarioKey && positionKey) {
+                const { data, error } = await supabase
+                    .from('eastern_interpretations')
+                    .select('interpretation')
+                    .eq('card_id', cardId)
+                    .eq('orientation', orientation)
+                    .eq('scenario_key', scenarioKey)
+                    .eq('position_key', positionKey)
+                    .eq('language', lang)
+                    .maybeSingle();
+                if (!error && data?.interpretation) return data.interpretation;
+            }
+
+            // 2. 情境化查詢但位置彈性（部分情境位置不同）
+            if (scenarioKey) {
+                const { data, error } = await supabase
+                    .from('eastern_interpretations')
+                    .select('interpretation')
+                    .eq('card_id', cardId)
+                    .eq('orientation', orientation)
+                    .eq('scenario_key', scenarioKey)
+                    .eq('language', lang)
+                    .limit(1)
+                    .maybeSingle();
+                if (!error && data?.interpretation) return data.interpretation;
+            }
+
+            // 3. fallback：泛用詮釋（scenario_key 為 NULL）
             const { data, error } = await supabase
                 .from('eastern_interpretations')
                 .select('interpretation')
                 .eq('card_id', cardId)
                 .eq('orientation', orientation)
+                .is('scenario_key', null)
                 .eq('language', lang)
                 .maybeSingle();
-
             if (!error && data?.interpretation) return data.interpretation;
         }
         return null;
@@ -180,17 +211,23 @@ export const getEasternInterpretation = async (
 };
 
 /**
- * 批量取得多張牌的東方智慧詮釋
+ * 批量取得多張牌的東方智慧詮釋（情境化）
  * 返回 Map<cardId-orientation, text>
  */
 export const getBatchEasternInterpretations = async (
     cards: { cardId: number; isReversed: boolean }[],
-    language: string = 'zh-TW'
+    language: string = 'zh-TW',
+    scenarioKey?: string,
+    positionKeys?: string[]
 ): Promise<Map<string, string>> => {
     const results = new Map<string, string>();
     try {
-        await Promise.all(cards.map(async (card) => {
-            const text = await getEasternInterpretation(card.cardId, card.isReversed, language);
+        await Promise.all(cards.map(async (card, idx) => {
+            const posKey = positionKeys?.[idx];
+            const text = await getEasternInterpretation(
+                card.cardId, card.isReversed, language,
+                scenarioKey, posKey
+            );
             if (text) results.set(`${card.cardId}-${card.isReversed ? 'r' : 'u'}`, text);
         }));
     } catch (err) {

@@ -533,11 +533,15 @@ const App: React.FC = () => {
       try {
         setIsTyping(true);
 
-        // 1. 從資料庫取得東方詮釋（免費用戶也可用）
+        // 1. 從資料庫取得東方詮釋（免費用戶也可用）— 情境化查詢
         const positions = spread.map(s => t(`spreads:positions.${s.positionId}`, s.position));
+        const spreadDefForScenario = selectedSpreadId ? Object.values(SPREADS).find(s => s.id === selectedSpreadId) : null;
+        const easternScenarioKey = spreadDefForScenario?.defaultScenario || detectScenario(question);
         const easternMap = await getBatchEasternInterpretations(
           spread.map(s => ({ cardId: s.card.id, isReversed: s.isReversed })),
-          i18n.language
+          i18n.language,
+          easternScenarioKey,
+          spread.map(s => s.positionId || mapPositionToKey(s.position, spread.indexOf(s)))
         );
 
         if (easternMap.size === 0) {
