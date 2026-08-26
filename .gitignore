@@ -78,3 +78,5 @@ data/eastern_import_progress*.json
 data/eastern_translate_*_progress.json
 data/oracle_batches/
 data/eastern_translation_source.json
+data/oracle_*_fix.json
+data/oracle_*_fix_progress.json
