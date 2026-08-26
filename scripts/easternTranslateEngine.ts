@@ -3,9 +3,11 @@
  * 讀取 data/eastern_done 的繁中已完成批次 → 呼叫 DeepSeek 翻譯為目標語言 → 寫入 data/eastern_done_{lang}
  *
  * 用法：
- *   $env:DEEPSEEK_API_KEY="sk-..." npx tsx scripts/easternTranslateEngine.ts <lang> [批次數]
+ *   $env:DEEPSEEK_API_KEY="sk-..." npx tsx scripts/easternTranslateEngine.ts <lang> [批次數] [並行度] [合併數]
  *   lang 必填：en | ja | ko | zh-CN
  *   [批次數] 可選：預設處理 1 個批次；設 N 則處理 N 個批次
+ *   [並行度] 可選：預設 1（串行）；設 4 則同時處理 4 個批次（注意 API 速率限制）
+ *   [合併數] 可選：預設 1；設 2 則每個 API 請求合併 2 個批次檔（10 筆），吞吐更高（max_tokens 8000 上限約 10 筆）
  *
  * 匯入時使用：
  *   $env:EASTERN_LANG=en npx tsx scripts/easternImportEngine.ts
@@ -161,6 +163,8 @@ ${JSON.stringify(input, null, 1)}
 
 async function main() {
   const maxBatches = parseInt(process.argv[3] || '1', 10);
+  const concurrency = Math.max(1, parseInt(process.argv[4] || '1', 10));
+  const mergeCount = Math.max(1, parseInt(process.argv[5] || '1', 10));
   fs.mkdirSync(DONE_DIR, { recursive: true });
 
   const srcFiles = fs
@@ -180,34 +184,65 @@ async function main() {
   }
 
   let processed = 0;
+  const pending: string[] = [];
 
+  // 收集待處理批次
   for (const file of progress.batchFiles) {
     if (processed >= maxBatches) break;
     const doneFile = path.join(DONE_DIR, file);
     if (fs.existsSync(doneFile)) continue; // 已翻譯
-
     const batchPath = path.join(SRC_DONE_DIR, file);
     if (!fs.existsSync(batchPath)) continue;
-    const items: OracleItem[] = JSON.parse(fs.readFileSync(batchPath, 'utf8'));
-
-    console.log(`[${file}] 翻譯中 (${items.length} 筆)...`);
-    const result = await translateBatch(items);
-
-    if (result) {
-      fs.writeFileSync(doneFile, JSON.stringify(result, null, 1), 'utf8');
-      progress.completed += items.length;
-      console.log(`  ✅ 完成，累計 ${progress.completed}`);
-    } else {
-      progress.failed += items.length;
-      console.log(`  ❌ 失敗，累計失敗 ${progress.failed}`);
-    }
-
-    saveProgress(progress);
+    pending.push(file);
     processed++;
-
-    // 小憩避免限流
-    await new Promise(r => setTimeout(r, 1000));
   }
+
+  console.log(`待翻譯 ${pending.length} 個批次，並行度 ${concurrency}，合併 ${mergeCount} 檔/請求...`);
+
+  // 並行處理（簡單 worker pool）
+  let next = 0;
+  const worker = async () => {
+    while (true) {
+      const start = next;
+      next += mergeCount;
+      if (start >= pending.length) break;
+      const files = pending.slice(start, start + mergeCount);
+      const todo = files.filter(f => !fs.existsSync(path.join(DONE_DIR, f)));
+      if (todo.length === 0) continue;
+
+      // 合併多個批次檔為一次 API 請求
+      const merged: { file: string; items: OracleItem[] }[] = [];
+      for (const file of todo) {
+        const items: OracleItem[] = JSON.parse(fs.readFileSync(path.join(SRC_DONE_DIR, file), 'utf8'));
+        merged.push({ file, items });
+      }
+      const allItems = merged.flatMap(m => m.items);
+
+      console.log(`[${todo.join(', ')}] 翻譯中 (${allItems.length} 筆)...`);
+      const result = await translateBatch(allItems);
+
+      if (result) {
+        // 依序分配回各批次檔
+        let offset = 0;
+        for (const m of merged) {
+          const slice = result.slice(offset, offset + m.items.length);
+          offset += m.items.length;
+          fs.writeFileSync(path.join(DONE_DIR, m.file), JSON.stringify(slice, null, 1), 'utf8');
+        }
+        progress.completed += allItems.length;
+        console.log(`  ✅ 完成，累計 ${progress.completed}`);
+      } else {
+        progress.failed += allItems.length;
+        console.log(`  ❌ 失敗，累計失敗 ${progress.failed}`);
+      }
+      saveProgress(progress);
+      // 小憩避免限流
+      await new Promise(r => setTimeout(r, 300));
+    }
+  };
+
+  const workers = Array.from({ length: concurrency }, () => worker());
+  await Promise.all(workers);
 
   console.log(`\n本次處理 ${processed} 個批次（${TARGET_LANG}）。總進度: ${progress.completed}/${progress.total || '?'} (失敗 ${progress.failed})`);
 }
