@@ -28,12 +28,18 @@ const isEcpayConfigured = () => Boolean(
   process.env.ECPAY_MERCHANT_ID && process.env.ECPAY_HASH_KEY && process.env.ECPAY_HASH_IV
 );
 
-// 延遲建立 supabase client（避免 env 缺失時在 module 層拋錯）
-const getSupabase = () => {
+// 延遲建立 supabase client
+// - anonClient：用 anon key 驗證用戶 JWT（auth.getUser 需 anon key）
+// - adminClient：用 service role key 做 DB 寫入（繞過 RLS）
+const getClients = () => {
   const url = process.env.VITE_SUPABASE_URL || '';
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_SERVICE_ROLE_KEY || '';
-  if (!url || !key) return null;
-  return createClient(url, key);
+  const anonKey = process.env.VITE_SUPABASE_ANON_KEY || '';
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_SERVICE_ROLE_KEY || '';
+  if (!url || !anonKey || !serviceKey) return null;
+  return {
+    anonClient: createClient(url, anonKey),
+    adminClient: createClient(url, serviceKey),
+  };
 };
 
 interface PlanInfo {
@@ -61,10 +67,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    const supabase = getSupabase();
-    if (!supabase) {
+    const clients = getClients();
+    if (!clients) {
       return res.status(500).json({ error: 'Supabase not configured' });
     }
+    const { anonClient, adminClient } = clients;
 
     const { planType } = req.body || {};
     const plan = PLAN_INFO[planType];
@@ -79,13 +86,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    const { data: { user }, error: authError } = await anonClient.auth.getUser(token);
     if (authError || !user) {
       return res.status(401).json({ error: 'Invalid token' });
     }
 
     // 從 DB 取得方案價格（避免前端竄改金額）
-    const { data: dbPlan, error: planError } = await supabase
+    const { data: dbPlan, error: planError } = await adminClient
       .from('pricing_plans')
       .select('*')
       .eq('plan_type', planType)
@@ -102,7 +109,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     // 建立付款記錄（pending）
-    const { data: payment, error: payError } = await supabase
+    const { data: payment, error: payError } = await adminClient
       .from('payment_records')
       .insert({
         user_id: user.id,
@@ -142,7 +149,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const order = paymentOrder._prepareOrder();
 
     // 記錄交易編號
-    await supabase
+    await adminClient
       .from('payment_records')
       .update({ provider_transaction_id: tradeNo })
       .eq('id', payment.id);

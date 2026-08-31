@@ -27,12 +27,12 @@ const isEcpayConfigured = () => Boolean(
   process.env.ECPAY_MERCHANT_ID && process.env.ECPAY_HASH_KEY && process.env.ECPAY_HASH_IV
 );
 
-// 延遲建立 supabase client（避免 env 缺失時在 module 層拋錯）
-const getSupabase = () => {
+// 延遲建立 supabase client（service role key，繞過 RLS 做 DB 寫入）
+const getAdminClient = () => {
   const url = process.env.VITE_SUPABASE_URL || '';
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_SERVICE_ROLE_KEY || '';
-  if (!url || !key) return null;
-  return createClient(url, key);
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_SERVICE_ROLE_KEY || '';
+  if (!url || !serviceKey) return null;
+  return createClient(url, serviceKey);
 };
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -45,7 +45,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    const supabase = getSupabase();
+    const supabase = getAdminClient();
     if (!supabase) {
       return res.status(500).send('0|Supabase not configured');
     }
