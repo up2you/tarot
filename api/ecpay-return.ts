@@ -14,7 +14,18 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 import { isValidReceivedCheckMacValue } from 'node-ecpay-aio';
-import { isEcpayConfigured, getMerchantConfig } from './ecpayConfig';
+
+// 綠界組態（內聯，避免跨目錄依賴在 Vercel 打包時遺漏）
+const getMerchantConfig = () => ({
+  MerchantID: process.env.ECPAY_MERCHANT_ID || '',
+  HashKey: process.env.ECPAY_HASH_KEY || '',
+  HashIV: process.env.ECPAY_HASH_IV || '',
+  ReturnURL: `${process.env.VITE_SITE_URL || 'https://majorarcana.app'}/api/ecpay-return`,
+  ClientBackURL: `${process.env.VITE_SITE_URL || 'https://majorarcana.app'}/pricing?payment=success`,
+});
+const isEcpayConfigured = () => Boolean(
+  process.env.ECPAY_MERCHANT_ID && process.env.ECPAY_HASH_KEY && process.env.ECPAY_HASH_IV
+);
 
 const supabase = createClient(
   process.env.VITE_SUPABASE_URL || '',
