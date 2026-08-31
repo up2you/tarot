@@ -80,12 +80,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     // 驗證用戶 JWT：直接呼叫 Supabase /auth/v1/user 端點
-    // （JWT 本身即憑證，Authorization header 即可，不需 anon key）
+    // 需 apikey header（anon key）+ Authorization: Bearer <JWT>
     const supabaseUrl = process.env.VITE_SUPABASE_URL || '';
+    const anonKey = process.env.VITE_SUPABASE_ANON_KEY || '';
     const authResp = await fetch(`${supabaseUrl}/auth/v1/user`, {
       headers: {
         'Authorization': `Bearer ${token}`,
-        'apikey': token,
+        'apikey': anonKey,
       },
     });
     if (!authResp.ok) {
