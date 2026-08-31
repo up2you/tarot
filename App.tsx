@@ -563,11 +563,15 @@ const App: React.FC = () => {
           );
           setEasternReading(fullText);
         } else {
-          // 2. 組合資料庫東方解讀
-          let easternText = formatEasternReading(spread, easternMap, positions);
+          // 2. 組合資料庫東方解讀（VIP 稍後用 AI 總結取代規則總結）
+          const isVip = Boolean(currentUser?.isVip);
+          const ruleSummary = isVip
+            ? formatEasternReading(spread, easternMap, positions, true).split('### 🕉️ 東方神諭總結')[1] || ''
+            : '';
+          let easternText = formatEasternReading(spread, easternMap, positions, !isVip);
 
-          // 3. VIP：追加 AI 個人化總結
-          if (currentUser?.isVip) {
+          // 3. VIP：AI 個人化東方神諭總結（取代規則式；失敗則補回規則式）
+          if (isVip) {
             const aiSummary = await generateEasternSummary(
               question,
               spread.map((s, idx) => ({
@@ -580,6 +584,8 @@ const App: React.FC = () => {
             );
             if (aiSummary) {
               easternText += '\n\n---\n\n' + aiSummary;
+            } else if (ruleSummary) {
+              easternText += '\n\n---\n\n### 🕉️ 東方神諭總結' + ruleSummary;
             }
           }
 

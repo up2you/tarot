@@ -7,6 +7,7 @@ import { supabase } from './supabaseClient';
 import { ORACLE_SCENARIOS } from '../constants/oracleScenarios';
 import { ORACLE_POSITIONS, getPositionByKey } from '../constants/oraclePositions';
 import { CardReading } from '../types';
+import { getEasternAttribute, ELEMENT_GENERATES, ELEMENT_CONTROLS } from '../data/easternCardAttributes';
 
 // ============================================
 // 類型定義
@@ -243,20 +244,126 @@ export const getBatchEasternInterpretations = async (
 export const formatEasternReading = (
     cards: (CardReading & { aiImage?: string })[],
     interpretations: Map<string, string>,
-    positions: string[]
+    positions: string[],
+    includeSummary: boolean = true
 ): string => {
     let text = `## ☯️ 東方智慧視角\n\n`;
+
+    // 收集牌面東方屬性（供總結使用）
+    const attrs = cards.map(card => getEasternAttribute(card.card.id)).filter(Boolean);
 
     cards.forEach((card, idx) => {
         const interp = interpretations.get(`${card.card.id}-${card.isReversed ? 'r' : 'u'}`);
         const reversedTag = card.isReversed ? '（逆位）' : '（正位）';
-        text += `### ${positions[idx] || card.position}：${card.card.nameZh} ${reversedTag}\n\n`;
+        const attr = getEasternAttribute(card.card.id);
+        // 東方意象標題（如：過去：孤燈照夜 — 隱士）
+        const imageTitle = attr ? `｜${attr.image}` : '';
+        text += `### ${positions[idx] || card.position}：${card.card.nameZh} ${reversedTag}${imageTitle}\n\n`;
         text += (interp || '此刻的能量正在流動中，靜觀其變。') + '\n\n';
         if (idx < cards.length - 1) text += '---\n\n';
     });
 
+    // ☯️ 東方神諭總結（規則式，基於牌面陰陽五行 — 所有用戶皆有）
+    // 若呼叫端會另外追加 AI 總結（VIP），可傳 includeSummary=false 避免重複
+    if (includeSummary) {
+        const summary = buildEasternOracleSummary(cards, attrs);
+        if (summary) {
+            text += `\n---\n\n### 🕉️ 東方神諭總結\n\n${summary}\n`;
+        }
+    }
+
     return text;
 };
+
+/**
+ * 東方神諭總結（規則式生成）
+ * 基於牌面陰陽平衡 + 五行生剋 + 意象貫穿，給出東方風格的收束建議
+ */
+function buildEasternOracleSummary(
+    cards: (CardReading & { aiImage?: string })[],
+    attrs: ReturnType<typeof getEasternAttribute>[]
+): string {
+    if (cards.length === 0) return '';
+
+    // 陰陽統計
+    const effectiveAttrs = cards.map((card, i) => {
+        const attr = attrs[i];
+        if (!attr) return null;
+        // 逆位時陰陽反轉（陽轉陰、陰轉陽）
+        const yinYang = card.isReversed
+            ? (attr.yinYang === '陽' ? '陰' : '陽')
+            : attr.yinYang;
+        return { ...attr, yinYang, isReversed: card.isReversed };
+    }).filter(Boolean) as { yinYang: string; element: string; hexagram: string; image: string; isReversed: boolean }[];
+
+    if (effectiveAttrs.length === 0) return '';
+
+    const yangCount = effectiveAttrs.filter(a => a.yinYang === '陽').length;
+    const yinCount = effectiveAttrs.length - yangCount;
+
+    // 陰陽判斷
+    let balanceText: string;
+    if (yangCount > yinCount) {
+        balanceText = '牌面陽氣偏盛，主「動」——外在行動力充足，但需防過剛易折，宜以柔濟剛、以靜制動。';
+    } else if (yinCount > yangCount) {
+        balanceText = '牌面陰氣偏盛，主「靜」——內在感知敏銳，但需防遲滯不前，宜順勢而動、以動破局。';
+    } else {
+        balanceText = '牌面陰陽相濟，動靜得宜——正是「致中和」的狀態，依循本心自然而行即可。';
+    }
+
+    // 五行統計與生剋（以整體分布判斷，非僅相鄰兩兩）
+    const elements = effectiveAttrs.map(a => a.element);
+    const elementCount: Record<string, number> = {};
+    elements.forEach(el => { elementCount[el] = (elementCount[el] || 0) + 1; });
+    const uniqueElements = Object.keys(elementCount).sort();
+
+    let elementText: string;
+    if (uniqueElements.length === 1) {
+        elementText = `牌面五行同屬${uniqueElements[0]}，氣機專一，宜集中精神於一事。`;
+    } else {
+        // 檢查是否存在相生鏈（如木→火→土）
+        const genChain: string[] = [];
+        for (let i = 0; i < uniqueElements.length - 1; i++) {
+            if (ELEMENT_GENERATES[uniqueElements[i]] === uniqueElements[i + 1]) {
+                genChain.push(`${uniqueElements[i]}生${uniqueElements[i + 1]}`);
+            }
+        }
+        // 檢查是否存在相剋
+        const controlPairs: string[] = [];
+        for (let i = 0; i < uniqueElements.length; i++) {
+            for (let j = i + 1; j < uniqueElements.length; j++) {
+                if (ELEMENT_CONTROLS[uniqueElements[i]] === uniqueElements[j]) {
+                    controlPairs.push(`${uniqueElements[i]}剋${uniqueElements[j]}`);
+                } else if (ELEMENT_CONTROLS[uniqueElements[j]] === uniqueElements[i]) {
+                    controlPairs.push(`${uniqueElements[j]}剋${uniqueElements[i]}`);
+                }
+            }
+        }
+
+        const flows: string[] = [...genChain, ...controlPairs];
+        elementText = flows.length > 0
+            ? `牌面五行交會：${uniqueElements.join('、')}。${flows.join('、')}，${controlPairs.length > 0 ? '有制衡亦有生發，氣機不失平衡。' : '氣機相生相續，順勢則通。'}`
+            : `牌面五行：${uniqueElements.join('、')}，各行其道，互不牽制。`;
+        if (elements.includes('水') && elements.includes('火')) {
+            elementText += '水火同現，正是陰陽交濟之象。';
+        }
+    }
+
+    // 意象貫穿（取首末兩張）
+    const firstImg = effectiveAttrs[0]?.image || '';
+    const lastImg = effectiveAttrs[effectiveAttrs.length - 1]?.image || '';
+    const flowText = effectiveAttrs.length >= 2
+        ? `由「${firstImg}」行至「${lastImg}」，象徵此局由起始之象走向收束之勢。`
+        : `此局之象：${firstImg}。`;
+
+    // 逆位提醒
+    const reversedCount = effectiveAttrs.filter(a => a.isReversed).length;
+    const reversedText = reversedCount > 0
+        ? `其中有 ${reversedCount} 張逆位，提示相關面向的氣機受阻或需反轉視角，宜順其勢而調其偏。`
+        : '全數正位，氣機通暢，時機已趨成熟。';
+
+    return `${balanceText}\n\n${elementText}\n\n${flowText}${reversedText}\n\n靜觀此象，不必強求——順應陰陽消長之理，守中致和，則吉凶自明，前路自現。`;
+}
 
 /**
  * 批量取得多張牌的解釋
