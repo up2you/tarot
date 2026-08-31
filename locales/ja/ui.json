@@ -216,6 +216,10 @@
     "avg_per_month": "月平均 NT$ {{price}}",
     "footer_features": "💳 多彩な決済方法 | 🔒 安全な暗号化決済 | 📧 即時反映",
     "selected_plan_msg": "選択したプラン: {{plan}}、決済機能は準備中です...",
+    "need_login": "購入するにはログインしてください",
+    "payment_not_ready": "決済機能はまだ利用できません。後でもう一度お試しください",
+    "purchase_failed": "決済の作成に失敗しました。後でもう一度お試しください",
+    "redirecting": "決済ページに移動しています...",
     "plans": {
       "credits_5": "5回 AI解読クレジット",
       "credits_10": "10回 AI解読クレジット",

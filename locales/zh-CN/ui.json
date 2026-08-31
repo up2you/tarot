@@ -216,6 +216,10 @@
     "avg_per_month": "平均每月 NT$ {{price}}",
     "footer_features": "💳 支持多种付款方式 | 🔒 安全加密交易 | 📧 购买后即时生效",
     "selected_plan_msg": "已选择方案：{{plan}}，付款功能开发中...",
+    "need_login": "请先登录后再购买",
+    "payment_not_ready": "付款功能尚未开通，请稍后再试",
+    "purchase_failed": "付款建立失败，请稍后再试",
+    "redirecting": "正在导向付款页面...",
     "plans": {
       "credits_5": "5 次 AI 解读点数",
       "credits_10": "10 次 AI 解读点数",

@@ -69,12 +69,72 @@ const PricingPage: React.FC<PricingPageProps> = ({ onPurchase, onClose }) => {
         setIsLoading(false);
     };
 
-    const handlePurchase = (planType: string) => {
+    const handlePurchase = async (planType: string) => {
         setSelectedPlan(planType);
-        if (onPurchase) {
-            onPurchase(planType);
-        } else {
-            setMessage({ type: 'success', text: t('pricing.selected_plan_msg', { plan: planType }) });
+        setMessage(null);
+
+        // 取得登入用戶
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+            setMessage({ type: 'error', text: t('pricing.need_login') });
+            return;
+        }
+
+        // 取得 access token（伺服器端驗證用）
+        const { data: sessionData } = await supabase.auth.getSession();
+        const accessToken = sessionData?.session?.access_token;
+        if (!accessToken) {
+            setMessage({ type: 'error', text: t('pricing.need_login') });
+            return;
+        }
+
+        setIsLoading(true);
+        try {
+            // 呼叫綠界付款建立 API
+            const response = await fetch('/api/ecpay-create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${accessToken}`,
+                },
+                body: JSON.stringify({ planType }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                const errMsg = data?.error === 'ECPay not configured'
+                    ? t('pricing.payment_not_ready')
+                    : t('pricing.purchase_failed');
+                setMessage({ type: 'error', text: errMsg });
+                return;
+            }
+
+            // 建立隱藏表單並自動 submit 到綠界
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = data.url;
+            form.target = '_blank';
+            form.style.display = 'none';
+
+            for (const [key, value] of Object.entries(data.params)) {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = key;
+                input.value = String(value);
+                form.appendChild(input);
+            }
+
+            document.body.appendChild(form);
+            form.submit();
+            document.body.removeChild(form);
+
+            setMessage({ type: 'success', text: t('pricing.redirecting') });
+        } catch (e) {
+            console.error('[PricingPage] purchase error:', e);
+            setMessage({ type: 'error', text: t('pricing.purchase_failed') });
+        } finally {
+            setIsLoading(false);
         }
     };
 

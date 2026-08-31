@@ -17,7 +17,7 @@
             "destination": "/cards.html"
         },
         {
-            "source": "/((?!admin|cards|assets|card01|audio|.*\\..*).*)",
+            "source": "/((?!admin|cards|api|assets|card01|audio|.*\\..*).*)",
             "destination": "/index.html"
         }
     ]

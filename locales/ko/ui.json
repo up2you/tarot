@@ -216,6 +216,10 @@
     "avg_per_month": "월 평균 NT$ {{price}}",
     "footer_features": "💳 다양한 결제 수단 | 🔒 안전한 암호화 결제 | 📧 즉시 적용",
     "selected_plan_msg": "선택한 플랜: {{plan}}, 결제 기능 준비 중...",
+    "need_login": "구매하려면 로그인하세요",
+    "payment_not_ready": "결제 기능이 아직 준비되지 않았습니다. 나중에 다시 시도해 주세요",
+    "purchase_failed": "결제 생성에 실패했습니다. 나중에 다시 시도해 주세요",
+    "redirecting": "결제 페이지로 이동 중...",
     "plans": {
       "credits_5": "5회 AI 해석 크레딧",
       "credits_10": "10회 AI 해석 크레딧",

@@ -216,6 +216,10 @@
     "avg_per_month": "Avg. NT$ {{price}} / mo",
     "footer_features": "💳 Multiple Payment Methods | 🔒 Secure Checkout | 📧 Instant Activation",
     "selected_plan_msg": "Selected plan: {{plan}}. Payment integration in progress...",
+    "need_login": "Please log in before purchasing",
+    "payment_not_ready": "Payment is not ready yet, please try again later",
+    "purchase_failed": "Failed to create payment, please try again later",
+    "redirecting": "Redirecting to payment page...",
     "plans": {
       "credits_5": "5 AI Readings",
       "credits_10": "10 AI Readings",
