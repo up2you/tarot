@@ -47,18 +47,50 @@ const App: React.FC = () => {
   const { settings: displaySettings } = useDisplaySettings();
   const { currentStyleId, getCardImageUrl, getBackImageUrl, styleImages, isLoading: isLoadingCardStyle } = useCardStyle();
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-  const [appState, setAppState] = useState<AppState>(AppState.AUTH);
+
+  // ⚡ 解讀會話持久化：頁面重載/切分頁/手機切後台後恢復（sessionStorage，標籤頁關閉即清）
+  const SESSION_KEY = 'aetheris_reading_session_v1';
+  const loadSession = useCallback((): Record<string, unknown> | null => {
+    try {
+      const raw = sessionStorage.getItem(SESSION_KEY);
+      if (!raw) return null;
+      return JSON.parse(raw);
+    } catch { return null; }
+  }, []);
+
+  const [appState, setAppState] = useState<AppState>(() => {
+    const s = loadSession();
+    return s?.appState !== undefined ? s.appState as AppState : AppState.AUTH;
+  });
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [question, setQuestion] = useState('');
-  const [spread, setSpread] = useState<(CardReading & { aiImage?: string })[]>([]);
+  const [question, setQuestion] = useState<string>(() => {
+    const s = loadSession();
+    return typeof s?.question === 'string' ? s.question as string : '';
+  });
+  const [spread, setSpread] = useState<(CardReading & { aiImage?: string })[]>(() => {
+    const s = loadSession();
+    return Array.isArray(s?.spread) ? s.spread as (CardReading & { aiImage?: string })[] : [];
+  });
   const [cardBackImage, setCardBackImage] = useState<string>(CARD_BACK_IMAGE);
-  const [isFlipped, setIsFlipped] = useState<boolean[]>([]);
+  const [isFlipped, setIsFlipped] = useState<boolean[]>(() => {
+    const s = loadSession();
+    return Array.isArray(s?.isFlipped) ? s.isFlipped as boolean[] : [];
+  });
   const [aiChat, setAiChat] = useState<DeepSeekChat | null>(null);
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>(() => {
+    const s = loadSession();
+    return Array.isArray(s?.messages) ? s.messages as ChatMessage[] : [];
+  });
   const [isTyping, setIsTyping] = useState(false);
   const [userInput, setUserInput] = useState('');
-  const [selectedSpreadId, setSelectedSpreadId] = useState<string | null>('three_card'); // 預設使用時間之流
-  const [followUpCount, setFollowUpCount] = useState(0); // 追問次數計數器
+  const [selectedSpreadId, setSelectedSpreadId] = useState<string | null>(() => {
+    const s = loadSession();
+    return typeof s?.selectedSpreadId === 'string' ? s.selectedSpreadId as string : 'three_card';
+  });
+  const [followUpCount, setFollowUpCount] = useState(() => {
+    const s = loadSession();
+    return typeof s?.followUpCount === 'number' ? s.followUpCount as number : 0;
+  }); // 追問次數計數器
   const MAX_FREE_FOLLOWUPS = 0; // 免費用戶不開放追問功能
   const [showUpgradeModal, setShowUpgradeModal] = useState(false); // 升級 VIP 彈窗
   const [currentPage, setCurrentPage] = useState<'main' | 'profile' | 'cardStyles' | 'pricing'>('main'); // 🆕 當前頁面
@@ -71,8 +103,15 @@ const App: React.FC = () => {
   const [showLanguageMenu, setShowLanguageMenu] = useState(false);
   const [isTypewriter, setIsTypewriter] = useState(false); // 打字機效果播放中（供跳過按鈕使用）
   const [showDailyFirst, setShowDailyFirst] = useState(true); // 首屏：冥想式每日卡入口（改造核心）
-  const [activeLens, setActiveLens] = useState<ReadingLens>('western'); // 🎭 雙透鏡：西方原型 / 東方智慧
-  const [easternReading, setEasternReading] = useState<string | null>(null); // 東方視角解讀（快取）
+  const [activeLens, setActiveLens] = useState<ReadingLens>(() => {
+    const s = loadSession();
+    const v = s?.activeLens;
+    return v === 'eastern' || v === 'compare' || v === 'western' ? v as ReadingLens : 'western';
+  }); // 🎭 雙透鏡：西方原型 / 東方智慧
+  const [easternReading, setEasternReading] = useState<string | null>(() => {
+    const s = loadSession();
+    return typeof s?.easternReading === 'string' ? s.easternReading as string : null;
+  }); // 東方視角解讀（快取）
   const isPerformingRef = useRef(false);
   const hasRecordedRef = useRef(false); // 防止重複記錄
   const hasConsumedQuotaRef = useRef(false); // 防止重複扣除額度
@@ -106,6 +145,102 @@ const App: React.FC = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // ⚡ 解讀會話自動保存（任何關鍵狀態變化即寫入 sessionStorage）
+  useEffect(() => {
+    // 僅在「有實際會話內容」時保存（避免登出/初始空狀態覆蓋）
+    const hasSession = messages.length > 0 || spread.length > 0;
+    if (!hasSession) {
+      sessionStorage.removeItem(SESSION_KEY);
+      return;
+    }
+    try {
+      const snapshot = {
+        appState,
+        question,
+        spread,
+        isFlipped,
+        messages,
+        selectedSpreadId,
+        followUpCount,
+        activeLens,
+        easternReading,
+        savedAt: Date.now(),
+      };
+      sessionStorage.setItem(SESSION_KEY, JSON.stringify(snapshot));
+    } catch (e) {
+      console.warn('[Session] 保存解讀會話失敗:', e);
+    }
+  }, [appState, question, spread, isFlipped, messages, selectedSpreadId, followUpCount, activeLens, easternReading, SESSION_KEY]);
+
+  // ⚡ 頁面離開前最後一次保存（切分頁/關閉前）
+  useEffect(() => {
+    const saveNow = () => {
+      const hasSession = messages.length > 0 || spread.length > 0;
+      if (!hasSession) return;
+      try {
+        const snapshot = {
+          appState,
+          question,
+          spread,
+          isFlipped,
+          messages,
+          selectedSpreadId,
+          followUpCount,
+          activeLens,
+          easternReading,
+          savedAt: Date.now(),
+        };
+        sessionStorage.setItem(SESSION_KEY, JSON.stringify(snapshot));
+      } catch (e) {
+        /* 忽略 */
+      }
+    };
+    // 注意：beforeunload 內不能可靠讀 state（閉包可能舊），故以 ref 保存最新快照
+    window.addEventListener('beforeunload', saveNow);
+    window.addEventListener('pagehide', saveNow);
+    document.addEventListener('visibilitychange', saveNow);
+    return () => {
+      window.removeEventListener('beforeunload', saveNow);
+      window.removeEventListener('pagehide', saveNow);
+      document.removeEventListener('visibilitychange', saveNow);
+    };
+    // 依賴：每次 state 更新都重新註冊以取得最新閉包
+  }, [appState, question, spread, isFlipped, messages, selectedSpreadId, followUpCount, activeLens, easternReading]);
+
+  // ⚡ 恢復：若從 sessionStorage 恢復了解讀，重建 aiChat（讓追問可繼續）
+  useEffect(() => {
+    const s = loadSession();
+    if (!s) return;
+    const hasMessages = Array.isArray(s.messages) && s.messages.length > 0;
+    const isInReading = s.appState === AppState.READING || s.appState === AppState.INTERACTIVE;
+
+    // 動畫中斷（洗牌/發牌途中離開）：歸一到「解讀完成」狀態，直接顯示結果
+    if ((s.appState === AppState.SHUFFLING || s.appState === AppState.SPREADING) && hasMessages) {
+      setAppState(AppState.INTERACTIVE);
+      // 確保牌全翻開
+      if (Array.isArray(s.spread) && s.spread.length > 0) {
+        setIsFlipped(s.spread.map(() => true));
+      }
+    }
+
+    if (hasMessages && isInReading && !aiChat) {
+      // 重建 DeepSeekChat（還原對話歷史，讓追問與接續對話可運作）
+      try {
+        const apiKey = (() => { try { return (process as any).env?.DEEPSEEK_API_KEY || ''; } catch { return ''; } })();
+        const chat = new DeepSeekChat('', apiKey || '');
+        // 將保存的訊息灌回（system 由 sendMessage 前的 messages 組成）
+        (chat as any).messages = [
+          { role: 'system', content: '' },
+          ...(s.messages as ChatMessage[]).map(m => ({ role: m.role, content: m.text })),
+        ];
+        setAiChat(chat);
+      } catch (e) {
+        console.warn('[Session] 重建 AI 會話失敗（僅顯示解讀）:', e);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // 🆕 監聽導航事件（來自 SettingsMenu）
   useEffect(() => {
     const handleNavigate = (e: CustomEvent) => {
@@ -121,6 +256,7 @@ const App: React.FC = () => {
         setAppState(AppState.AUTH);
         setCurrentUser(null);
         sessionStorage.removeItem('ethereal_user');
+        sessionStorage.removeItem(SESSION_KEY);
       }
       else setCurrentPage('main');
     };
@@ -636,6 +772,8 @@ const App: React.FC = () => {
 
   const handleResetCeremony = () => {
     playSound('draw');
+    // 清除解讀會話（結束占卜後不保留）
+    sessionStorage.removeItem(SESSION_KEY);
     setAppState(AppState.WELCOME);
     setShowDailyFirst(true); // 回到冥想式每日卡首屏
     setQuestion('');
@@ -643,6 +781,8 @@ const App: React.FC = () => {
     setIsFlipped([]);
     setAiChat(null);
     setMessages([]);
+    setEasternReading(null);
+    setActiveLens('western');
     setUserInput('');
     setSelectedSpreadId('three_card'); // 重置為預設牌陣(時間之流)
     setFollowUpCount(0); // 重置追問次數
