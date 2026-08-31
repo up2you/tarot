@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
     FollowupEligibility,
     Followup,
@@ -19,6 +20,7 @@ interface FollowUpPanelProps {
 }
 
 const FollowUpPanel: React.FC<FollowUpPanelProps> = ({ readingId, onFollowupComplete }) => {
+    const { i18n } = useTranslation();
     const [eligibility, setEligibility] = useState<FollowupEligibility | null>(null);
     const [followups, setFollowups] = useState<Followup[]>([]);
     const [question, setQuestion] = useState('');
@@ -61,7 +63,7 @@ const FollowUpPanel: React.FC<FollowUpPanelProps> = ({ readingId, onFollowupComp
         setIsAsking(true);
         setMessage(null);
 
-        const result = await askFollowup(userId, readingId, question.trim());
+        const result = await askFollowup(userId, readingId, question.trim(), i18n.language);
 
         if (result.success && result.answer) {
             setMessage({ type: 'success', text: '追問完成！' });

@@ -3,6 +3,24 @@
  */
 
 import { supabase } from './supabaseClient';
+import { MAJOR_ARCANA } from '../constants';
+
+const DEEPSEEK_API_URL = 'https://api.deepseek.com/chat/completions';
+
+// 各語言的導師 persona（與 geminiService 一致）
+const FOLLOWUP_PERSONAS: Record<string, { name: string; lang: string; style: string }> = {
+  'zh-TW': { name: '艾瑟瑞爾', lang: '繁體中文', style: '溫暖真誠、有智慧與洞見的現代塔羅導師，用白話口語解讀' },
+  'zh-CN': { name: '艾瑟瑞尔', lang: '简体中文', style: '温暖真诚、有智慧与洞见的现代塔罗导师，用白话口语解读' },
+  'en':    { name: 'Aetheriel', lang: 'English', style: 'warm, sincere, wise and insightful modern tarot guide speaking in plain language' },
+  'ja':    { name: 'エーセリエル', lang: '日本語', style: '温かく誠実で、知恵と洞察に満ちた現代のタロットガイド。平易な口語で' },
+  'ko':    { name: '에테리엘', lang: '한국어', style: '따뜻하고 진실하며 지혜와 통찰이 있는 현대 타로 가이드. 쉬운 구어체로' },
+};
+
+// 取得 API Key（由 vite.config.ts define 注入）
+const getApiKey = (): string => {
+  // @ts-ignore - process.env 由 vite.config.ts define 注入
+  return process.env.DEEPSEEK_API_KEY || '';
+};
 
 // ============================================
 // 類型定義
@@ -368,30 +386,109 @@ export const getFollowups = async (readingId: string): Promise<Followup[]> => {
 };
 
 // ============================================
-// AI 追問回答（需整合 AI 服務）
+// AI 追問回答（DeepSeek 整合）
 // ============================================
 
 /**
- * 生成追問回答（整合 AI）
+ * 取得牌名（含正逆位標記）
+ */
+function getCardDisplay(card: CardResult, language: string): string {
+    const major = MAJOR_ARCANA.find(c => c.id === card.cardId);
+    const baseName = major?.nameZh || `Card ${card.cardId}`;
+    const isEn = language === 'en';
+    const upright = isEn ? 'Upright' : language === 'ja' ? '正位置' : language === 'ko' ? '정위치' : '正位';
+    const reversed = isEn ? 'Reversed' : language === 'ja' ? '逆位置' : language === 'ko' ? '역위치' : '逆位';
+    return `${card.position}：${baseName} (${card.isReversed ? reversed : upright})`;
+}
+
+/**
+ * 生成追問回答（整合 DeepSeek AI）
+ * 根據：
+ * 1. 原始占卜結果 (reading.cards, reading.interpretation)
+ * 2. 用戶的追問問題 (followupQuestion)
+ * 3. 之前的追問對話 (previousFollowups)
  */
 export const generateFollowupAnswer = async (
     reading: Reading,
     followupQuestion: string,
-    previousFollowups: Followup[]
+    previousFollowups: Followup[],
+    language: string = 'zh-TW'
 ): Promise<string> => {
-    // TODO: 整合 DeepSeek 或其他 AI 服務
-    // 這裡需要根據：
-    // 1. 原始占卜結果 (reading.cards, reading.interpretation)
-    // 2. 用戶的追問問題 (followupQuestion)
-    // 3. 之前的追問對話 (previousFollowups)
+    const apiKey = getApiKey();
+    if (!apiKey) {
+        return language === 'zh-TW' || language === 'zh-CN'
+            ? '抱歉，AI 服務暫時無法使用，請稍後再試。'
+            : 'Sorry, the AI service is temporarily unavailable. Please try again later.';
+    }
 
-    // 暫時返回模擬回答
-    const mockAnswers = [
-        `根據您抽到的牌卡所呈現的能量，關於「${followupQuestion}」這個問題，牌面顯示您目前正處於一個轉變的時期。建議您保持耐心，相信自己的直覺，機會很快就會到來。`,
-        `針對您的追問，牌卡的能量指引著一個正面的方向。雖然過程中可能會有些挑戰，但只要您堅持初心，最終會有好的結果。請記得在做決定時，聆聽內心的聲音。`,
-    ];
+    const persona = FOLLOWUP_PERSONAS[language] || FOLLOWUP_PERSONAS['zh-TW'];
 
-    return mockAnswers[previousFollowups.length] || mockAnswers[0];
+    // 牌面描述
+    const cardsDesc = reading.cards.map(c => getCardDisplay(c, language)).join('\n');
+
+    // 過往追問對話（若有）
+    const historyDesc = previousFollowups.length > 0
+        ? previousFollowups.map((f, i) =>
+            `Q${i + 1}: ${f.question}\nA${i + 1}: ${f.answer || '(尚未回答)'}`
+        ).join('\n\n')
+        : '（無）';
+
+    const prompt = `你是一位資深的塔羅解讀師「${persona.name}」，擅長用${persona.style}。
+
+【原始占卜】
+- 尋求者問題：${reading.question || '（未記錄）'}
+- 牌陣：${reading.spread_type}
+- 牌面：
+${cardsDesc}
+
+【原始解讀】
+${reading.interpretation?.substring(0, 2000) || '（無）'}
+
+【過往追問對話】
+${historyDesc}
+
+【尋求者現在追問】
+${followupQuestion}
+
+請針對這個追問，用${persona.lang}的白話口語回答。
+要求：
+1. **直接正面回答追問**，不要重複原始解讀，而是針對新問題深入。
+2. 語氣${persona.style}，清楚易懂。
+3. **禁止使用文言文或古語**（如「汝」「吾」「之乎者也」）。
+4. 可引用牌面能量，但要與追問問題緊密結合。
+5. 使用 Markdown 格式，長度約 250-400 字。
+6. 結尾給出一個具體的建議或行動方向。`;
+
+    try {
+        const response = await fetch(DEEPSEEK_API_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey}`
+            },
+            body: JSON.stringify({
+                model: 'deepseek-chat',
+                messages: [{ role: 'user', content: prompt }],
+                temperature: 0.8,
+                max_tokens: 1024
+            })
+        });
+
+        if (!response.ok) {
+            console.error('[FollowUpService] DeepSeek API error:', response.status);
+            return language === 'zh-TW' || language === 'zh-CN'
+                ? '抱歉，AI 服務暫時無法使用，請稍後再試。'
+                : 'Sorry, the AI service is temporarily unavailable. Please try again later.';
+        }
+
+        const data = await response.json();
+        return data.choices[0]?.message?.content || '（無回應）';
+    } catch (err) {
+        console.error('[FollowUpService] generateFollowupAnswer error:', err);
+        return language === 'zh-TW' || language === 'zh-CN'
+            ? '抱歉，AI 服務暫時無法使用，請稍後再試。'
+            : 'Sorry, the AI service is temporarily unavailable. Please try again later.';
+    }
 };
 
 /**
@@ -400,7 +497,8 @@ export const generateFollowupAnswer = async (
 export const askFollowup = async (
     userId: string,
     readingId: string,
-    question: string
+    question: string,
+    language: string = 'zh-TW'
 ): Promise<{ success: boolean; answer?: string; message: string }> => {
     // 1. 創建追問記錄
     const createResult = await createFollowup(userId, readingId, question);
@@ -419,7 +517,7 @@ export const askFollowup = async (
         const previousFollowups = await getFollowups(readingId);
 
         // 4. 生成 AI 回答
-        const answer = await generateFollowupAnswer(reading, question, previousFollowups);
+        const answer = await generateFollowupAnswer(reading, question, previousFollowups, language);
 
         // 5. 儲存回答
         await completeFollowup(createResult.followupId, answer);
