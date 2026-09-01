@@ -241,6 +241,31 @@ export const getBatchEasternInterpretations = async (
  * 組合東方智慧視角的完整解讀（資料庫部分）
  * 格式與 formatOracleReading 類似，但用東方詮釋
  */
+/**
+ * 清理東方解讀中的冗餘開頭問候（「親愛的朋友」等）
+ * 資料庫內容由轉換引擎生成，固定以問候語開頭；顯示時移除，使解讀更精煉
+ */
+export function stripEasternGreeting(text: string): string {
+    if (!text) return text;
+    // 支援多語言問候：親愛的朋友/亲爱的朋友/Dear friend/親愛なる友/사랑하는 친구 등
+    const patterns = [
+        /^親愛的朋友[，,、．。!！]?\s*/,
+        /^亲爱的朋友[，,、．。!！]?\s*/,
+        /^親愛なる友へ[、,，]?\s*/,
+        /^사랑하는 친구[이에]?[,.，、]?\s*/,
+        /^Dear friend[s]?[,，、]?\s*/i,
+        /^My dear friend[s]?[,，、]?\s*/i,
+    ];
+    let result = text;
+    for (const p of patterns) {
+        if (p.test(result)) {
+            result = result.replace(p, '');
+            break;
+        }
+    }
+    return result.trim();
+}
+
 export const formatEasternReading = (
     cards: (CardReading & { aiImage?: string })[],
     interpretations: Map<string, string>,
@@ -259,7 +284,9 @@ export const formatEasternReading = (
         // 東方意象標題（如：過去：孤燈照夜 — 隱士）
         const imageTitle = attr ? `｜${attr.image}` : '';
         text += `### ${positions[idx] || card.position}：${card.card.nameZh} ${reversedTag}${imageTitle}\n\n`;
-        text += (interp || '此刻的能量正在流動中，靜觀其變。') + '\n\n';
+        // 移除冗餘開頭問候（親愛的朋友...）
+        const cleaned = interp ? stripEasternGreeting(interp) : '';
+        text += (cleaned || '此刻的能量正在流動中，靜觀其變。') + '\n\n';
         if (idx < cards.length - 1) text += '---\n\n';
     });
 
